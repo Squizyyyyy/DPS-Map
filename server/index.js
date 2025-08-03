@@ -2,16 +2,17 @@ const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path'); // добавлено
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
 const DATA_FILE = './markers.json';
 let markers = [];
-const deleteTimestamps = {}; // IP → время последнего удаления
-const addTimestamps = {};    // IP → время последнего добавления
+const deleteTimestamps = {};
+const addTimestamps = {};
 
 // Загрузка при запуске
 if (fs.existsSync(DATA_FILE)) {
@@ -23,7 +24,7 @@ const saveMarkers = () => {
   fs.writeFileSync(DATA_FILE, JSON.stringify(markers, null, 2));
 };
 
-// Получение адреса по координатам
+// Получение адреса
 async function getAddress(lat, lng) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
   try {
@@ -41,7 +42,7 @@ async function getAddress(lat, lng) {
   }
 }
 
-// Автообновление: старение и удаление
+// Автообновление
 setInterval(() => {
   const now = Date.now();
   let changed = false;
@@ -68,12 +69,11 @@ setInterval(() => {
   if (changed) saveMarkers();
 }, 30 * 1000);
 
-// Получить все метки
+// API маршруты
 app.get('/markers', (req, res) => {
   res.json(markers);
 });
 
-// Добавить метку (ограничение: не чаще 1 раза в 5 минут с одного IP)
 app.post('/markers', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const now = Date.now();
@@ -105,7 +105,6 @@ app.post('/markers', async (req, res) => {
   res.json(marker);
 });
 
-// Подтвердить метку
 app.post('/markers/:id/confirm', (req, res) => {
   const id = Number(req.params.id);
   const marker = markers.find((m) => m.id === id);
@@ -120,7 +119,6 @@ app.post('/markers/:id/confirm', (req, res) => {
   }
 });
 
-// Удалить метку (ограничение: не чаще 1 раза в 5 минут с одного IP)
 app.post('/markers/:id/delete', (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const now = Date.now();
@@ -143,7 +141,15 @@ app.post('/markers/:id/delete', (req, res) => {
   }
 });
 
-// Старт сервера
+
+// ✅ Отдача фронтенда из папки build (важно для Render)
+app.use(express.static(path.join(__dirname, '../build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../build/index.html'));
+});
+
+// Запуск сервера
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
 });
