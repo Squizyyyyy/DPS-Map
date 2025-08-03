@@ -36,7 +36,7 @@ function LocationMarker({ onAddMarker }) {
       const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
       if (!confirmAdd) return;
 
-      fetch('http://localhost:5000/markers', {
+      fetch('https://dps-map-rzn.onrender.com/markers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat, lng }),
@@ -74,7 +74,7 @@ export default function App() {
   }, []);
 
   const fetchMarkers = () => {
-    fetch('http://localhost:5000/markers')
+    fetch('https://dps-map-rzn.onrender.com/markers')
       .then((res) => res.json())
       .then((data) => setMarkers(data))
       .catch(() => {
@@ -83,7 +83,7 @@ export default function App() {
   };
 
   const handleConfirm = (id) => {
-    fetch(`http://localhost:5000/markers/${id}/confirm`, { method: 'POST' })
+    fetch(`https://dps-map-rzn.onrender.com/markers/${id}/confirm`, { method: 'POST' })
       .then(() => {
         fetchMarkers();
         toast.success('Метка подтверждена');
@@ -92,7 +92,7 @@ export default function App() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/markers/${id}/delete`, { method: 'POST' })
+    fetch(`https://dps-map-rzn.onrender.com/markers/${id}/delete`, { method: 'POST' })
       .then((res) => {
         if (res.status === 429) {
           toast.warn('Ошибка. Удалить метку можно не чаще 1 раз/5 мин');
@@ -120,8 +120,8 @@ export default function App() {
       <MapContainer
         center={[54.62, 39.72]}
         zoom={13}
-		minZoom={11}
-		maxZoom={19}
+        minZoom={11}
+        maxZoom={19}
         maxBounds={[[54.42, 39.32], [54.82, 40.12]]}
         maxBoundsViscosity={1.0}
         style={{ height: '100%' }}
