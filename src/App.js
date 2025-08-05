@@ -137,8 +137,8 @@ export default function App() {
         style={{ height: '100%' }}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
         />
         <LocationMarker onAddMarker={onAddMarker} />
         {markers.map((marker) => (
@@ -149,19 +149,18 @@ export default function App() {
           >
             <Popup>
               {marker.status === 'stale' ? (
-              <p>⚠️ Метка устарела (не подтверждена)</p>
+                <p>⚠️ Метка устарела (не подтверждена)</p>
               ) : (
-              <p>🚓 ДПС здесь</p>
+                <p>🚓 ДПС здесь</p>
               )}
               <p><b>Адрес:</b> {marker.address || 'Адрес не определён'}</p>
               <p>⏱️ Поставлена: {new Date(marker.timestamp).toLocaleString()}</p>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
-              <button onClick={() => handleConfirm(marker.id)}>✅ Подтвердить</button>
-              <button onClick={() => handleDelete(marker.id)}>❌ Уже нет</button>
+                <button onClick={() => handleConfirm(marker.id)}>✅ Подтвердить</button>
+                <button onClick={() => handleDelete(marker.id)}>❌ Уже нет</button>
               </div>
             </Popup>
-
           </Marker>
         ))}
       </MapContainer>
@@ -169,6 +168,10 @@ export default function App() {
       <style>{`
         .leaflet-marker-icon.grayscale-icon {
           filter: grayscale(100%);
+        }
+        /* Скрываем флаг Украины в атрибуции карты */
+        .leaflet-control-attribution .leaflet-control-attribution-flags {
+          display: none !important;
         }
       `}</style>
     </div>
