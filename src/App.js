@@ -137,8 +137,8 @@ export default function App() {
         style={{ height: '100%' }}
       >
         <TileLayer
-          url='https://tile.openstreetmap.de/{z}/{x}/{y}.png'
-          attribution='&copy; OpenStreetMap contributors'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
         />
         <LocationMarker onAddMarker={onAddMarker} />
         {markers.map((marker) => (
