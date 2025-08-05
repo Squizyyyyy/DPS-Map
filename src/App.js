@@ -158,7 +158,16 @@ export default function App() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                 <button onClick={() => handleConfirm(marker.id)}>✅ Подтвердить</button>
-                <button onClick={() => handleDelete(marker.id)}>❌ Уже нет</button>
+                <button
+                  onClick={() => {
+                    const confirmDelete = window.confirm('Вы уверены, что хотите удалить метку?');
+                    if (confirmDelete) {
+                      handleDelete(marker.id);
+                    }
+                  }}
+                >
+                  ❌ Уже нет
+                </button>
               </div>
             </Popup>
           </Marker>
