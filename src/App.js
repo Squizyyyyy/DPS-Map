@@ -149,16 +149,19 @@ export default function App() {
           >
             <Popup>
               {marker.status === 'stale' ? (
-                <p>⚠️ Метка устарела (не подтверждена)</p>
+              <p>⚠️ Метка устарела (не подтверждена)</p>
               ) : (
-                <p>🚓 ДПС здесь</p>
+              <p>🚓 ДПС здесь</p>
               )}
               <p><b>Адрес:</b> {marker.address || 'Адрес не определён'}</p>
               <p>⏱️ Поставлена: {new Date(marker.timestamp).toLocaleString()}</p>
-              <button onClick={() => handleConfirm(marker.id)}>Подтвердить</button>
-              <br />
-              <button onClick={() => handleDelete(marker.id)}>Уже нет</button>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+              <button onClick={() => handleConfirm(marker.id)}>✅ Подтвердить</button>
+              <button onClick={() => handleDelete(marker.id)}>❌ Уже нет</button>
+              </div>
             </Popup>
+
           </Marker>
         ))}
       </MapContainer>
