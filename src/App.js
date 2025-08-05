@@ -169,8 +169,8 @@ export default function App() {
         .leaflet-marker-icon.grayscale-icon {
           filter: grayscale(100%);
         }
-        /* Скрываем флаг Украины в атрибуции карты */
-        .leaflet-control-attribution .leaflet-control-attribution-flags {
+        /* Скрываем все изображения в атрибуции, включая флаг */
+        .leaflet-control-attribution img {
           display: none !important;
         }
       `}</style>
