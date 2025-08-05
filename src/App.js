@@ -11,7 +11,7 @@ import L from 'leaflet';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Цветная полицейская машинка
+// Иконки
 const policeIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/128/5959/5959568.png',
   iconSize: [30, 30],
@@ -19,7 +19,6 @@ const policeIcon = new L.Icon({
   popupAnchor: [0, -30],
 });
 
-// Серая иконка (устаревшая)
 const staleIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/128/5959/5959568.png',
   iconSize: [30, 30],
@@ -28,10 +27,20 @@ const staleIcon = new L.Icon({
   className: 'grayscale-icon',
 });
 
+// Локальные ограничения
+let lastAddTime = 0;
+let lastDeleteTime = 0;
+
 function LocationMarker({ onAddMarker }) {
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
+      const now = Date.now();
+
+      if (now - lastAddTime < 5 * 60 * 1000) {
+        toast.warn('Добавлять метки можно раз в 5 минут');
+        return;
+      }
 
       const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
       if (!confirmAdd) return;
@@ -47,11 +56,10 @@ function LocationMarker({ onAddMarker }) {
             return;
           }
 
-          if (!res.ok) {
-            throw new Error('Ошибка при добавлении');
-          }
+          if (!res.ok) throw new Error('Ошибка при добавлении');
 
           const data = await res.json();
+          lastAddTime = Date.now();
           onAddMarker(data);
           toast.success('Метка добавлена');
         })
@@ -69,7 +77,7 @@ export default function App() {
 
   useEffect(() => {
     fetchMarkers();
-    const interval = setInterval(fetchMarkers, 30000); // обновлять каждые 30 сек
+    const interval = setInterval(fetchMarkers, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -92,11 +100,18 @@ export default function App() {
   };
 
   const handleDelete = (id) => {
+    const now = Date.now();
+    if (now - lastDeleteTime < 5 * 60 * 1000) {
+      toast.warn('Удалять метки можно раз в 5 минут');
+      return;
+    }
+
     fetch(`https://dps-map-rzn.onrender.com/markers/${id}/delete`, { method: 'POST' })
       .then((res) => {
         if (res.status === 429) {
-          toast.warn('Ошибка. Удалить метку можно не чаще 1 раз/5 мин');
+          toast.warn('Ошибка. Удалить метку можно не чаще 1 раза/5 мин');
         } else if (res.ok) {
+          lastDeleteTime = Date.now();
           fetchMarkers();
           toast.success('Метка удалена');
         } else {
@@ -109,11 +124,6 @@ export default function App() {
   const onAddMarker = (marker) => {
     setMarkers((prev) => [...prev, marker]);
   };
-
-  const ryazanBounds = [
-    [53.8, 38.5], // Юго-западная граница
-    [55.2, 41.2]  // Северо-восточная граница
-  ];
 
   return (
     <div style={{ height: '100vh' }}>
