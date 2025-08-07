@@ -1,28 +1,43 @@
 const express = require('express');
-const fs = require('fs');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
-const path = require('path'); // добавлено
+const path = require('path');
+const { MongoClient } = require('mongodb');
+const fetch = require('node-fetch'); // если не установлен — установи через npm
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// MongoDB
+const MONGO_URI = 'mongodb+srv://danilkrauyshin2:Squizyzerofox1221.@dps-cluster.wj56qe5.mongodb.net/?retryWrites=true&w=majority&appName=DPS-Cluster';
+const client = new MongoClient(MONGO_URI);
+let markersCollection;
+
+const deleteTimestamps = {};
+const addTimestamps = {};
 
 app.use(cors());
 app.use(express.json());
 
-const DATA_FILE = './markers.json';
-let markers = [];
-const deleteTimestamps = {};
-const addTimestamps = {};
+// Подключение к MongoDB и запуск сервера
+async function startServer() {
+  try {
+    await client.connect();
+    const db = client.db('dps-map');
+    markersCollection = db.collection('markers');
+    console.log('✅ Подключено к MongoDB');
 
-// Загрузка при запуске
-if (fs.existsSync(DATA_FILE)) {
-  markers = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    app.listen(PORT, () => {
+      console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Ошибка подключения к MongoDB:', err);
+    process.exit(1);
+  }
 }
 
-// Сохранение в файл
-const saveMarkers = () => {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(markers, null, 2));
-};
+startServer();
 
 // Получение адреса
 async function getAddress(lat, lng) {
@@ -43,37 +58,37 @@ async function getAddress(lat, lng) {
 }
 
 // Автообновление
-setInterval(() => {
+setInterval(async () => {
   const now = Date.now();
-  let changed = false;
+  const allMarkers = await markersCollection.find().toArray();
 
-  markers.forEach((marker) => {
+  for (const marker of allMarkers) {
     const age = now - marker.timestamp;
+    let updateNeeded = false;
 
     if (marker.status === 'active' && age > 60 * 60 * 1000) {
-      marker.status = 'stale';
-      changed = true;
+      await markersCollection.updateOne({ id: marker.id }, { $set: { status: 'stale' } });
+      updateNeeded = true;
     }
 
     if (marker.status === 'stale' && age > 80 * 60 * 1000) {
-      changed = true;
+      await markersCollection.deleteOne({ id: marker.id });
+      updateNeeded = true;
     }
-  });
 
-  const before = markers.length;
-  markers = markers.filter(
-    (m) => !(m.status === 'stale' && now - m.timestamp > 80 * 60 * 1000)
-  );
-  if (before !== markers.length) changed = true;
-
-  if (changed) saveMarkers();
+    if (updateNeeded) {
+      console.log(`🕒 Обновлена/удалена метка ${marker.id}`);
+    }
+  }
 }, 30 * 1000);
 
-// API маршруты
-app.get('/markers', (req, res) => {
-  res.json(markers);
+// API: Получить все метки
+app.get('/markers', async (req, res) => {
+  const allMarkers = await markersCollection.find().toArray();
+  res.json(allMarkers);
 });
 
+// API: Добавить метку
 app.post('/markers', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const now = Date.now();
@@ -90,8 +105,6 @@ app.post('/markers', async (req, res) => {
   const id = Date.now();
   const address = await getAddress(lat, lng);
 
-  console.log('Добавлена метка с адресом:', address);
-
   const marker = {
     id,
     lat,
@@ -100,29 +113,36 @@ app.post('/markers', async (req, res) => {
     status: 'active',
     confirmations: 0,
     address,
-    comment, // сохраняем комментарий
+    comment,
   };
 
-  markers.push(marker);
-  saveMarkers();
+  await markersCollection.insertOne(marker);
   res.json(marker);
 });
 
-app.post('/markers/:id/confirm', (req, res) => {
+// API: Подтверждение метки
+app.post('/markers/:id/confirm', async (req, res) => {
   const id = Number(req.params.id);
-  const marker = markers.find((m) => m.id === id);
-  if (marker) {
-    marker.status = 'active';
-    marker.timestamp = Date.now();
-    marker.confirmations += 1;
-    saveMarkers();
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(404);
-  }
+  const marker = await markersCollection.findOne({ id });
+
+  if (!marker) return res.sendStatus(404);
+
+  await markersCollection.updateOne(
+    { id },
+    {
+      $set: {
+        status: 'active',
+        timestamp: Date.now(),
+      },
+      $inc: { confirmations: 1 },
+    }
+  );
+
+  res.sendStatus(200);
 });
 
-app.post('/markers/:id/delete', (req, res) => {
+// API: Удаление метки
+app.post('/markers/:id/delete', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const now = Date.now();
 
@@ -133,25 +153,17 @@ app.post('/markers/:id/delete', (req, res) => {
   deleteTimestamps[ip] = now;
 
   const id = Number(req.params.id);
-  const prevLen = markers.length;
-  markers = markers.filter((m) => m.id !== id);
+  const result = await markersCollection.deleteOne({ id });
 
-  if (markers.length !== prevLen) {
-    saveMarkers();
+  if (result.deletedCount > 0) {
     res.sendStatus(200);
   } else {
     res.sendStatus(404);
   }
 });
 
-// ✅ Отдача фронтенда из папки build (важно для Render)
+// Отдача фронтенда
 app.use(express.static(path.join(__dirname, '../build')));
-
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));
-});
-
-// Запуск сервера
-app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
 });
