@@ -93,10 +93,10 @@ export default function App() {
 
   const fetchMarkers = () => {
     fetch('https://dps-map-rzn-h0uq.onrender.com/markers')
-      .then((res) => res.json())
+      .then((res) => {
 	    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 		 return res.json();
-	  });
+	  })
       .then((data) => setMarkers(data))
       .catch(() => {
         toast.error('Ошибка сети при загрузке меток');
