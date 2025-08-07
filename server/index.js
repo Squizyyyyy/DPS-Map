@@ -3,7 +3,7 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const { MongoClient } = require('mongodb');
-const fetch = require('node-fetch'); // если не установлен — установи через npm
+const fetch = require('node-fetch');
 require('dotenv').config();
 
 const app = express();
@@ -39,9 +39,9 @@ async function startServer() {
 
 startServer();
 
-// Получение адреса
+// Получение укороченного адреса
 async function getAddress(lat, lng) {
-  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
   try {
     const response = await fetch(url, {
       headers: {
@@ -50,7 +50,18 @@ async function getAddress(lat, lng) {
       },
     });
     const data = await response.json();
-    return data.display_name || 'Адрес не найден';
+
+    if (!data.address) return 'Адрес не найден';
+
+    const { house_number, road, suburb, neighbourhood, city, town, state } = data.address;
+
+    return [
+      house_number,
+      road,
+      suburb || neighbourhood,
+      city || town
+    ].filter(Boolean).join(', ');
+
   } catch (error) {
     console.error('Ошибка получения адреса:', error);
     return 'Адрес не найден';
