@@ -96,7 +96,7 @@ export default function App() {
       .then((res) => res.json())
 	    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 		 return res.json();
-	  })
+	  });
       .then((data) => setMarkers(data))
       .catch(() => {
         toast.error('Ошибка сети при загрузке меток');
