@@ -17,9 +17,9 @@
     "uuid": "^11.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "node index.js",
     "build": "react-scripts build",
-    "server": "node server/index.js"
+    "postinstall": "npm run build"
   },
   "browserslist": {
     "production": [
@@ -34,7 +34,7 @@
     ]
   },
   "description": "",
-  "main": "bot.js",
+  "main": "index.js",
   "keywords": [],
   "author": "",
   "license": "ISC"

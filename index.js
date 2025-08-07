@@ -1,30 +1,26 @@
 const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
-const path = require('path'); // добавлено
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-app.use(cors());
-app.use(express.json());
 
 const DATA_FILE = './markers.json';
 let markers = [];
 const deleteTimestamps = {};
 const addTimestamps = {};
 
-// Загрузка при запуске
+// ===== Загрузка меток при запуске =====
 if (fs.existsSync(DATA_FILE)) {
   markers = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
 }
 
-// Сохранение в файл
+// ===== Сохранение в файл =====
 const saveMarkers = () => {
   fs.writeFileSync(DATA_FILE, JSON.stringify(markers, null, 2));
 };
 
-// Получение адреса
+// ===== Получение адреса по координатам =====
 async function getAddress(lat, lng) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
   try {
@@ -42,7 +38,7 @@ async function getAddress(lat, lng) {
   }
 }
 
-// Автообновление
+// ===== Автоматическое обновление статуса меток =====
 setInterval(() => {
   const now = Date.now();
   let changed = false;
@@ -69,7 +65,11 @@ setInterval(() => {
   if (changed) saveMarkers();
 }, 30 * 1000);
 
-// API маршруты
+// ===== Middleware =====
+app.use(cors());
+app.use(express.json());
+
+// ===== API =====
 app.get('/markers', (req, res) => {
   res.json(markers);
 });
@@ -141,15 +141,14 @@ app.post('/markers/:id/delete', (req, res) => {
   }
 });
 
-
-// ✅ Отдача фронтенда из папки build (важно для Render)
+// ===== Отдача React-фронта из папки build =====
 app.use(express.static(path.join(__dirname, '../build')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../build/index.html'));
+  res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
-// Запуск сервера
+// ===== Запуск сервера =====
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
 });
