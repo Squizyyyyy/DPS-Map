@@ -45,10 +45,20 @@ function LocationMarker({ onAddMarker }) {
       const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
       if (!confirmAdd) return;
 
+      const addComment = window.confirm("Добавить комментарий к метке?");
+      let comment = '';
+      if (addComment) {
+        comment = window.prompt("Введите комментарий к метке:");
+        if (comment === null) {
+          // Пользователь отменил ввод — считаем, что комментария нет
+          comment = '';
+        }
+      }
+
       fetch('https://dps-map-rzn-h0uq.onrender.com/markers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lng }),
+        body: JSON.stringify({ lat, lng, comment }), // передаем comment
       })
         .then(async (res) => {
           if (res.status === 429) {
@@ -155,6 +165,11 @@ export default function App() {
               )}
               <p><b>Адрес:</b> {marker.address || 'Адрес не определён'}</p>
               <p>⏱️ Поставлена: {new Date(marker.timestamp).toLocaleString()}</p>
+
+              {/* Новое — вывод комментария, если есть */}
+              {marker.comment && marker.comment.trim() !== '' && (
+                <p><b>Комментарий:</b> {marker.comment}</p>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                 <button onClick={() => handleConfirm(marker.id)}>✅ Подтвердить</button>

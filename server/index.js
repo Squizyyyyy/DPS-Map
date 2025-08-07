@@ -84,7 +84,9 @@ app.post('/markers', async (req, res) => {
 
   addTimestamps[ip] = now;
 
-  const { lat, lng } = req.body;
+  let { lat, lng, comment } = req.body;
+  if (!comment || comment.trim() === '') comment = '-';
+
   const id = Date.now();
   const address = await getAddress(lat, lng);
 
@@ -98,6 +100,7 @@ app.post('/markers', async (req, res) => {
     status: 'active',
     confirmations: 0,
     address,
+    comment, // сохраняем комментарий
   };
 
   markers.push(marker);
@@ -140,7 +143,6 @@ app.post('/markers/:id/delete', (req, res) => {
     res.sendStatus(404);
   }
 });
-
 
 // ✅ Отдача фронтенда из папки build (важно для Render)
 app.use(express.static(path.join(__dirname, '../build')));
