@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const { MongoClient } = require('mongodb');
 const fetch = require('node-fetch');
@@ -13,9 +12,7 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = 'mongodb+srv://danilkrauyshin2:Squizyzerofox1221.@dps-cluster.wj56qe5.mongodb.net/?retryWrites=true&w=majority&appName=DPS-Cluster';
 const client = new MongoClient(MONGO_URI);
 let markersCollection;
-
-const deleteTimestamps = {};
-const addTimestamps = {};
+let actionsCollection;  // Для хранения времени последних действий по IP
 
 app.use(cors());
 app.use(express.json());
@@ -26,7 +23,11 @@ async function startServer() {
     await client.connect();
     const db = client.db('dps-map');
     markersCollection = db.collection('markers');
+    actionsCollection = db.collection('actions'); // новая коллекция
     console.log('✅ Подключено к MongoDB');
+
+    // Создаем индекс для быстрого поиска по IP и действию
+    await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
 
     app.listen(PORT, () => {
       console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
@@ -53,7 +54,7 @@ async function getAddress(lat, lng) {
 
     if (!data.address) return 'Адрес не найден';
 
-    const { house_number, road, suburb, neighbourhood, city, town, state } = data.address;
+    const { house_number, road, suburb, neighbourhood, city, town } = data.address;
 
     return [
       house_number,
@@ -68,7 +69,30 @@ async function getAddress(lat, lng) {
   }
 }
 
-// Автообновление
+// Проверка ограничений по IP и действию (add или delete)
+async function checkRateLimit(ip, action) {
+  const now = Date.now();
+  const limitMs = 5 * 60 * 1000; // 5 минут
+
+  // Ищем последнюю запись о действии этого IP
+  const record = await actionsCollection.findOne({ ip, action });
+
+  if (record && now - record.timestamp < limitMs) {
+    // Если прошло меньше 5 минут — запрещаем
+    return false;
+  }
+
+  // Обновляем или вставляем новую запись
+  await actionsCollection.updateOne(
+    { ip, action },
+    { $set: { timestamp: now } },
+    { upsert: true }
+  );
+
+  return true;
+}
+
+// Автообновление меток — без изменений
 setInterval(async () => {
   const now = Date.now();
   const allMarkers = await markersCollection.find().toArray();
@@ -102,13 +126,11 @@ app.get('/markers', async (req, res) => {
 // API: Добавить метку
 app.post('/markers', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const now = Date.now();
-
-  if (addTimestamps[ip] && now - addTimestamps[ip] < 5 * 60 * 1000) {
+  
+  const allowed = await checkRateLimit(ip, 'add');
+  if (!allowed) {
     return res.status(429).json({ error: 'Слишком частое добавление. Попробуйте позже.' });
   }
-
-  addTimestamps[ip] = now;
 
   let { lat, lng, comment } = req.body;
   if (!comment || comment.trim() === '') comment = '-';
@@ -131,7 +153,7 @@ app.post('/markers', async (req, res) => {
   res.json(marker);
 });
 
-// API: Подтверждение метки
+// API: Подтверждение метки — без изменений
 app.post('/markers/:id/confirm', async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
@@ -155,13 +177,11 @@ app.post('/markers/:id/confirm', async (req, res) => {
 // API: Удаление метки
 app.post('/markers/:id/delete', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const now = Date.now();
-
-  if (deleteTimestamps[ip] && now - deleteTimestamps[ip] < 5 * 60 * 1000) {
+  
+  const allowed = await checkRateLimit(ip, 'delete');
+  if (!allowed) {
     return res.status(429).json({ error: 'Слишком частое удаление. Попробуйте позже.' });
   }
-
-  deleteTimestamps[ip] = now;
 
   const id = Number(req.params.id);
   const result = await markersCollection.deleteOne({ id });
@@ -173,7 +193,7 @@ app.post('/markers/:id/delete', async (req, res) => {
   }
 });
 
-// Отдача фронтенда
+// Отдача фронтенда — без изменений
 app.use(express.static(path.join(__dirname, '../build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));
