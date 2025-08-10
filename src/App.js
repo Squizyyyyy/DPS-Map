@@ -70,7 +70,7 @@ function LocationMarker({ onAddMarker }) {
 
           const data = await res.json();
           lastAddTime = Date.now();
-          onAddMarker(data);
+          onAddMarker();
           toast.success('Метка добавлена');
         })
         .catch(() => {
@@ -134,8 +134,8 @@ export default function App() {
       .catch(() => toast.error('Ошибка при удалении'));
   };
 
-  const onAddMarker = (marker) => {
-    setMarkers((prev) => [...prev, marker]);
+  const onAddMarker = () => {
+    fetchMarkers();
   };
 
   return (
