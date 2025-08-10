@@ -117,6 +117,16 @@ setInterval(async () => {
   }
 }, 30 * 1000);
 
+// Вспомогательная функция для получения "чистого" IP
+function getClientIp(req) {
+  const xForwardedFor = req.headers['x-forwarded-for'];
+  if (xForwardedFor) {
+    // Берём первый IP из списка, если их несколько через запятую
+    return xForwardedFor.split(',')[0].trim();
+  }
+  return req.socket.remoteAddress;
+}
+
 // API: Получить все метки
 app.get('/markers', async (req, res) => {
   const allMarkers = await markersCollection.find().toArray();
@@ -125,8 +135,8 @@ app.get('/markers', async (req, res) => {
 
 // API: Добавить метку
 app.post('/markers', async (req, res) => {
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  
+  const ip = getClientIp(req);
+
   const allowed = await checkRateLimit(ip, 'add');
   if (!allowed) {
     return res.status(429).json({ error: 'Слишком частое добавление. Попробуйте позже.' });
@@ -176,8 +186,8 @@ app.post('/markers/:id/confirm', async (req, res) => {
 
 // API: Удаление метки
 app.post('/markers/:id/delete', async (req, res) => {
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  
+  const ip = getClientIp(req);
+
   const allowed = await checkRateLimit(ip, 'delete');
   if (!allowed) {
     return res.status(429).json({ error: 'Слишком частое удаление. Попробуйте позже.' });
