@@ -62,7 +62,7 @@ function LocationMarker({ onAddMarker }) {
       })
         .then(async (res) => {
           if (res.status === 429) {
-            toast.warn('Ошибка. Добавить метку можно не чаще 1 раза/5 мин');
+            toast.warn('Добавлять метки можно раз в 5 минут');
             return;
           }
 
@@ -122,7 +122,7 @@ export default function App() {
     fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/delete`, { method: 'POST' })
       .then((res) => {
         if (res.status === 429) {
-          toast.warn('Ошибка. Удалить метку можно не чаще 1 раза/5 мин');
+          toast.warn('Удалять метки можно раз в 5 минут');
         } else if (res.ok) {
           lastDeleteTime = Date.now();
           fetchMarkers();
