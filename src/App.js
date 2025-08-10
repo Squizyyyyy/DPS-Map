@@ -50,6 +50,7 @@ function LocationMarker({ onAddMarker }) {
       if (addComment) {
         comment = window.prompt("Введите комментарий к метке:");
         if (comment === null) {
+          // Пользователь отменил ввод — считаем, что комментария нет
           comment = '';
         }
       }
@@ -57,7 +58,7 @@ function LocationMarker({ onAddMarker }) {
       fetch('https://dps-map-rzn-h0uq.onrender.com/markers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lng, comment }),
+        body: JSON.stringify({ lat, lng, comment }), // передаем comment
       })
         .then(async (res) => {
           if (res.status === 429) {
@@ -83,7 +84,6 @@ function LocationMarker({ onAddMarker }) {
 
 export default function App() {
   const [markers, setMarkers] = useState([]);
-  const [installPrompt, setInstallPrompt] = useState(null);
 
   useEffect(() => {
     fetchMarkers();
@@ -91,20 +91,12 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    // Ловим событие, когда браузер готов предложить установку
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    });
-  }, []);
-
   const fetchMarkers = () => {
     fetch('https://dps-map-rzn-h0uq.onrender.com/markers')
       .then((res) => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
+	    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+		 return res.json();
+	  })
       .then((data) => setMarkers(data))
       .catch(() => {
         toast.error('Ошибка сети при загрузке меток');
@@ -146,15 +138,8 @@ export default function App() {
     setMarkers((prev) => [...prev, marker]);
   };
 
-  const handleInstallClick = () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      installPrompt.userChoice.then(() => setInstallPrompt(null));
-    }
-  };
-
   return (
-    <div style={{ height: '100vh', position: 'relative' }}>
+    <div style={{ height: '100vh' }}>
       <MapContainer
         center={[54.62, 39.72]}
         zoom={13}
@@ -184,6 +169,7 @@ export default function App() {
               <p><b>Адрес:</b> {marker.address || 'Адрес не определён'}</p>
               <p>⏱️ Поставлена: {new Date(marker.timestamp).toLocaleString()}</p>
 
+              {/* Новое — вывод комментария, если есть */}
               {marker.comment && marker.comment.trim() !== '' && (
                 <p><b>Комментарий:</b> {marker.comment}</p>
               )}
@@ -205,34 +191,13 @@ export default function App() {
           </Marker>
         ))}
       </MapContainer>
-
-      {/* Кнопка установки PWA */}
-      {installPrompt && (
-        <button
-          onClick={handleInstallClick}
-          style={{
-            position: 'absolute',
-            bottom: '80px',
-            right: '20px',
-            backgroundColor: '#317EFB',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '10px',
-            padding: '10px 15px',
-            fontSize: '16px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.2)'
-          }}
-        >
-          📱 Установить DPS Map
-        </button>
-      )}
-
       <ToastContainer position="bottom-right" autoClose={3000} />
       <style>{`
         .leaflet-marker-icon.grayscale-icon {
           filter: grayscale(100%);
         }
+
+        /* Убираем флаг Украины */
         .leaflet-control-attribution .leaflet-attribution-flag {
           display: none !important;
         }
