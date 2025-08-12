@@ -30,9 +30,9 @@ export default function Map() {
   return (
     <MapContainer center={[55.75, 37.62]} zoom={11} style={{ height: '100vh', width: '100%' }}>
       <TileLayer
-        attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        detectRetina={true}  // <-- Добавил эту строку для улучшения качества на ретина дисплеях
+        attribution='Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
+        url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png"
+        detectRetina={true}
       />
       {markers.map((pos, idx) => (
         <Marker key={idx} position={pos}>
