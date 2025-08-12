@@ -11,51 +11,78 @@ const tabColors = {
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState('account');
 
+  const isMapActive = activeTab === 'map';
+
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: tabColors.background, color: tabColors.text }}>
-      <nav style={{ display: 'flex', justifyContent: 'center', backgroundColor: tabColors.active }}>
-        {['account', 'subscription', 'map'].map((tab) => (
+    <div style={{ height: '100vh', backgroundColor: tabColors.background, color: tabColors.text, display: 'flex', flexDirection: 'column' }}>
+      {/* Показываем навигацию только если НЕ карта */}
+      {!isMapActive && (
+        <nav style={{ display: 'flex', justifyContent: 'center', backgroundColor: tabColors.active }}>
+          {['account', 'subscription', 'map'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '12px 24px',
+                margin: '8px',
+                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+                border: 'none',
+                borderRadius: '4px',
+                color: tabColors.text,
+                cursor: 'pointer',
+                fontWeight: activeTab === tab ? 'bold' : 'normal',
+                transition: 'background-color 0.3s',
+              }}
+            >
+              {tab === 'account' && 'Аккаунт'}
+              {tab === 'subscription' && 'Подписка'}
+              {tab === 'map' && 'Карта'}
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {/* Контент */}
+      {isMapActive ? (
+        // Карта на весь экран
+        <div style={{ flex: 1, height: '100vh', width: '100vw' }}>
+          <MapView />
+          {/* Можно добавить кнопку назад, если нужно */}
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => setActiveTab('account')}
             style={{
-              padding: '12px 24px',
-              margin: '8px',
-              backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+              position: 'absolute',
+              top: 10,
+              left: 10,
+              zIndex: 1000,
+              padding: '8px 12px',
+              backgroundColor: '#063353',
+              color: '#fff',
               border: 'none',
               borderRadius: '4px',
-              color: tabColors.text,
               cursor: 'pointer',
-              fontWeight: activeTab === tab ? 'bold' : 'normal',
-              transition: 'background-color 0.3s',
+              boxShadow: '0 0 6px rgba(0,0,0,0.3)',
             }}
           >
-            {tab === 'account' && 'Аккаунт'}
-            {tab === 'subscription' && 'Подписка'}
-            {tab === 'map' && 'Карта'}
+            ← Назад
           </button>
-        ))}
-      </nav>
-
-      <main style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
-        {activeTab === 'account' && (
-          <div>
-            <h2>Аккаунт</h2>
-            <p>Здесь будет информация об аккаунте пользователя.</p>
-          </div>
-        )}
-        {activeTab === 'subscription' && (
-          <div>
-            <h2>Подписка</h2>
-            <p>Здесь будет информация о подписке (пока пусто).</p>
-          </div>
-        )}
-        {activeTab === 'map' && (
-          <div style={{ height: '80vh', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 0 8px rgba(0,0,0,0.3)' }}>
-            <MapView />
-          </div>
-        )}
-      </main>
+        </div>
+      ) : (
+        <main style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
+          {activeTab === 'account' && (
+            <div>
+              <h2>Аккаунт</h2>
+              <p>Здесь будет информация об аккаунте пользователя.</p>
+            </div>
+          )}
+          {activeTab === 'subscription' && (
+            <div>
+              <h2>Подписка</h2>
+              <p>Здесь будет информация о подписке (пока пусто).</p>
+            </div>
+          )}
+        </main>
+      )}
     </div>
   );
 }
