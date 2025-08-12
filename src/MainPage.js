@@ -10,14 +10,29 @@ const tabColors = {
 
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState('account');
+  const [backBtnHover, setBackBtnHover] = useState(false);
 
   const isMapActive = activeTab === 'map';
 
   return (
-    <div style={{ height: '100vh', backgroundColor: tabColors.background, color: tabColors.text, display: 'flex', flexDirection: 'column' }}>
-      {/* Показываем навигацию только если НЕ карта */}
+    <div
+      style={{
+        height: '100vh',
+        backgroundColor: tabColors.background,
+        color: tabColors.text,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Навигация только если НЕ карта */}
       {!isMapActive && (
-        <nav style={{ display: 'flex', justifyContent: 'center', backgroundColor: tabColors.active }}>
+        <nav
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            backgroundColor: tabColors.active,
+          }}
+        >
           {['account', 'subscription', 'map'].map((tab) => (
             <button
               key={tab}
@@ -25,7 +40,8 @@ export default function MainPage() {
               style={{
                 padding: '12px 24px',
                 margin: '8px',
-                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+                backgroundColor:
+                  activeTab === tab ? tabColors.inactive : tabColors.active,
                 border: 'none',
                 borderRadius: '4px',
                 color: tabColors.text,
@@ -47,21 +63,24 @@ export default function MainPage() {
         // Карта на весь экран
         <div style={{ flex: 1, height: '100vh', width: '100vw' }}>
           <MapView />
-          {/* Можно добавить кнопку назад, если нужно */}
+          {/* Кнопка назад */}
           <button
             onClick={() => setActiveTab('account')}
+            onMouseEnter={() => setBackBtnHover(true)}
+            onMouseLeave={() => setBackBtnHover(false)}
             style={{
               position: 'absolute',
-              top: 15,
-              right: 10,
+              top: 18, // чуть ниже
+              right: 16,
               zIndex: 1000,
               padding: '8px 12px',
-              backgroundColor: '#ffffff',
+              backgroundColor: backBtnHover ? '#f4f4f4' : '#ffffff',
               color: '#000',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
               boxShadow: '0 0 6px rgba(0,0,0,0.3)',
+              fontWeight: 500,
             }}
           >
             ← Назад
