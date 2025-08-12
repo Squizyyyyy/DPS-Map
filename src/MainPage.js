@@ -53,10 +53,10 @@ export default function MainPage() {
             style={{
               position: 'absolute',
               top: 10,
-              left: 10,
+              right: 10,
               zIndex: 1000,
               padding: '8px 12px',
-              backgroundColor: '#063353',
+              backgroundColor: '#ffffff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',

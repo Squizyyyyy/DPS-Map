@@ -32,6 +32,7 @@ export default function Map() {
       <TileLayer
         attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        detectRetina={true}  // <-- Добавил эту строку для улучшения качества на ретина дисплеях
       />
       {markers.map((pos, idx) => (
         <Marker key={idx} position={pos}>
