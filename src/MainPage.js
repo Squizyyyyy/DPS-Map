@@ -71,7 +71,7 @@ export default function MainPage() {
             style={{
               position: 'absolute',
               top: 18, // чуть ниже
-              right: 16,
+              right: 15,
               zIndex: 1000,
               padding: '8px 12px',
               backgroundColor: backBtnHover ? '#f4f4f4' : '#ffffff',
