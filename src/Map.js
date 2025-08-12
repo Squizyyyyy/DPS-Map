@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaf
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Исправляем стандартные иконки маркеров Leaflet (иначе они не показываются в React)
+// Иконки Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -28,11 +28,17 @@ export default function Map() {
   };
 
   return (
-    <MapContainer center={[55.75, 37.62]} zoom={11} style={{ height: '100vh', width: '100%' }}>
+    <MapContainer
+      center={[55.75, 37.62]}
+      zoom={13}
+      zoomSnap={0.25}
+      zoomDelta={0.25}
+      detectRetina={true}
+      style={{ height: '100vh', width: '100%' }}
+    >
       <TileLayer
-        attribution='Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
-        url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png"
-        detectRetina={true}
+        attribution='Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}@2x.png"
       />
       {markers.map((pos, idx) => (
         <Marker key={idx} position={pos}>

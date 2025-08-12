@@ -52,12 +52,12 @@ export default function MainPage() {
             onClick={() => setActiveTab('account')}
             style={{
               position: 'absolute',
-              top: 10,
+              top: 15,
               right: 10,
               zIndex: 1000,
               padding: '8px 12px',
               backgroundColor: '#ffffff',
-              color: '#fff',
+              color: '#000',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
