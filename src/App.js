@@ -1,6 +1,6 @@
 import React from 'react';
-import MapView from './MapView';
+import MainPage from './MainPage';
 
 export default function App() {
-  return <MapView />;
+  return <MainPage />;
 }
