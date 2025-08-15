@@ -141,7 +141,7 @@ export default function MapView() {
     <div style={{ height: '100vh' }}>
       <MapContainer
         center={[54.62, 39.72]}
-        zoom={13}
+        zoom={window.innerWidth < 768 ? 14 : 13}
         minZoom={11}
         maxZoom={19}
         maxBounds={[[54.42, 39.32], [54.82, 40.12]]}
@@ -152,7 +152,7 @@ export default function MapView() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 		  subdomains={['a','b','c']}
-		  detectRetina={false}
+		  detectRetina={true}
         />
 
         <LocationMarker onAddMarker={onAddMarker} />
