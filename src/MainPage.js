@@ -73,17 +73,21 @@ export default function MainPage() {
               top: 18, // чуть ниже
               right: 14,
               zIndex: 1000,
-              padding: '8px 12px',
+              width: '35px',
+			  height: '35px',
               backgroundColor: backBtnHover ? '#f4f4f4' : '#ffffff',
               color: '#000',
               border: 'none',
-              borderRadius: '4px',
+			  borderRadius: '50%',
               cursor: 'pointer',
               boxShadow: '0 0 6px rgba(0,0,0,0.3)',
-              fontWeight: 500,
+			  fontSize: '20px',
+              fontWeight: 'bold',
+			  lineHeight: '35px',
+			  textAlign: 'center',
             }}
           >
-            ← Назад
+            &times;
           </button>
         </div>
       ) : (

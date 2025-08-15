@@ -149,8 +149,10 @@ export default function MapView() {
         style={{ height: '100%' }}
       >
         <TileLayer
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}@2x.png"
-          attribution='&copy; OpenStreetMap contributors'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+		  subdomains={['a','b','c']}
+		  detectRetina={false}
         />
 
         <LocationMarker onAddMarker={onAddMarker} />
