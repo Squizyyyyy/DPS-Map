@@ -102,15 +102,15 @@ export default function MapView() {
       });
   };
 
-  // Мгновенное обновление confirmCount
+  // Мгновенное обновление confirmations
   const handleConfirm = (id) => {
     fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`, { method: 'POST' })
       .then((res) => {
         if (!res.ok) throw new Error('Ошибка подтверждения');
-        // Обновляем confirmCount локально без перезагрузки всех меток
+        // Обновляем confirmations локально без перезагрузки всех меток
         setMarkers((prev) =>
           prev.map((m) =>
-            m.id === id ? { ...m, confirmCount: (m.confirmCount || 0) + 1 } : m
+            m.id === id ? { ...m, confirmations: (m.confirmations || 0) + 1 } : m
           )
         );
         toast.success('Метка подтверждена');
@@ -183,7 +183,7 @@ export default function MapView() {
               )}
 
               {/* Счётчик подтверждений */}
-              <p><b>Подтверждений:</b> {marker.confirmCount || 0}</p>
+              <p><b>Подтверждений:</b> {marker.confirmations || 0}</p>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                 <button onClick={() => handleConfirm(marker.id)}>✅ Подтвердить</button>
