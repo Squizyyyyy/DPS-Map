@@ -141,7 +141,7 @@ export default function MapView() {
     <div style={{ height: '100%' }}>
       <MapContainer
         center={[54.62, 39.72]}
-        zoom={15}
+        zoom={11}
         minZoom={11}
         maxZoom={19}
         maxBounds={[[54.42, 39.32], [54.82, 40.12]]}
@@ -149,9 +149,10 @@ export default function MapView() {
         style={{ height: '100%' }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.thunderforest.com/">Thunderforest</a>'
-          url="https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=e200e142d30b4cb38f8c5027855920b1"
-		  detectRetina={true}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+          url="https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png"
+          subdomains="abcd"
+          detectRetina={true}
         />
 
         <LocationMarker onAddMarker={onAddMarker} />
