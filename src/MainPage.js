@@ -87,7 +87,7 @@ export default function MainPage() {
 			  textAlign: 'center',
             }}
           >
-            &times;
+            ←
           </button>
         </div>
       ) : (
