@@ -141,7 +141,7 @@ export default function MapView() {
     <div style={{ height: '100%' }}>
       <MapContainer
         center={[54.62, 39.72]}
-        zoom={13}
+        zoom={15}
         minZoom={11}
         maxZoom={19}
         maxBounds={[[54.42, 39.32], [54.82, 40.12]]}
@@ -151,6 +151,7 @@ export default function MapView() {
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.thunderforest.com/">Thunderforest</a>'
           url="https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=e200e142d30b4cb38f8c5027855920b1"
+		  detectRetina={true}
         />
 
         <LocationMarker onAddMarker={onAddMarker} />
