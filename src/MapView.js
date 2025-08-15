@@ -138,7 +138,7 @@ export default function MapView() {
   };
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100vh' }}>
       <MapContainer
         center={[54.62, 39.72]}
         zoom={13}
@@ -152,7 +152,7 @@ export default function MapView() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           subdomains={['a','b','c']}
-          detectRetina={true}
+          detectRetina={false}
         />
 
         <LocationMarker onAddMarker={onAddMarker} />
