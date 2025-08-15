@@ -102,10 +102,17 @@ export default function MapView() {
       });
   };
 
+  // Мгновенное обновление confirmCount
   const handleConfirm = (id) => {
     fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`, { method: 'POST' })
-      .then(() => {
-        fetchMarkers();
+      .then((res) => {
+        if (!res.ok) throw new Error('Ошибка подтверждения');
+        // Обновляем confirmCount локально без перезагрузки всех меток
+        setMarkers((prev) =>
+          prev.map((m) =>
+            m.id === id ? { ...m, confirmCount: (m.confirmCount || 0) + 1 } : m
+          )
+        );
         toast.success('Метка подтверждена');
       })
       .catch(() => toast.error('Ошибка при подтверждении'));
@@ -124,7 +131,7 @@ export default function MapView() {
           toast.warn('Удалять метки можно раз в 5 минут');
         } else if (res.ok) {
           lastDeleteTime = Date.now();
-          fetchMarkers();
+          setMarkers((prev) => prev.filter((m) => m.id !== id));
           toast.success('Метка удалена');
         } else {
           toast.error('Ошибка при удалении');
@@ -150,9 +157,9 @@ export default function MapView() {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png"
-		  subdomains={['a','b','c']}
-		  detectRetina={true}
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          subdomains={['a','b','c']}
+          detectRetina={false}
         />
 
         <LocationMarker onAddMarker={onAddMarker} />
@@ -175,6 +182,9 @@ export default function MapView() {
                 <p><b>Комментарий:</b> {marker.comment}</p>
               )}
 
+              {/* Счётчик подтверждений */}
+              <p><b>Подтверждений:</b> {marker.confirmCount || 0}</p>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                 <button onClick={() => handleConfirm(marker.id)}>✅ Подтвердить</button>
                 <button
@@ -185,7 +195,7 @@ export default function MapView() {
                     }
                   }}
                 >
-                  ❌ Уже нет
+                  ❌ Уехали
                 </button>
               </div>
             </Popup>
