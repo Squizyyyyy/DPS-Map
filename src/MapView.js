@@ -141,7 +141,7 @@ export default function MapView() {
     <div style={{ height: '100%' }}>
       <MapContainer
         center={[54.62, 39.72]}
-        zoom={11}
+        zoom={13}
         minZoom={11}
         maxZoom={19}
         maxBounds={[[54.42, 39.32], [54.82, 40.12]]}
