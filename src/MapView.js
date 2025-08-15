@@ -141,7 +141,7 @@ export default function MapView() {
     <div style={{ height: '100vh' }}>
       <MapContainer
         center={[54.62, 39.72]}
-        zoom={window.innerWidth < 768 ? 14 : 13}
+        zoom={13}
         minZoom={11}
         maxZoom={19}
         maxBounds={[[54.42, 39.32], [54.82, 40.12]]}
@@ -150,8 +150,8 @@ export default function MapView() {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-		  subdomains={['a','b','c']}
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+		  subdomains={['a', 'b', 'c', 'd']}
 		  detectRetina={true}
         />
 
