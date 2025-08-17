@@ -11,6 +11,7 @@ const tabColors = {
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState('account');
   const [backBtnHover, setBackBtnHover] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false); // пока false, можно потом получать из API
 
   const isMapActive = activeTab === 'map';
 
@@ -60,36 +61,67 @@ export default function MainPage() {
 
       {/* Контент */}
       {isMapActive ? (
-        // Карта на весь экран
-        <div style={{ flex: 1, height: '100vh', width: '100vw' }}>
-          <MapView />
-          {/* Кнопка назад */}
-          <button
-            onClick={() => setActiveTab('account')}
-            onMouseEnter={() => setBackBtnHover(true)}
-            onMouseLeave={() => setBackBtnHover(false)}
+        hasSubscription ? (
+          // Карта на весь экран для подписчиков
+          <div style={{ flex: 1, height: '100vh', width: '100vw' }}>
+            <MapView />
+            {/* Кнопка назад */}
+            <button
+              onClick={() => setActiveTab('account')}
+              onMouseEnter={() => setBackBtnHover(true)}
+              onMouseLeave={() => setBackBtnHover(false)}
+              style={{
+                position: 'absolute',
+                top: 18,
+                right: 14,
+                zIndex: 1000,
+                width: '35px',
+                height: '35px',
+                backgroundColor: backBtnHover ? '#f4f4f4' : '#ffffff',
+                color: '#000',
+                border: 'none',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                boxShadow: '0 0 6px rgba(0,0,0,0.3)',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                lineHeight: '35px',
+                textAlign: 'center',
+              }}
+            >
+              ←
+            </button>
+          </div>
+        ) : (
+          // Блокировка карты для тех, у кого нет подписки
+          <div
             style={{
-              position: 'absolute',
-              top: 18, // чуть ниже
-              right: 14,
-              zIndex: 1000,
-              width: '35px',
-			  height: '35px',
-              backgroundColor: backBtnHover ? '#f4f4f4' : '#ffffff',
-              color: '#000',
-              border: 'none',
-			  borderRadius: '50%',
-              cursor: 'pointer',
-              boxShadow: '0 0 6px rgba(0,0,0,0.3)',
-			  fontSize: '20px',
-              fontWeight: 'bold',
-			  lineHeight: '35px',
-			  textAlign: 'center',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              color: '#fff',
             }}
           >
-            ←
-          </button>
-        </div>
+            <h2>Доступ к карте ограничен</h2>
+            <p>Чтобы использовать карту, необходимо оформить подписку.</p>
+            <button
+              onClick={() => setActiveTab('subscription')}
+              style={{
+                padding: '12px 24px',
+                marginTop: '16px',
+                backgroundColor: '#063353',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Оформить подписку
+            </button>
+          </div>
+        )
       ) : (
         <main style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
           {activeTab === 'account' && (
