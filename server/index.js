@@ -29,9 +29,8 @@ async function startServer() {
     const db = client.db('dps-map');
     markersCollection = db.collection('markers');
     actionsCollection = db.collection('actions');
-    usersCollection = db.collection('users'); // для хранения пользователей
+    usersCollection = db.collection('users');
 
-    // Индекс для быстрого поиска по IP и действию
     await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
 
     console.log('✅ Подключено к MongoDB');
@@ -61,8 +60,6 @@ function authenticateJWT(req, res, next) {
 }
 
 // ---------------------- OAuth / Auth Routes ----------------------
-
-// VK login
 app.post('/auth/vk', async (req, res) => {
   const { access_token } = req.body;
   if (!access_token) return res.status(400).json({ error: 'No access token' });
@@ -91,7 +88,6 @@ app.post('/auth/vk', async (req, res) => {
   }
 });
 
-// Telegram login
 app.post('/auth/telegram', async (req, res) => {
   const { id, first_name, last_name, username } = req.body;
   if (!id) return res.status(400).json({ error: 'No Telegram user data' });
@@ -112,8 +108,6 @@ app.post('/auth/telegram', async (req, res) => {
 });
 
 // ---------------------- Helper Functions ----------------------
-
-// Получение укороченного адреса
 async function getAddress(lat, lng) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
   try {
@@ -134,7 +128,6 @@ async function getAddress(lat, lng) {
   }
 }
 
-// Проверка ограничений по IP и действию (add или delete)
 async function checkRateLimit(ip, action) {
   const now = Date.now();
   const limitMs = 5 * 60 * 1000; // 5 минут
@@ -151,7 +144,6 @@ async function checkRateLimit(ip, action) {
   return true;
 }
 
-// Вспомогательная функция для получения "чистого" IP
 function getClientIp(req) {
   const xForwardedFor = req.headers['x-forwarded-for'];
   if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
@@ -159,14 +151,11 @@ function getClientIp(req) {
 }
 
 // ---------------------- Marker Routes ----------------------
-
-// Получить все метки
 app.get('/markers', async (req, res) => {
   const allMarkers = await markersCollection.find().toArray();
   res.json(allMarkers);
 });
 
-// Добавить метку (только авторизованный пользователь)
 app.post('/markers', authenticateJWT, async (req, res) => {
   const ip = getClientIp(req);
   const allowed = await checkRateLimit(ip, 'add');
@@ -187,14 +176,12 @@ app.post('/markers', authenticateJWT, async (req, res) => {
     confirmations: 0,
     address,
     comment,
-    // userId убран
   };
 
   await markersCollection.insertOne(marker);
   res.json(marker);
 });
 
-// Подтверждение метки
 app.post('/markers/:id/confirm', authenticateJWT, async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
@@ -211,7 +198,6 @@ app.post('/markers/:id/confirm', authenticateJWT, async (req, res) => {
   res.sendStatus(200);
 });
 
-// Удаление метки (только авторизованный пользователь)
 app.post('/markers/:id/delete', authenticateJWT, async (req, res) => {
   const ip = getClientIp(req);
   const allowed = await checkRateLimit(ip, 'delete');
@@ -247,7 +233,10 @@ setInterval(async () => {
 }, 30 * 1000);
 
 // ---------------------- Serve frontend ----------------------
+// Сначала отдаём статические файлы React
 app.use(express.static(path.join(__dirname, '../build')));
-app.get('*', (req, res) => {
+
+// Ловим все остальные GET-запросы **только для фронтенда**, исключая API маршруты
+app.get(/^\/(?!markers|auth).*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));
 });
