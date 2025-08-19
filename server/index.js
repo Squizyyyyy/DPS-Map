@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { MongoClient, ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
@@ -21,7 +22,7 @@ app.use(express.json());
 // JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
-// ---------------------- Подключение к MongoDB и запуск сервера ----------------------
+// ---------------------- MongoDB Connection ----------------------
 async function startServer() {
   try {
     await client.connect();
@@ -41,7 +42,6 @@ async function startServer() {
     process.exit(1);
   }
 }
-
 startServer();
 
 // ---------------------- JWT Middleware ----------------------
@@ -59,67 +59,51 @@ function authenticateJWT(req, res, next) {
 }
 
 // ---------------------- VK OAuth ----------------------
-app.get('/auth/vk', (req, res) => {
-  const vkAuthUrl = `https://oauth.vk.com/authorize?client_id=${process.env.VK_CLIENT_ID}&display=page&redirect_uri=${process.env.VK_REDIRECT_URI}&scope=email&response_type=code&v=5.131`;
-  res.redirect(vkAuthUrl);
-});
-
-app.get('/auth/vk/callback', async (req, res) => {
-  const { code } = req.query;
-  if (!code) return res.status(400).send('Code is missing');
+app.post('/auth/vk', async (req, res) => {
+  const { access_token } = req.body;
+  if (!access_token) return res.status(400).json({ error: 'No access token' });
 
   try {
-    const tokenRes = await fetch(
-      `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${process.env.VK_REDIRECT_URI}&code=${code}`
-    );
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) return res.status(400).json({ error: 'VK token error', details: tokenData });
+    const vkRes = await fetch(`https://api.vk.com/method/users.get?access_token=${access_token}&v=5.131`);
+    const data = await vkRes.json();
+    if (!data.response) return res.status(400).json({ error: 'VK authorization failed' });
 
-    const userRes = await fetch(
-      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&access_token=${tokenData.access_token}&v=5.131`
-    );
-    const userData = await userRes.json();
-    if (!userData.response) return res.status(400).json({ error: 'VK user fetch failed', details: userData });
-
-    const vkUser = userData.response[0];
-
+    const vkUser = data.response[0];
     let user = await usersCollection.findOne({ vkId: vkUser.id });
     if (!user) {
-      const newUser = {
+      const result = await usersCollection.insertOne({
         vkId: vkUser.id,
         name: `${vkUser.first_name} ${vkUser.last_name}`,
         createdAt: Date.now(),
-      };
-      const result = await usersCollection.insertOne(newUser);
-      user = { ...newUser, _id: result.insertedId };
+      });
+      user = { _id: result.insertedId, vkId: vkUser.id, name: `${vkUser.first_name} ${vkUser.last_name}` };
     }
 
-    const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
+    const token = jwt.sign({ id: user._id.toString(), name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'VK login error' });
   }
 });
 
-// ---------------------- Telegram OAuth ----------------------
+// ---------------------- Telegram Auth ----------------------
 app.post('/auth/telegram', async (req, res) => {
   const { id, first_name, last_name, username } = req.body;
   if (!id) return res.status(400).json({ error: 'No Telegram user data' });
 
   let user = await usersCollection.findOne({ telegramId: id });
   if (!user) {
-    const newUser = {
+    const result = await usersCollection.insertOne({
       telegramId: id,
       name: first_name + (last_name ? ` ${last_name}` : ''),
       username,
       createdAt: Date.now(),
-    };
-    const result = await usersCollection.insertOne(newUser);
-    user = { ...newUser, _id: result.insertedId };
+    });
+    user = { _id: result.insertedId, telegramId: id, name: first_name + (last_name ? ` ${last_name}` : '') };
   }
 
-  const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+  const token = jwt.sign({ id: user._id.toString(), name: user.name }, JWT_SECRET, { expiresIn: '7d' });
   res.json({ token, user });
 });
 
@@ -135,6 +119,7 @@ async function getAddress(lat, lng) {
     });
     const data = await response.json();
     if (!data.address) return 'Адрес не найден';
+
     const { house_number, road, suburb, neighbourhood, city, town } = data.address;
     return [house_number, road, suburb || neighbourhood, city || town].filter(Boolean).join(', ');
   } catch (error) {
@@ -145,7 +130,7 @@ async function getAddress(lat, lng) {
 
 async function checkRateLimit(ip, action) {
   const now = Date.now();
-  const limitMs = 5 * 60 * 1000;
+  const limitMs = 5 * 60 * 1000; // 5 минут
   const record = await actionsCollection.findOne({ ip, action });
 
   if (record && now - record.timestamp < limitMs) return false;
@@ -243,6 +228,12 @@ setInterval(async () => {
       updateNeeded = true;
     }
 
-    if (updateNeeded) console.log(`Updated marker ${marker.id}`);
+    if (updateNeeded) console.log(`🕒 Обновлена/удалена метка ${marker.id}`);
   }
-}, 60 * 1000);
+}, 30 * 1000);
+
+// ---------------------- Serve frontend ----------------------
+app.use(express.static(path.join(__dirname, '../build')));
+app.get(/^\/(?!markers|auth).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../build/index.html'));
+});
