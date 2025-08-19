@@ -65,7 +65,7 @@ export default function MainPage() {
           // Карта на весь экран для подписчиков
           <div style={{ flex: 1, height: '100vh', width: '100vw' }}>
             <MapView />
-            {/* Кнопка назад */}
+            {/* Кнопка назад (стрелка) */}
             <button
               onClick={() => setActiveTab('account')}
               onMouseEnter={() => setBackBtnHover(true)}
@@ -102,8 +102,34 @@ export default function MainPage() {
               justifyContent: 'center',
               alignItems: 'center',
               color: '#fff',
+              position: 'relative',
             }}
           >
+            {/* Кнопка Назад */}
+            <button
+              onClick={() => setActiveTab('account')}
+              style={{
+                position: 'absolute',
+                top: 18,
+                left: 14,
+                zIndex: 1000,
+                padding: '10px 20px',
+                backgroundColor: tabColors.active,
+                color: tabColors.text,
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                boxShadow: '0 0 6px rgba(0,0,0,0.3)',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                transition: 'background-color 0.3s',
+              }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = tabColors.inactive)}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = tabColors.active)}
+            >
+              Назад
+            </button>
+
             <h2>Доступ к карте ограничен</h2>
             <p>Чтобы использовать карту, необходимо оформить подписку.</p>
             <button
