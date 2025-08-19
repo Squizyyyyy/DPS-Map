@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const { MongoClient, ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
@@ -60,48 +59,42 @@ function authenticateJWT(req, res, next) {
 }
 
 // ---------------------- VK OAuth ----------------------
-// Редирект на VK для авторизации
 app.get('/auth/vk', (req, res) => {
   const vkAuthUrl = `https://oauth.vk.com/authorize?client_id=${process.env.VK_CLIENT_ID}&display=page&redirect_uri=${process.env.VK_REDIRECT_URI}&scope=email&response_type=code&v=5.131`;
   res.redirect(vkAuthUrl);
 });
 
-// Callback от VK после авторизации
 app.get('/auth/vk/callback', async (req, res) => {
   const { code } = req.query;
   if (!code) return res.status(400).send('Code is missing');
 
   try {
-    // Обмен кода на access_token
     const tokenRes = await fetch(
       `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${process.env.VK_REDIRECT_URI}&code=${code}`
     );
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) return res.status(400).json({ error: 'VK token error', details: tokenData });
 
-    // Получение данных пользователя
-    const userRes = await fetch(`https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&access_token=${tokenData.access_token}&v=5.131`);
+    const userRes = await fetch(
+      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&access_token=${tokenData.access_token}&v=5.131`
+    );
     const userData = await userRes.json();
     if (!userData.response) return res.status(400).json({ error: 'VK user fetch failed', details: userData });
 
     const vkUser = userData.response[0];
 
-    // Сохранение/поиск пользователя в MongoDB
     let user = await usersCollection.findOne({ vkId: vkUser.id });
     if (!user) {
-      user = {
+      const newUser = {
         vkId: vkUser.id,
         name: `${vkUser.first_name} ${vkUser.last_name}`,
         createdAt: Date.now(),
       };
-      const result = await usersCollection.insertOne(user);
-      user._id = result.insertedId;
+      const result = await usersCollection.insertOne(newUser);
+      user = { ...newUser, _id: result.insertedId };
     }
 
-    // Генерация JWT
     const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-
-    // Редирект на фронтенд с токеном
     res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
   } catch (err) {
     console.error(err);
@@ -116,14 +109,14 @@ app.post('/auth/telegram', async (req, res) => {
 
   let user = await usersCollection.findOne({ telegramId: id });
   if (!user) {
-    user = {
+    const newUser = {
       telegramId: id,
       name: first_name + (last_name ? ` ${last_name}` : ''),
       username,
       createdAt: Date.now(),
     };
-    const result = await usersCollection.insertOne(user);
-    user._id = result.insertedId;
+    const result = await usersCollection.insertOne(newUser);
+    user = { ...newUser, _id: result.insertedId };
   }
 
   const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
@@ -142,7 +135,6 @@ async function getAddress(lat, lng) {
     });
     const data = await response.json();
     if (!data.address) return 'Адрес не найден';
-
     const { house_number, road, suburb, neighbourhood, city, town } = data.address;
     return [house_number, road, suburb || neighbourhood, city || town].filter(Boolean).join(', ');
   } catch (error) {
