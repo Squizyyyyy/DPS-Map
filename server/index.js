@@ -9,7 +9,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// MongoDB
+// ---------------------- MongoDB ----------------------
 const MONGO_URI = process.env.MONGO_URI;
 const client = new MongoClient(MONGO_URI);
 let markersCollection;
@@ -19,10 +19,10 @@ let usersCollection;
 app.use(cors());
 app.use(express.json());
 
-// JWT secret
+// ---------------------- JWT secret ----------------------
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
-// ---------------------- MongoDB Connection ----------------------
+// ---------------------- Connect to MongoDB ----------------------
 async function startServer() {
   try {
     await client.connect();
@@ -42,6 +42,7 @@ async function startServer() {
     process.exit(1);
   }
 }
+
 startServer();
 
 // ---------------------- JWT Middleware ----------------------
@@ -60,26 +61,32 @@ function authenticateJWT(req, res, next) {
 
 // ---------------------- VK OAuth ----------------------
 app.post('/auth/vk', async (req, res) => {
-  const { access_token } = req.body;
-  if (!access_token) return res.status(400).json({ error: 'No access token' });
+  const { code, redirect_uri } = req.body;
+  if (!code || !redirect_uri) return res.status(400).json({ error: 'No code or redirect_uri' });
 
   try {
-    const vkRes = await fetch(`https://api.vk.com/method/users.get?access_token=${access_token}&v=5.131`);
+    // Обмен кода на access_token
+    const tokenRes = await fetch(`https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${redirect_uri}&code=${code}`);
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) return res.status(400).json({ error: 'VK token exchange failed', details: tokenData });
+
+    const vkRes = await fetch(`https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&access_token=${tokenData.access_token}&v=5.131`);
     const data = await vkRes.json();
-    if (!data.response) return res.status(400).json({ error: 'VK authorization failed' });
+    if (!data.response) return res.status(400).json({ error: 'VK API failed', details: data });
 
     const vkUser = data.response[0];
     let user = await usersCollection.findOne({ vkId: vkUser.id });
     if (!user) {
-      const result = await usersCollection.insertOne({
+      user = {
         vkId: vkUser.id,
         name: `${vkUser.first_name} ${vkUser.last_name}`,
         createdAt: Date.now(),
-      });
-      user = { _id: result.insertedId, vkId: vkUser.id, name: `${vkUser.first_name} ${vkUser.last_name}` };
+      };
+      await usersCollection.insertOne(user);
+      user._id = user._id || ObjectId(); // чтобы JWT корректно сработал
     }
 
-    const token = jwt.sign({ id: user._id.toString(), name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user });
   } catch (err) {
     console.error(err);
@@ -87,23 +94,24 @@ app.post('/auth/vk', async (req, res) => {
   }
 });
 
-// ---------------------- Telegram Auth ----------------------
+// ---------------------- Telegram OAuth ----------------------
 app.post('/auth/telegram', async (req, res) => {
   const { id, first_name, last_name, username } = req.body;
   if (!id) return res.status(400).json({ error: 'No Telegram user data' });
 
   let user = await usersCollection.findOne({ telegramId: id });
   if (!user) {
-    const result = await usersCollection.insertOne({
+    user = {
       telegramId: id,
       name: first_name + (last_name ? ` ${last_name}` : ''),
       username,
       createdAt: Date.now(),
-    });
-    user = { _id: result.insertedId, telegramId: id, name: first_name + (last_name ? ` ${last_name}` : '') };
+    };
+    await usersCollection.insertOne(user);
+    user._id = user._id || ObjectId();
   }
 
-  const token = jwt.sign({ id: user._id.toString(), name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+  const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
   res.json({ token, user });
 });
 
@@ -234,6 +242,7 @@ setInterval(async () => {
 
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, '../build')));
+
 app.get(/^\/(?!markers|auth).*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));
 });

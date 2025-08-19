@@ -37,7 +37,7 @@ export default function MainPage() {
 
   // VK OAuth redirect
   const handleVKLogin = () => {
-    // Просто редирект на серверный маршрут /auth/vk
+    // Редирект на сервер, который сам ведет на VK OAuth
     window.location.href = 'http://localhost:5000/auth/vk';
   };
 
