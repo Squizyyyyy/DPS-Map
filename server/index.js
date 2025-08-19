@@ -1,10 +1,14 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const { MongoClient, ObjectId } = require('mongodb');
-const fetch = require('node-fetch');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { MongoClient, ObjectId } from 'mongodb';
+import fetch from 'node-fetch';
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -65,7 +69,6 @@ app.post('/auth/vk', async (req, res) => {
   if (!code || !redirect_uri) return res.status(400).json({ error: 'No code or redirect_uri' });
 
   try {
-    // Обмен кода на access_token
     const tokenRes = await fetch(`https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${redirect_uri}&code=${code}`);
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) return res.status(400).json({ error: 'VK token exchange failed', details: tokenData });
@@ -83,7 +86,7 @@ app.post('/auth/vk', async (req, res) => {
         createdAt: Date.now(),
       };
       await usersCollection.insertOne(user);
-      user._id = user._id || ObjectId(); // чтобы JWT корректно сработал
+      user._id = user._id || ObjectId();
     }
 
     const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
