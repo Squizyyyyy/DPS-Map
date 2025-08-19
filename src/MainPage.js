@@ -39,7 +39,7 @@ export default function MainPage() {
 
   // VK OAuth redirect
   const handleVKLogin = () => {
-    window.location.href = `${API_URL}/auth/vk`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/auth/vk`;
   };
 
   return (

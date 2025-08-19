@@ -64,21 +64,38 @@ function authenticateJWT(req, res, next) {
 }
 
 // ---------------------- VK OAuth ----------------------
-app.post('/auth/vk', async (req, res) => {
-  const { code, redirect_uri } = req.body;
-  if (!code || !redirect_uri) return res.status(400).json({ error: 'No code or redirect_uri' });
+app.get('/auth/vk', (req, res) => {
+  const redirectUri = `${process.env.BASE_URL}/auth/vk/callback`;
+  const vkAuthUrl = `https://oauth.vk.com/authorize?client_id=${process.env.VK_CLIENT_ID}&display=page&redirect_uri=${redirectUri}&scope=friends&response_type=code&v=5.131`;
+  res.redirect(vkAuthUrl);
+});
+
+app.get('/auth/vk/callback', async (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.status(400).json({ error: 'No code provided' });
 
   try {
-    const tokenRes = await fetch(`https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${redirect_uri}&code=${code}`);
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) return res.status(400).json({ error: 'VK token exchange failed', details: tokenData });
+    const redirectUri = `${process.env.BASE_URL}/auth/vk/callback`;
 
-    const vkRes = await fetch(`https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&access_token=${tokenData.access_token}&v=5.131`);
+    const tokenRes = await fetch(
+      `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${redirectUri}&code=${code}`
+    );
+    const tokenData = await tokenRes.json();
+
+    if (!tokenData.access_token) {
+      return res.status(400).json({ error: 'VK token exchange failed', details: tokenData });
+    }
+
+    const vkRes = await fetch(
+      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&access_token=${tokenData.access_token}&v=5.131`
+    );
     const data = await vkRes.json();
+
     if (!data.response) return res.status(400).json({ error: 'VK API failed', details: data });
 
     const vkUser = data.response[0];
     let user = await usersCollection.findOne({ vkId: vkUser.id });
+
     if (!user) {
       user = {
         vkId: vkUser.id,
@@ -86,11 +103,12 @@ app.post('/auth/vk', async (req, res) => {
         createdAt: Date.now(),
       };
       await usersCollection.insertOne(user);
-      user._id = user._id || ObjectId();
     }
 
     const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user });
+
+    // редиректим обратно на фронт с токеном
+    res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'VK login error' });
