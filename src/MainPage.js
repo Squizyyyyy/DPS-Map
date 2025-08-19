@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import MapView from './MapView';
 
+const API_URL = 'https://dps-map-rzn-h0uq.onrender.com'; // <-- сюда твой сервер на Render
+
 const tabColors = {
   background: '#001c39',
   active: '#063353',
@@ -37,8 +39,7 @@ export default function MainPage() {
 
   // VK OAuth redirect
   const handleVKLogin = () => {
-    // Редирект на сервер, который сам ведет на VK OAuth
-    window.location.href = 'http://localhost:5000/auth/vk';
+    window.location.href = `${API_URL}/auth/vk`;
   };
 
   return (
