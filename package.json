@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@telegram-auth/react": "^1.0.4",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
@@ -17,7 +18,9 @@
     "react-leaflet": "^4.2.1",
     "react-map-gl": "^8.0.4",
     "react-scripts": "5.0.1",
+    "react-telegram-login": "^1.1.2",
     "react-toastify": "^11.0.5",
+    "react-vk-auth": "^0.0.2",
     "uuid": "^11.1.0"
   },
   "scripts": {

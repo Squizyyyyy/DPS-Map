@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MapView from './MapView';
 
 const tabColors = {
@@ -11,9 +11,35 @@ const tabColors = {
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState('account');
   const [backBtnHover, setBackBtnHover] = useState(false);
-  const [hasSubscription, setHasSubscription] = useState(false); // пока false, можно потом получать из API
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [user, setUser] = useState(null);
 
   const isMapActive = activeTab === 'map';
+
+  // Проверяем URL на наличие токена после редиректа с сервера
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (token && !user) {
+      localStorage.setItem('token', token);
+
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1])); // декодируем JWT
+        setUser({ name: payload.name, id: payload.id });
+      } catch (err) {
+        console.error('Ошибка декодирования токена:', err);
+      }
+
+      window.history.replaceState({}, document.title, '/'); // убираем ?token
+    }
+  }, [user]);
+
+  // VK OAuth redirect
+  const handleVKLogin = () => {
+    // Просто редирект на серверный маршрут /auth/vk
+    window.location.href = 'http://localhost:5000/auth/vk';
+  };
 
   return (
     <div
@@ -25,7 +51,6 @@ export default function MainPage() {
         flexDirection: 'column',
       }}
     >
-      {/* Навигация только если НЕ карта */}
       {!isMapActive && (
         <nav
           style={{
@@ -59,13 +84,10 @@ export default function MainPage() {
         </nav>
       )}
 
-      {/* Контент */}
       {isMapActive ? (
         hasSubscription ? (
-          // Карта на весь экран для подписчиков
           <div style={{ flex: 1, height: '100vh', width: '100vw' }}>
             <MapView />
-            {/* Кнопка назад (стрелка) */}
             <button
               onClick={() => setActiveTab('account')}
               onMouseEnter={() => setBackBtnHover(true)}
@@ -93,7 +115,6 @@ export default function MainPage() {
             </button>
           </div>
         ) : (
-          // Блокировка карты для тех, у кого нет подписки
           <div
             style={{
               flex: 1,
@@ -105,12 +126,11 @@ export default function MainPage() {
               position: 'relative',
             }}
           >
-            {/* Кнопка Назад */}
             <button
               onClick={() => setActiveTab('account')}
               style={{
                 position: 'absolute',
-                top: 18,
+                top: 17.5,
                 left: 14,
                 zIndex: 1000,
                 padding: '10px 20px',
@@ -124,8 +144,12 @@ export default function MainPage() {
                 fontWeight: 'bold',
                 transition: 'background-color 0.3s',
               }}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = tabColors.inactive)}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = tabColors.active)}
+              onMouseEnter={(e) =>
+                (e.target.style.backgroundColor = tabColors.inactive)
+              }
+              onMouseLeave={(e) =>
+                (e.target.style.backgroundColor = tabColors.active)
+              }
             >
               Назад
             </button>
@@ -153,7 +177,24 @@ export default function MainPage() {
           {activeTab === 'account' && (
             <div>
               <h2>Аккаунт</h2>
-              <p>Здесь будет информация об аккаунте пользователя.</p>
+              {!user ? (
+                <button
+                  onClick={handleVKLogin}
+                  style={{
+                    padding: '12px 24px',
+                    marginTop: '16px',
+                    backgroundColor: '#4680C2',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Войти через VK
+                </button>
+              ) : (
+                <p>Привет, {user.name}</p>
+              )}
             </div>
           )}
           {activeTab === 'subscription' && (
