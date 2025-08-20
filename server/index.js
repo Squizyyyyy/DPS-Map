@@ -1,14 +1,10 @@
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { MongoClient, ObjectId } from 'mongodb';
-import fetch from 'node-fetch';
-import jwt from 'jsonwebtoken';
-import 'dotenv/config';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const { MongoClient, ObjectId } = require('mongodb');
+const fetch = require('node-fetch');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,10 +16,11 @@ let markersCollection;
 let actionsCollection;
 let usersCollection;
 
+// ---------------------- Middleware ----------------------
 app.use(cors());
 app.use(express.json());
 
-// ---------------------- JWT secret ----------------------
+// JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 // ---------------------- Connect to MongoDB ----------------------
@@ -46,7 +43,6 @@ async function startServer() {
     process.exit(1);
   }
 }
-
 startServer();
 
 // ---------------------- JWT Middleware ----------------------
@@ -62,138 +58,6 @@ function authenticateJWT(req, res, next) {
     return res.sendStatus(403);
   }
 }
-
-// ---------------------- VK OAuth ----------------------
-app.get('/auth/vk', (req, res) => {
-  const redirectUri = `${process.env.BASE_URL}/auth/vk/callback`;
-  const vkAuthUrl = `https://oauth.vk.com/authorize?client_id=${process.env.VK_CLIENT_ID}&display=page&redirect_uri=${redirectUri}&scope=friends&response_type=code&v=5.131`;
-  res.redirect(vkAuthUrl);
-});
-
-app.get('/auth/vk/callback', async (req, res) => {
-  const code = req.query.code;
-  if (!code) return res.status(400).json({ error: 'No code provided' });
-
-  try {
-    const redirectUri = `${process.env.BASE_URL}/auth/vk/callback`;
-
-    const tokenRes = await fetch(
-      `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${redirectUri}&code=${code}`
-    );
-    const tokenData = await tokenRes.json();
-
-    if (!tokenData.access_token) {
-      return res.status(400).json({ error: 'VK token exchange failed', details: tokenData });
-    }
-
-    const vkRes = await fetch(
-      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&access_token=${tokenData.access_token}&v=5.131`
-    );
-    const data = await vkRes.json();
-
-    if (!data.response) return res.status(400).json({ error: 'VK API failed', details: data });
-
-    const vkUser = data.response[0];
-    let user = await usersCollection.findOne({ vkId: vkUser.id });
-
-    if (!user) {
-      user = {
-        vkId: vkUser.id,
-        name: `${vkUser.first_name} ${vkUser.last_name}`,
-        createdAt: Date.now(),
-      };
-      await usersCollection.insertOne(user);
-    }
-
-    const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-
-    res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'VK login error' });
-  }
-});
-
-// ---------------------- VK ID OAuth (через SDK) ----------------------
-app.post('/auth/vkid', async (req, res) => {
-  const { code, device_id } = req.body;
-  if (!code || !device_id) {
-    return res.status(400).json({ error: 'No code or device_id provided' });
-  }
-
-  try {
-    const tokenRes = await fetch("https://id.vk.com/oauth2/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: process.env.VK_CLIENT_ID,
-        client_secret: process.env.VK_CLIENT_SECRET,
-        code,
-        device_id,
-        grant_type: "authorization_code",
-        redirect_uri: `${process.env.BASE_URL}/auth/vk/callback`,
-      }),
-    });
-
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) {
-      return res.status(400).json({ error: "VK token exchange failed", details: tokenData });
-    }
-
-    const vkRes = await fetch(
-      `https://api.vk.com/method/users.get?access_token=${tokenData.access_token}&v=5.131`
-    );
-    const data = await vkRes.json();
-
-    if (!data.response) {
-      return res.status(400).json({ error: "VK API failed", details: data });
-    }
-
-    const vkUser = data.response[0];
-
-    let user = await usersCollection.findOne({ vkId: vkUser.id });
-    if (!user) {
-      user = {
-        vkId: vkUser.id,
-        name: `${vkUser.first_name} ${vkUser.last_name}`,
-        createdAt: Date.now(),
-      };
-      await usersCollection.insertOne(user);
-    }
-
-    const token = jwt.sign(
-      { id: user._id, name: user.name },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.json({ token, user });
-  } catch (err) {
-    console.error("VKID Auth Error:", err);
-    res.status(500).json({ error: "VKID login error" });
-  }
-});
-
-// ---------------------- Telegram OAuth ----------------------
-app.post('/auth/telegram', async (req, res) => {
-  const { id, first_name, last_name, username } = req.body;
-  if (!id) return res.status(400).json({ error: 'No Telegram user data' });
-
-  let user = await usersCollection.findOne({ telegramId: id });
-  if (!user) {
-    user = {
-      telegramId: id,
-      name: first_name + (last_name ? ` ${last_name}` : ''),
-      username,
-      createdAt: Date.now(),
-    };
-    await usersCollection.insertOne(user);
-    user._id = user._id || ObjectId();
-  }
-
-  const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, user });
-});
 
 // ---------------------- Helper Functions ----------------------
 async function getAddress(lat, lng) {
@@ -237,6 +101,69 @@ function getClientIp(req) {
   if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
   return req.socket.remoteAddress;
 }
+
+// ---------------------- Auth Routes ----------------------
+
+// Telegram
+app.post('/auth/telegram', async (req, res) => {
+  const { id, first_name, last_name, username } = req.body;
+  if (!id) return res.status(400).json({ error: 'No Telegram user data' });
+
+  let user = await usersCollection.findOne({ telegramId: id });
+  if (!user) {
+    user = {
+      telegramId: id,
+      name: first_name + (last_name ? ` ${last_name}` : ''),
+      username,
+      createdAt: Date.now(),
+    };
+    await usersCollection.insertOne(user);
+  }
+
+  const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, user });
+});
+
+// VKID OneTap
+app.post('/auth/vkid', async (req, res) => {
+  const { code, deviceId } = req.body;
+  if (!code || !deviceId) return res.status(400).json({ error: 'No VKID code or deviceId' });
+
+  try {
+    const vkidRes = await fetch(`https://api.vk.com/method/auth.vkid.exchangeCode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: process.env.VK_APP_ID,
+        client_secret: process.env.VK_APP_SECRET,
+        code,
+        device_id: deviceId,
+      }),
+    });
+
+    const data = await vkidRes.json();
+    if (!data.response || !data.response.user) {
+      return res.status(400).json({ error: 'VKID authorization failed' });
+    }
+
+    const vkUser = data.response.user;
+    let user = await usersCollection.findOne({ vkidId: vkUser.id });
+    if (!user) {
+      user = {
+        vkidId: vkUser.id,
+        name: vkUser.first_name + ' ' + vkUser.last_name,
+        createdAt: Date.now(),
+      };
+      await usersCollection.insertOne(user);
+    }
+
+    const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'VKID login error' });
+  }
+});
 
 // ---------------------- Marker Routes ----------------------
 app.get('/markers', async (req, res) => {
@@ -322,7 +249,6 @@ setInterval(async () => {
 
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, '../build')));
-
 app.get(/^\/(?!markers|auth).*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));
 });
