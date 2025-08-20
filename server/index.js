@@ -1,10 +1,17 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const { MongoClient, ObjectId } = require('mongodb');
-const fetch = require('node-fetch');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+// server/index.js (ES Modules)
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { MongoClient, ObjectId } from 'mongodb';
+import fetch from 'node-fetch';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
