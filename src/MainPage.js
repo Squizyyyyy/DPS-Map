@@ -18,77 +18,74 @@ export default function MainPage() {
 
   const isMapActive = activeTab === "map";
 
-  // Проверяем: Mini App или браузер
+  // Проверка JWT при загрузке страницы
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    // 🔹 VK Mini Apps авторизация через сервер
-    if (params.has("vk_user_id") && params.has("sign")) {
-      fetch(`${API_URL}/auth/vk-mini?${params.toString()}`)
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
         .then((res) => res.json())
         .then((data) => {
-          if (data.token) {
-            localStorage.setItem("token", data.token);
-            setUser({ name: data.user?.first_name, id: data.user?.id });
-            setHasSubscription(data.user?.hasSubscription || false);
-            console.log("✅ Авторизация через VK Mini Apps", data);
+          if (data.user) {
+            setUser({ name: data.user.name, id: data.user.id });
+            setHasSubscription(data.user.hasSubscription || false);
+            console.log("✅ JWT Validated:", data);
+          } else {
+            localStorage.removeItem("token");
           }
         })
-        .catch((err) => console.error("VK Mini auth error:", err));
-
-      return;
-    }
-
-    // 🔹 VK ID (браузер) через сервер
-    const initVK = () => {
-      if ("VKIDSDK" in window) {
-        const VKID = window.VKIDSDK;
-
-        VKID.Config.init({
-          app: 54061231, // твой app_id
-          redirectUrl: `${API_URL}/auth/vk`, // серверный эндпоинт
-          responseMode: VKID.ConfigResponseMode.Redirect, // редирект на сервер
-          source: VKID.ConfigSource.LOWCODE,
-          scope: "",
+        .catch((err) => {
+          console.error("JWT validation error:", err);
+          localStorage.removeItem("token");
         });
+    }
+  }, []);
 
-        const oAuth = new VKID.OAuthList();
+  // Инициализация VKID OneTap
+  useEffect(() => {
+    const initVK = () => {
+      if (!("VKIDSDK" in window)) return;
 
-        oAuth
-          .render({
-            container: document.getElementById("vk-login-btn"),
-            oauthList: ["vkid"],
-          })
-          .on(VKID.WidgetEvents.ERROR, (err) =>
-            console.error("VK error:", err)
-          )
-          .on(
-            VKID.OAuthListInternalEvents.LOGIN_SUCCESS,
-            ({ code, device_id }) => {
-              // Отправляем код на сервер, чтобы он вернул JWT
-              fetch(`${API_URL}/auth/vk?code=${code}&device_id=${device_id}`)
-                .then((res) => res.json())
-                .then((data) => {
-                  if (data.token) {
-                    localStorage.setItem("token", data.token);
-                    setUser({
-                      name: data.user?.first_name + " " + data.user?.last_name,
-                      id: data.user?.id,
-                    });
-                    setHasSubscription(data.user?.hasSubscription || false);
-                    console.log("✅ VK ID Success:", data);
-                  }
-                })
-                .catch((err) => console.error("VK ID Auth Error:", err));
-            }
-          );
-      }
+      const VKID = window.VKIDSDK;
+
+      VKID.Config.init({
+        app: 54061231, // твой app_id
+        redirectUrl: "", // редирект не нужен для OneTap
+        responseMode: VKID.ConfigResponseMode.OneTap,
+        source: VKID.ConfigSource.LOWCODE,
+        scope: "",
+      });
+
+      const oAuth = new VKID.OAuthList();
+
+      oAuth
+        .render({
+          container: document.getElementById("vk-login-btn"),
+          oauthList: ["vkid"],
+        })
+        .on(VKID.WidgetEvents.ERROR, (err) => console.error("VK error:", err))
+        .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, ({ code, device_id }) => {
+          fetch(`${API_URL}/auth/vkid?code=${code}&device_id=${device_id}`)
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.token) {
+                localStorage.setItem("token", data.token);
+                setUser({
+                  name: data.user?.name || `${data.user?.first_name} ${data.user?.last_name}`,
+                  id: data.user?.id,
+                });
+                setHasSubscription(data.user?.hasSubscription || false);
+                console.log("✅ VKID OneTap Success:", data);
+              }
+            })
+            .catch((err) => console.error("VKID Auth Error:", err));
+        });
     };
 
     if (!window.VKIDSDK) {
       const script = document.createElement("script");
-      script.src =
-        "https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js";
+      script.src = "https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js";
       script.onload = initVK;
       document.body.appendChild(script);
     } else {
