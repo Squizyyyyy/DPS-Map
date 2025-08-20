@@ -115,6 +115,66 @@ app.get('/auth/vk/callback', async (req, res) => {
   }
 });
 
+// ---------------------- VK ID OAuth (через SDK) ----------------------
+app.post('/auth/vkid', async (req, res) => {
+  const { code, device_id } = req.body;
+  if (!code || !device_id) {
+    return res.status(400).json({ error: 'No code or device_id provided' });
+  }
+
+  try {
+    const tokenRes = await fetch("https://id.vk.com/oauth2/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.VK_CLIENT_ID,
+        client_secret: process.env.VK_CLIENT_SECRET,
+        code,
+        device_id,
+        grant_type: "authorization_code",
+        redirect_uri: process.env.BASE_URL,
+      }),
+    });
+
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) {
+      return res.status(400).json({ error: "VK token exchange failed", details: tokenData });
+    }
+
+    const vkRes = await fetch(
+      `https://api.vk.com/method/users.get?access_token=${tokenData.access_token}&v=5.131`
+    );
+    const data = await vkRes.json();
+
+    if (!data.response) {
+      return res.status(400).json({ error: "VK API failed", details: data });
+    }
+
+    const vkUser = data.response[0];
+
+    let user = await usersCollection.findOne({ vkId: vkUser.id });
+    if (!user) {
+      user = {
+        vkId: vkUser.id,
+        name: `${vkUser.first_name} ${vkUser.last_name}`,
+        createdAt: Date.now(),
+      };
+      await usersCollection.insertOne(user);
+    }
+
+    const token = jwt.sign(
+      { id: user._id, name: user.name },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({ token, user });
+  } catch (err) {
+    console.error("VKID Auth Error:", err);
+    res.status(500).json({ error: "VKID login error" });
+  }
+});
+
 // ---------------------- Telegram OAuth ----------------------
 app.post('/auth/telegram', async (req, res) => {
   const { id, first_name, last_name, username } = req.body;
