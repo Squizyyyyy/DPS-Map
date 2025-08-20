@@ -107,7 +107,6 @@ app.get('/auth/vk/callback', async (req, res) => {
 
     const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
 
-    // редиректим обратно на фронт с токеном
     res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
   } catch (err) {
     console.error(err);
@@ -123,7 +122,7 @@ app.post('/auth/vkid', async (req, res) => {
   }
 
   try {
-    const tokenRes = await fetch("https://id.vk.com/oauth2/auth", {
+    const tokenRes = await fetch("https://id.vk.com/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
