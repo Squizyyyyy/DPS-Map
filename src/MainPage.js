@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
 
-const API_URL = "https://dps-map-rzn-h0uq.onrender.com"; // твой сервер
+const API_URL = "https://dps-map-rzn-h0uq.onrender.com";
 
 const tabColors = {
   background: "#001c39",
@@ -13,57 +13,52 @@ const tabColors = {
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState("account");
   const [backBtnHover, setBackBtnHover] = useState(false);
-  const [hasSubscription, setHasSubscription] = useState(false);
   const [user, setUser] = useState(null);
+  const [hasSubscription, setHasSubscription] = useState(false);
 
   const isMapActive = activeTab === "map";
 
-  // Проверка JWT при загрузке страницы
+  // ---------------- JWT Validation ----------------
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.user) {
-            setUser({ name: data.user.name, id: data.user.id });
-            setHasSubscription(data.user.hasSubscription || false);
-            console.log("✅ JWT Validated:", data);
-          } else {
-            localStorage.removeItem("token");
-          }
-        })
-        .catch((err) => {
-          console.error("JWT validation error:", err);
+    if (!token) return;
+
+    fetch(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) {
+          setUser({ name: data.user.name, id: data.user.id });
+          setHasSubscription(data.user.hasSubscription || false);
+          console.log("✅ JWT Validated:", data);
+        } else {
           localStorage.removeItem("token");
-        });
-    }
+        }
+      })
+      .catch((err) => {
+        console.error("JWT validation error:", err);
+        localStorage.removeItem("token");
+      });
   }, []);
 
-  // Инициализация VKID OneTap
+  // ---------------- VKID OneTap ----------------
   useEffect(() => {
     const initVK = () => {
-      if (!("VKIDSDK" in window)) return;
+      if (!window.VKIDSDK) return;
 
       const VKID = window.VKIDSDK;
-
       VKID.Config.init({
-        app: 54061231, // твой app_id
-        redirectUrl: "", // редирект не нужен для OneTap
+        app: 54061231,
+        redirectUrl: "",
         responseMode: VKID.ConfigResponseMode.OneTap,
         source: VKID.ConfigSource.LOWCODE,
         scope: "",
       });
 
       const oAuth = new VKID.OAuthList();
-
       oAuth
-        .render({
-          container: document.getElementById("vk-login-btn"),
-          oauthList: ["vkid"],
-        })
+        .render({ container: document.getElementById("vk-login-btn"), oauthList: ["vkid"] })
         .on(VKID.WidgetEvents.ERROR, (err) => console.error("VK error:", err))
         .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, ({ code, device_id }) => {
           fetch(`${API_URL}/auth/vkid?code=${code}&device_id=${device_id}`)
@@ -93,24 +88,11 @@ export default function MainPage() {
     }
   }, []);
 
+  // ---------------- Render ----------------
   return (
-    <div
-      style={{
-        height: "100vh",
-        backgroundColor: tabColors.background,
-        color: tabColors.text,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div style={{ height: "100vh", backgroundColor: tabColors.background, color: tabColors.text, display: "flex", flexDirection: "column" }}>
       {!isMapActive && (
-        <nav
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            backgroundColor: tabColors.active,
-          }}
-        >
+        <nav style={{ display: "flex", justifyContent: "center", backgroundColor: tabColors.active }}>
           {["account", "subscription", "map"].map((tab) => (
             <button
               key={tab}
@@ -118,8 +100,7 @@ export default function MainPage() {
               style={{
                 padding: "12px 24px",
                 margin: "8px",
-                backgroundColor:
-                  activeTab === tab ? tabColors.inactive : tabColors.active,
+                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
                 border: "none",
                 borderRadius: "4px",
                 color: tabColors.text,
@@ -138,7 +119,7 @@ export default function MainPage() {
 
       {isMapActive ? (
         hasSubscription ? (
-          <div style={{ flex: 1, height: "100vh", width: "100vw" }}>
+          <div style={{ flex: 1, height: "100vh", width: "100vw", position: "relative" }}>
             <MapView />
             <button
               onClick={() => setActiveTab("account")}
@@ -167,17 +148,7 @@ export default function MainPage() {
             </button>
           </div>
         ) : (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#fff",
-              position: "relative",
-            }}
-          >
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", color: "#fff", position: "relative" }}>
             <button
               onClick={() => setActiveTab("account")}
               style={{
@@ -196,16 +167,11 @@ export default function MainPage() {
                 fontWeight: "bold",
                 transition: "background-color 0.3s",
               }}
-              onMouseEnter={(e) =>
-                (e.target.style.backgroundColor = tabColors.inactive)
-              }
-              onMouseLeave={(e) =>
-                (e.target.style.backgroundColor = tabColors.active)
-              }
+              onMouseEnter={(e) => (e.target.style.backgroundColor = tabColors.inactive)}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = tabColors.active)}
             >
               Назад
             </button>
-
             <h2>Доступ к карте ограничен</h2>
             <p>Чтобы использовать карту, необходимо оформить подписку.</p>
             <button
@@ -229,11 +195,7 @@ export default function MainPage() {
           {activeTab === "account" && (
             <div>
               <h2>Аккаунт</h2>
-              {!user ? (
-                <div id="vk-login-btn"></div>
-              ) : (
-                <p>Привет, {user.name}</p>
-              )}
+              {!user ? <div id="vk-login-btn"></div> : <p>Привет, {user.name}</p>}
             </div>
           )}
           {activeTab === "subscription" && (
