@@ -132,7 +132,7 @@ app.post('/auth/vkid', async (req, res) => {
         code,
         device_id,
         grant_type: "authorization_code",
-        redirect_uri: process.env.BASE_URL,
+        redirect_uri: `${process.env.BASE_URL}/auth/vk/callback`,
       }),
     });
 
