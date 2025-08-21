@@ -23,7 +23,7 @@ let markersCollection;
 let actionsCollection;
 
 // ---------------------- Middlewares ----------------------
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(
   session({
@@ -102,7 +102,6 @@ function getClientIp(req) {
 // ---------------------- VK Authorization ----------------------
 const VK_CLIENT_ID = process.env.VK_CLIENT_ID;
 const VK_CLIENT_SECRET = process.env.VK_CLIENT_SECRET;
-const VK_REDIRECT_URI = process.env.VK_REDIRECT_URI; // https://yourdomain.com/auth/vk/callback
 
 // Middleware для защиты роутов
 function checkAuth(req, res, next) {
@@ -110,24 +109,16 @@ function checkAuth(req, res, next) {
   res.status(401).json({ error: "Не авторизован" });
 }
 
-// Редирект на VK для авторизации
-app.get("/auth/vk", (req, res) => {
-  const url = `https://oauth.vk.com/authorize?client_id=${VK_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-    VK_REDIRECT_URI
-  )}&response_type=code&scope=email`;
-  res.redirect(url);
-});
-
-// Callback VK после авторизации
-app.get("/auth/vk/callback", async (req, res) => {
-  const code = req.query.code;
-  if (!code) return res.status(400).send("Нет кода авторизации");
+// Callback для VK ID SDK: получаем код от фронтенда
+app.post("/auth/vk/sdk", async (req, res) => {
+  const { code, redirect_uri } = req.body;
+  if (!code || !redirect_uri) return res.status(400).json({ error: "Нет кода авторизации" });
 
   try {
     // Получаем access_token
     const tokenResp = await fetch(
       `https://oauth.vk.com/access_token?client_id=${VK_CLIENT_ID}&client_secret=${VK_CLIENT_SECRET}&redirect_uri=${encodeURIComponent(
-        VK_REDIRECT_URI
+        redirect_uri
       )}&code=${code}`
     );
     const tokenData = await tokenResp.json();
@@ -147,18 +138,17 @@ app.get("/auth/vk/callback", async (req, res) => {
       info: userData.response[0],
     };
 
-    // Редирект на frontend (главную страницу)
-    res.redirect("/");
+    res.json({ success: true, user: req.session.user });
   } catch (err) {
-    console.error("VK Auth Error:", err);
-    res.status(500).send("Ошибка авторизации VK");
+    console.error("VK SDK Auth Error:", err);
+    res.status(500).json({ error: "Ошибка авторизации VK" });
   }
 });
 
 // Роут для проверки авторизации
 app.get("/auth/status", (req, res) => {
-  if (req.session.user) res.json({ authenticated: true, user: req.session.user });
-  else res.json({ authenticated: false });
+  if (req.session.user) res.json({ authorized: true, user: req.session.user });
+  else res.json({ authorized: false });
 });
 
 // ---------------------- Marker Routes (защищенные) ----------------------

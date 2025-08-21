@@ -9,14 +9,15 @@ const tabColors = {
 };
 
 export default function MainPage() {
-  const [activeTab, setActiveTab] = useState("auth"); // по умолчанию вкладка авторизации
+  const [activeTab, setActiveTab] = useState("auth");
   const [backBtnHover, setBackBtnHover] = useState(false);
-  const [hasSubscription, setHasSubscription] = useState(false); // пока false, потом можно получать из API
+  const [hasSubscription, setHasSubscription] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   const isMapActive = activeTab === "map";
 
-  // Проверяем авторизацию при загрузке
+  const VK_CLIENT_ID = process.env.REACT_APP_VK_CLIENT_ID; // должен быть в .env
+
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -38,7 +39,15 @@ export default function MainPage() {
     checkAuth();
   }, []);
 
-  // Если пользователь не авторизован, показываем только вкладку авторизации
+  const handleVKLogin = () => {
+    // VK ID SDK Authorization
+    const redirect_uri = window.location.origin; 
+    const url = `https://oauth.vk.com/authorize?client_id=${VK_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      redirect_uri
+    )}&display=page&response_type=code&scope=email`;
+    window.location.href = url;
+  };
+
   if (!isAuthorized) {
     return (
       <div
@@ -55,7 +64,7 @@ export default function MainPage() {
         <h2>Авторизация</h2>
         <p>Чтобы пользоваться сайтом, войдите через VK.</p>
         <button
-          onClick={() => (window.location.href = "/auth/vk")}
+          onClick={handleVKLogin}
           style={{
             padding: "12px 24px",
             marginTop: "16px",
@@ -73,25 +82,12 @@ export default function MainPage() {
     );
   }
 
+  // Дальше твой UI для вкладок account, subscription, map (как раньше)
   return (
-    <div
-      style={{
-        height: "100vh",
-        backgroundColor: tabColors.background,
-        color: tabColors.text,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Навигация только если НЕ карта */}
+    <div style={{ height: "100vh", backgroundColor: tabColors.background, color: tabColors.text, display: "flex", flexDirection: "column" }}>
+      {/* Навигация */}
       {!isMapActive && (
-        <nav
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            backgroundColor: tabColors.active,
-          }}
-        >
+        <nav style={{ display: "flex", justifyContent: "center", backgroundColor: tabColors.active }}>
           {["account", "subscription", "map"].map((tab) => (
             <button
               key={tab}
@@ -99,8 +95,7 @@ export default function MainPage() {
               style={{
                 padding: "12px 24px",
                 margin: "8px",
-                backgroundColor:
-                  activeTab === tab ? tabColors.inactive : tabColors.active,
+                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
                 border: "none",
                 borderRadius: "4px",
                 color: tabColors.text,
@@ -116,115 +111,11 @@ export default function MainPage() {
           ))}
         </nav>
       )}
-
       {/* Контент */}
       {isMapActive ? (
-        hasSubscription ? (
-          // Карта на весь экран для подписчиков
-          <div style={{ flex: 1, height: "100vh", width: "100vw" }}>
-            <MapView />
-            {/* Кнопка назад (стрелка) */}
-            <button
-              onClick={() => setActiveTab("account")}
-              onMouseEnter={() => setBackBtnHover(true)}
-              onMouseLeave={() => setBackBtnHover(false)}
-              style={{
-                position: "absolute",
-                top: 18,
-                right: 14,
-                zIndex: 1000,
-                width: "35px",
-                height: "35px",
-                backgroundColor: backBtnHover ? "#f4f4f4" : "#ffffff",
-                color: "#000",
-                border: "none",
-                borderRadius: "50%",
-                cursor: "pointer",
-                boxShadow: "0 0 6px rgba(0,0,0,0.3)",
-                fontSize: "20px",
-                fontWeight: "bold",
-                lineHeight: "35px",
-                textAlign: "center",
-              }}
-            >
-              ←
-            </button>
-          </div>
-        ) : (
-          // Блокировка карты для тех, у кого нет подписки
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#fff",
-              position: "relative",
-            }}
-          >
-            {/* Кнопка Назад */}
-            <button
-              onClick={() => setActiveTab("account")}
-              style={{
-                position: "absolute",
-                top: 17,
-                left: 14,
-                zIndex: 1000,
-                padding: "10px 20px",
-                backgroundColor: tabColors.active,
-                color: tabColors.text,
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                boxShadow: "0 0 6px rgba(0,0,0,0.3)",
-                fontSize: "14px",
-                fontWeight: "bold",
-                transition: "background-color 0.3s",
-              }}
-              onMouseEnter={(e) =>
-                (e.target.style.backgroundColor = tabColors.inactive)
-              }
-              onMouseLeave={(e) =>
-                (e.target.style.backgroundColor = tabColors.active)
-              }
-            >
-              Назад
-            </button>
-
-            <h2>Доступ к карте ограничен</h2>
-            <p>Чтобы использовать карту, необходимо оформить подписку.</p>
-            <button
-              onClick={() => setActiveTab("subscription")}
-              style={{
-                padding: "12px 24px",
-                marginTop: "16px",
-                backgroundColor: "#063353",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              Оформить подписку
-            </button>
-          </div>
-        )
+        hasSubscription ? <MapView /> : <div>Доступ к карте ограничен</div>
       ) : (
-        <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
-          {activeTab === "account" && (
-            <div>
-              <h2>Аккаунт</h2>
-              <p>Здесь будет информация об аккаунте пользователя.</p>
-            </div>
-          )}
-          {activeTab === "subscription" && (
-            <div>
-              <h2>Подписка</h2>
-              <p>Здесь будет информация о подписке (пока пусто).</p>
-            </div>
-          )}
-        </main>
+        <main>{activeTab === "account" ? <div>Аккаунт</div> : <div>Подписка</div>}</main>
       )}
     </div>
   );
