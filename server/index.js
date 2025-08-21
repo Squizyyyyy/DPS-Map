@@ -1,43 +1,29 @@
-// server/index.js (ES Modules)
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { MongoClient, ObjectId } from 'mongodb';
-import fetch from 'node-fetch';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const { MongoClient } = require('mongodb');
+const fetch = require('node-fetch');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ---------------------- MongoDB ----------------------
+// MongoDB
 const MONGO_URI = process.env.MONGO_URI;
 const client = new MongoClient(MONGO_URI);
 let markersCollection;
 let actionsCollection;
-let usersCollection;
 
-// ---------------------- Middleware ----------------------
 app.use(cors());
 app.use(express.json());
 
-// JWT secret
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
-
-// ---------------------- Connect to MongoDB ----------------------
+// Подключение к MongoDB и запуск сервера
 async function startServer() {
   try {
     await client.connect();
     const db = client.db('dps-map');
     markersCollection = db.collection('markers');
     actionsCollection = db.collection('actions');
-    usersCollection = db.collection('users');
 
     await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
 
@@ -50,21 +36,8 @@ async function startServer() {
     process.exit(1);
   }
 }
+
 startServer();
-
-// ---------------------- JWT Middleware ----------------------
-function authenticateJWT(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.sendStatus(403);
-  }
-}
 
 // ---------------------- Helper Functions ----------------------
 async function getAddress(lat, lng) {
@@ -109,76 +82,13 @@ function getClientIp(req) {
   return req.socket.remoteAddress;
 }
 
-// ---------------------- Auth Routes ----------------------
-
-// Telegram
-app.post('/auth/telegram', async (req, res) => {
-  const { id, first_name, last_name, username } = req.body;
-  if (!id) return res.status(400).json({ error: 'No Telegram user data' });
-
-  let user = await usersCollection.findOne({ telegramId: id });
-  if (!user) {
-    user = {
-      telegramId: id,
-      name: first_name + (last_name ? ` ${last_name}` : ''),
-      username,
-      createdAt: Date.now(),
-    };
-    await usersCollection.insertOne(user);
-  }
-
-  const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, user });
-});
-
-// VKID OneTap
-app.post('/auth/vkid', async (req, res) => {
-  const { code, deviceId } = req.body;
-  if (!code || !deviceId) return res.status(400).json({ error: 'No VKID code or deviceId' });
-
-  try {
-    const vkidRes = await fetch(`https://api.vk.com/method/auth.vkid.exchangeCode`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: process.env.VK_APP_ID,
-        client_secret: process.env.VK_APP_SECRET,
-        code,
-        device_id: deviceId,
-      }),
-    });
-
-    const data = await vkidRes.json();
-    if (!data.response || !data.response.user) {
-      return res.status(400).json({ error: 'VKID authorization failed' });
-    }
-
-    const vkUser = data.response.user;
-    let user = await usersCollection.findOne({ vkidId: vkUser.id });
-    if (!user) {
-      user = {
-        vkidId: vkUser.id,
-        name: vkUser.first_name + ' ' + vkUser.last_name,
-        createdAt: Date.now(),
-      };
-      await usersCollection.insertOne(user);
-    }
-
-    const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'VKID login error' });
-  }
-});
-
 // ---------------------- Marker Routes ----------------------
 app.get('/markers', async (req, res) => {
   const allMarkers = await markersCollection.find().toArray();
   res.json(allMarkers);
 });
 
-app.post('/markers', authenticateJWT, async (req, res) => {
+app.post('/markers', async (req, res) => {
   const ip = getClientIp(req);
   const allowed = await checkRateLimit(ip, 'add');
   if (!allowed) return res.status(429).json({ error: 'Слишком частое добавление. Попробуйте позже.' });
@@ -204,7 +114,7 @@ app.post('/markers', authenticateJWT, async (req, res) => {
   res.json(marker);
 });
 
-app.post('/markers/:id/confirm', authenticateJWT, async (req, res) => {
+app.post('/markers/:id/confirm', async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
   if (!marker) return res.sendStatus(404);
@@ -220,7 +130,7 @@ app.post('/markers/:id/confirm', authenticateJWT, async (req, res) => {
   res.sendStatus(200);
 });
 
-app.post('/markers/:id/delete', authenticateJWT, async (req, res) => {
+app.post('/markers/:id/delete', async (req, res) => {
   const ip = getClientIp(req);
   const allowed = await checkRateLimit(ip, 'delete');
   if (!allowed) return res.status(429).json({ error: 'Слишком частое удаление. Попробуйте позже.' });
@@ -256,6 +166,7 @@ setInterval(async () => {
 
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, '../build')));
-app.get(/^\/(?!markers|auth).*/, (req, res) => {
+
+app.get(/^\/(?!markers).*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));
 });

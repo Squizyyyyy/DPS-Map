@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import MapView from "./MapView";
-
-const API_URL = "https://dps-map-rzn-h0uq.onrender.com"; // твой сервер
 
 const tabColors = {
   background: "#001c39",
@@ -13,85 +11,9 @@ const tabColors = {
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState("account");
   const [backBtnHover, setBackBtnHover] = useState(false);
-  const [hasSubscription, setHasSubscription] = useState(false);
-  const [user, setUser] = useState(null);
+  const [hasSubscription, setHasSubscription] = useState(false); // пока false, потом можно получать из API
 
   const isMapActive = activeTab === "map";
-
-  // Проверка JWT при загрузке страницы
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.user) {
-            setUser({ name: data.user.name, id: data.user.id });
-            setHasSubscription(data.user.hasSubscription || false);
-            console.log("✅ JWT Validated:", data);
-          } else {
-            localStorage.removeItem("token");
-          }
-        })
-        .catch((err) => {
-          console.error("JWT validation error:", err);
-          localStorage.removeItem("token");
-        });
-    }
-  }, []);
-
-  // Инициализация VKID OneTap
-  useEffect(() => {
-    const initVK = () => {
-      if (!("VKIDSDK" in window)) return;
-
-      const VKID = window.VKIDSDK;
-
-      VKID.Config.init({
-        app: 54061231, // твой app_id
-        redirectUrl: "", // редирект не нужен для OneTap
-        responseMode: VKID.ConfigResponseMode.OneTap,
-        source: VKID.ConfigSource.LOWCODE,
-        scope: "",
-      });
-
-      const oAuth = new VKID.OAuthList();
-
-      oAuth
-        .render({
-          container: document.getElementById("vk-login-btn"),
-          oauthList: ["vkid"],
-        })
-        .on(VKID.WidgetEvents.ERROR, (err) => console.error("VK error:", err))
-        .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, ({ code, device_id }) => {
-          fetch(`${API_URL}/auth/vkid?code=${code}&device_id=${device_id}`)
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.token) {
-                localStorage.setItem("token", data.token);
-                setUser({
-                  name: data.user?.name || `${data.user?.first_name} ${data.user?.last_name}`,
-                  id: data.user?.id,
-                });
-                setHasSubscription(data.user?.hasSubscription || false);
-                console.log("✅ VKID OneTap Success:", data);
-              }
-            })
-            .catch((err) => console.error("VKID Auth Error:", err));
-        });
-    };
-
-    if (!window.VKIDSDK) {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js";
-      script.onload = initVK;
-      document.body.appendChild(script);
-    } else {
-      initVK();
-    }
-  }, []);
 
   return (
     <div
@@ -103,6 +25,7 @@ export default function MainPage() {
         flexDirection: "column",
       }}
     >
+      {/* Навигация только если НЕ карта */}
       {!isMapActive && (
         <nav
           style={{
@@ -136,10 +59,13 @@ export default function MainPage() {
         </nav>
       )}
 
+      {/* Контент */}
       {isMapActive ? (
         hasSubscription ? (
+          // Карта на весь экран для подписчиков
           <div style={{ flex: 1, height: "100vh", width: "100vw" }}>
             <MapView />
+            {/* Кнопка назад (стрелка) */}
             <button
               onClick={() => setActiveTab("account")}
               onMouseEnter={() => setBackBtnHover(true)}
@@ -167,6 +93,7 @@ export default function MainPage() {
             </button>
           </div>
         ) : (
+          // Блокировка карты для тех, у кого нет подписки
           <div
             style={{
               flex: 1,
@@ -178,6 +105,7 @@ export default function MainPage() {
               position: "relative",
             }}
           >
+            {/* Кнопка Назад */}
             <button
               onClick={() => setActiveTab("account")}
               style={{
@@ -229,11 +157,7 @@ export default function MainPage() {
           {activeTab === "account" && (
             <div>
               <h2>Аккаунт</h2>
-              {!user ? (
-                <div id="vk-login-btn"></div>
-              ) : (
-                <p>Привет, {user.name}</p>
-              )}
+              <p>Здесь будет информация об аккаунте пользователя.</p>
             </div>
           )}
           {activeTab === "subscription" && (
