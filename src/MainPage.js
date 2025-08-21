@@ -13,28 +13,27 @@ export default function MainPage() {
   const [backBtnHover, setBackBtnHover] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [user, setUser] = useState(null);
 
   const isMapActive = activeTab === "map";
-  const VK_APP_ID = process.env.REACT_APP_VK_CLIENT_ID;
-  const redirect_uri = process.env.REACT_APP_VK_REDIRECT_URI;
 
+  const VK_CLIENT_ID = process.env.REACT_APP_VK_CLIENT_ID; // должен быть в .env
+  const VK_REDIRECT_URI = process.env.REACT_APP_VK_REDIRECT_URI; // тот же, что на сервере
+
+  // Проверка авторизации через сессию
   useEffect(() => {
-    // Проверка авторизации
     async function checkAuth() {
       try {
         const res = await fetch("/auth/status", { credentials: "include" });
         const data = await res.json();
         if (data.authorized) {
           setIsAuthorized(true);
-          setUser(data.user);
           setActiveTab("account");
         } else {
           setIsAuthorized(false);
           setActiveTab("auth");
         }
       } catch (err) {
-        console.error(err);
+        console.error("Ошибка проверки авторизации:", err);
         setIsAuthorized(false);
         setActiveTab("auth");
       }
@@ -42,12 +41,10 @@ export default function MainPage() {
     checkAuth();
   }, []);
 
-  // VK ID login через One Tap
+  // Обработчик кнопки "Войти через VK"
   const handleVKLogin = () => {
-    const url = `https://oauth.vk.com/authorize?client_id=${VK_APP_ID}&display=page&redirect_uri=${encodeURIComponent(
-      redirect_uri
-    )}&response_type=code&scope=email`;
-    window.location.href = url;
+    // редирект на серверный роут, который потом редиректит на VK
+    window.location.href = "/auth/vk";
   };
 
   if (!isAuthorized) {
@@ -84,6 +81,7 @@ export default function MainPage() {
     );
   }
 
+  // Основной UI после авторизации
   return (
     <div
       style={{
@@ -109,12 +107,14 @@ export default function MainPage() {
               style={{
                 padding: "12px 24px",
                 margin: "8px",
-                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+                backgroundColor:
+                  activeTab === tab ? tabColors.inactive : tabColors.active,
                 border: "none",
                 borderRadius: "4px",
                 color: tabColors.text,
                 cursor: "pointer",
                 fontWeight: activeTab === tab ? "bold" : "normal",
+                transition: "background-color 0.3s",
               }}
             >
               {tab === "account" && "Аккаунт"}
@@ -137,26 +137,31 @@ export default function MainPage() {
               justifyContent: "center",
               alignItems: "center",
               color: "#fff",
+              position: "relative",
             }}
           >
             <h2>Доступ к карте ограничен</h2>
             <p>Чтобы использовать карту, необходимо оформить подписку.</p>
+            <button
+              onClick={() => setActiveTab("subscription")}
+              style={{
+                padding: "12px 24px",
+                marginTop: "16px",
+                backgroundColor: "#063353",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Оформить подписку
+            </button>
           </div>
         )
       ) : (
         <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
-          {activeTab === "account" && (
-            <div>
-              <h2>Аккаунт</h2>
-              <p>Привет, {user?.info?.first_name} {user?.info?.last_name}</p>
-            </div>
-          )}
-          {activeTab === "subscription" && (
-            <div>
-              <h2>Подписка</h2>
-              <p>Здесь будет информация о подписке (пока пусто).</p>
-            </div>
-          )}
+          {activeTab === "account" && <div>Аккаунт</div>}
+          {activeTab === "subscription" && <div>Подписка</div>}
         </main>
       )}
     </div>
