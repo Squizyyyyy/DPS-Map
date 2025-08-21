@@ -104,13 +104,13 @@ function checkAuth(req, res, next) {
 
 // ---------------------- VK Routes ----------------------
 
-// Редирект на VK для авторизации с display=popup
+// Редирект на VK для авторизации с display=page
 app.get("/auth/vk", (req, res) => {
   if (!VK_APP_ID || !VK_REDIRECT_URI) {
     return res.status(500).send("VK_CLIENT_ID или VK_REDIRECT_URI не настроены в .env");
   }
 
-  const url = `https://oauth.vk.com/authorize?client_id=${VK_APP_ID}&display=popup&redirect_uri=${encodeURIComponent(VK_REDIRECT_URI)}&response_type=code&scope=email`;
+  const url = `https://oauth.vk.com/authorize?client_id=${VK_APP_ID}&display=page&redirect_uri=${encodeURIComponent(VK_REDIRECT_URI)}&response_type=code&scope=email`;
   res.redirect(url);
 });
 
