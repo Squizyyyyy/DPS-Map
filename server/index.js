@@ -94,6 +94,7 @@ function getClientIp(req) {
 
 // ---------------------- VK ID Authentication ----------------------
 const VK_APP_ID = process.env.VK_CLIENT_ID;
+const VK_REDIRECT_URI = process.env.VK_REDIRECT_URI;
 
 // Middleware для защиты роутов
 function checkAuth(req, res, next) {
@@ -101,18 +102,34 @@ function checkAuth(req, res, next) {
   res.status(401).json({ error: "Не авторизован" });
 }
 
+// ---------------------- VK Routes ----------------------
+
+// Редирект на VK для авторизации
+app.get("/auth/vk", (req, res) => {
+  if (!VK_APP_ID || !VK_REDIRECT_URI) {
+    return res.status(500).send("VK_CLIENT_ID или VK_REDIRECT_URI не настроены в .env");
+  }
+
+  const url = `https://oauth.vk.com/authorize?client_id=${VK_APP_ID}&display=page&redirect_uri=${encodeURIComponent(VK_REDIRECT_URI)}&response_type=code&scope=email`;
+  res.redirect(url);
+});
+
 // Роут для обмена кода на токен и сохранения пользователя в сессии
 app.post("/auth/vk/exchange", async (req, res) => {
-  const { code, device_id } = req.body;
-  if (!code || !device_id) return res.status(400).json({ error: "Нет кода или device_id" });
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: "Нет кода авторизации" });
 
   try {
-    const tokenResp = await fetch(`https://api.vk.com/oauth/token?client_id=${VK_APP_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${process.env.VK_REDIRECT_URI}&code=${code}&v=5.131`);
+    const tokenResp = await fetch(
+      `https://oauth.vk.com/access_token?client_id=${VK_APP_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${encodeURIComponent(VK_REDIRECT_URI)}&code=${code}`
+    );
     const tokenData = await tokenResp.json();
 
     if (tokenData.error) return res.status(400).json(tokenData);
 
-    const userResp = await fetch(`https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`);
+    const userResp = await fetch(
+      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
+    );
     const userData = await userResp.json();
 
     req.session.user = {
