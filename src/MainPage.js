@@ -13,28 +13,28 @@ export default function MainPage() {
   const [backBtnHover, setBackBtnHover] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [user, setUser] = useState(null);
 
   const isMapActive = activeTab === "map";
+  const VK_APP_ID = process.env.REACT_APP_VK_CLIENT_ID;
+  const redirect_uri = process.env.REACT_APP_VK_REDIRECT_URI;
 
-  // Берём VK_CLIENT_ID и redirect_uri из .env (с префиксом REACT_APP_)
-  const VK_CLIENT_ID = process.env.REACT_APP_VK_CLIENT_ID;
-  const REDIRECT_URI = process.env.REACT_APP_VK_REDIRECT_URI;
-
-  // Проверка авторизации при загрузке
   useEffect(() => {
+    // Проверка авторизации
     async function checkAuth() {
       try {
         const res = await fetch("/auth/status", { credentials: "include" });
         const data = await res.json();
-        if (data.authenticated) {
+        if (data.authorized) {
           setIsAuthorized(true);
+          setUser(data.user);
           setActiveTab("account");
         } else {
           setIsAuthorized(false);
           setActiveTab("auth");
         }
       } catch (err) {
-        console.error("Ошибка проверки авторизации:", err);
+        console.error(err);
         setIsAuthorized(false);
         setActiveTab("auth");
       }
@@ -42,15 +42,14 @@ export default function MainPage() {
     checkAuth();
   }, []);
 
-  // Кнопка входа через VK
+  // VK ID login через One Tap
   const handleVKLogin = () => {
-    const url = `https://oauth.vk.com/authorize?client_id=${VK_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&display=page&response_type=code&scope=email`;
+    const url = `https://oauth.vk.com/authorize?client_id=${VK_APP_ID}&display=page&redirect_uri=${encodeURIComponent(
+      redirect_uri
+    )}&response_type=code&scope=email`;
     window.location.href = url;
   };
 
-  // Если пользователь не авторизован — показываем только страницу авторизации
   if (!isAuthorized) {
     return (
       <div
@@ -85,7 +84,6 @@ export default function MainPage() {
     );
   }
 
-  // UI для авторизованного пользователя
   return (
     <div
       style={{
@@ -96,7 +94,6 @@ export default function MainPage() {
         flexDirection: "column",
       }}
     >
-      {/* Навигация */}
       {!isMapActive && (
         <nav
           style={{
@@ -112,14 +109,12 @@ export default function MainPage() {
               style={{
                 padding: "12px 24px",
                 margin: "8px",
-                backgroundColor:
-                  activeTab === tab ? tabColors.inactive : tabColors.active,
+                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
                 border: "none",
                 borderRadius: "4px",
                 color: tabColors.text,
                 cursor: "pointer",
                 fontWeight: activeTab === tab ? "bold" : "normal",
-                transition: "background-color 0.3s",
               }}
             >
               {tab === "account" && "Аккаунт"}
@@ -130,19 +125,39 @@ export default function MainPage() {
         </nav>
       )}
 
-      {/* Контент */}
       {isMapActive ? (
         hasSubscription ? (
           <MapView />
         ) : (
-          <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <p>Доступ к карте ограничен. Оформите подписку.</p>
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#fff",
+            }}
+          >
+            <h2>Доступ к карте ограничен</h2>
+            <p>Чтобы использовать карту, необходимо оформить подписку.</p>
           </div>
         )
-      ) : activeTab === "account" ? (
-        <div style={{ padding: "16px" }}>Здесь информация об аккаунте пользователя.</div>
       ) : (
-        <div style={{ padding: "16px" }}>Здесь информация о подписке.</div>
+        <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
+          {activeTab === "account" && (
+            <div>
+              <h2>Аккаунт</h2>
+              <p>Привет, {user?.info?.first_name} {user?.info?.last_name}</p>
+            </div>
+          )}
+          {activeTab === "subscription" && (
+            <div>
+              <h2>Подписка</h2>
+              <p>Здесь будет информация о подписке (пока пусто).</p>
+            </div>
+          )}
+        </main>
       )}
     </div>
   );
