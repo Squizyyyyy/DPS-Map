@@ -16,14 +16,17 @@ export default function MainPage() {
 
   const isMapActive = activeTab === "map";
 
-  const VK_CLIENT_ID = process.env.REACT_APP_VK_CLIENT_ID; // должен быть в .env
+  // Берём VK_CLIENT_ID и redirect_uri из .env (с префиксом REACT_APP_)
+  const VK_CLIENT_ID = process.env.REACT_APP_VK_CLIENT_ID;
+  const REDIRECT_URI = process.env.REACT_APP_VK_REDIRECT_URI;
 
+  // Проверка авторизации при загрузке
   useEffect(() => {
     async function checkAuth() {
       try {
         const res = await fetch("/auth/status", { credentials: "include" });
         const data = await res.json();
-        if (data.authorized) {
+        if (data.authenticated) {
           setIsAuthorized(true);
           setActiveTab("account");
         } else {
@@ -39,15 +42,15 @@ export default function MainPage() {
     checkAuth();
   }, []);
 
+  // Кнопка входа через VK
   const handleVKLogin = () => {
-    // VK ID SDK Authorization
-    const redirect_uri = window.location.origin; 
     const url = `https://oauth.vk.com/authorize?client_id=${VK_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-      redirect_uri
+      REDIRECT_URI
     )}&display=page&response_type=code&scope=email`;
     window.location.href = url;
   };
 
+  // Если пользователь не авторизован — показываем только страницу авторизации
   if (!isAuthorized) {
     return (
       <div
@@ -82,12 +85,26 @@ export default function MainPage() {
     );
   }
 
-  // Дальше твой UI для вкладок account, subscription, map (как раньше)
+  // UI для авторизованного пользователя
   return (
-    <div style={{ height: "100vh", backgroundColor: tabColors.background, color: tabColors.text, display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        height: "100vh",
+        backgroundColor: tabColors.background,
+        color: tabColors.text,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Навигация */}
       {!isMapActive && (
-        <nav style={{ display: "flex", justifyContent: "center", backgroundColor: tabColors.active }}>
+        <nav
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            backgroundColor: tabColors.active,
+          }}
+        >
           {["account", "subscription", "map"].map((tab) => (
             <button
               key={tab}
@@ -95,7 +112,8 @@ export default function MainPage() {
               style={{
                 padding: "12px 24px",
                 margin: "8px",
-                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+                backgroundColor:
+                  activeTab === tab ? tabColors.inactive : tabColors.active,
                 border: "none",
                 borderRadius: "4px",
                 color: tabColors.text,
@@ -111,11 +129,20 @@ export default function MainPage() {
           ))}
         </nav>
       )}
+
       {/* Контент */}
       {isMapActive ? (
-        hasSubscription ? <MapView /> : <div>Доступ к карте ограничен</div>
+        hasSubscription ? (
+          <MapView />
+        ) : (
+          <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <p>Доступ к карте ограничен. Оформите подписку.</p>
+          </div>
+        )
+      ) : activeTab === "account" ? (
+        <div style={{ padding: "16px" }}>Здесь информация об аккаунте пользователя.</div>
       ) : (
-        <main>{activeTab === "account" ? <div>Аккаунт</div> : <div>Подписка</div>}</main>
+        <div style={{ padding: "16px" }}>Здесь информация о подписке.</div>
       )}
     </div>
   );
