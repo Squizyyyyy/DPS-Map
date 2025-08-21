@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
 
 const tabColors = {
@@ -9,11 +9,69 @@ const tabColors = {
 };
 
 export default function MainPage() {
-  const [activeTab, setActiveTab] = useState("account");
+  const [activeTab, setActiveTab] = useState("auth"); // по умолчанию вкладка авторизации
   const [backBtnHover, setBackBtnHover] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false); // пока false, потом можно получать из API
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const isMapActive = activeTab === "map";
+
+  // Проверяем авторизацию при загрузке
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/auth/status", { credentials: "include" });
+        const data = await res.json();
+        if (data.authorized) {
+          setIsAuthorized(true);
+          setActiveTab("account");
+        } else {
+          setIsAuthorized(false);
+          setActiveTab("auth");
+        }
+      } catch (err) {
+        console.error("Ошибка проверки авторизации:", err);
+        setIsAuthorized(false);
+        setActiveTab("auth");
+      }
+    }
+    checkAuth();
+  }, []);
+
+  // Если пользователь не авторизован, показываем только вкладку авторизации
+  if (!isAuthorized) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          backgroundColor: tabColors.background,
+          color: tabColors.text,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <h2>Авторизация</h2>
+        <p>Чтобы пользоваться сайтом, войдите через VK.</p>
+        <button
+          onClick={() => (window.location.href = "/auth/vk")}
+          style={{
+            padding: "12px 24px",
+            marginTop: "16px",
+            backgroundColor: "#4680c2",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          Войти через VK
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div

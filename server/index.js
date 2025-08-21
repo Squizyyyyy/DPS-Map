@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { MongoClient } from "mongodb";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+import session from "express-session";
 
 dotenv.config();
 
@@ -21,9 +22,18 @@ const client = new MongoClient(MONGO_URI);
 let markersCollection;
 let actionsCollection;
 
+// ---------------------- Middlewares ----------------------
 app.use(cors());
 app.use(express.json());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "supersecret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
+// ---------------------- Start Server ----------------------
 async function startServer() {
   try {
     await client.connect();
@@ -89,13 +99,75 @@ function getClientIp(req) {
   return req.socket.remoteAddress;
 }
 
-// ---------------------- Marker Routes ----------------------
-app.get("/markers", async (req, res) => {
+// ---------------------- VK Authorization ----------------------
+const VK_CLIENT_ID = process.env.VK_CLIENT_ID;
+const VK_CLIENT_SECRET = process.env.VK_CLIENT_SECRET;
+const VK_REDIRECT_URI = process.env.VK_REDIRECT_URI; // https://yourdomain.com/auth/vk/callback
+
+// Middleware для защиты роутов
+function checkAuth(req, res, next) {
+  if (req.session.user) return next();
+  res.status(401).json({ error: "Не авторизован" });
+}
+
+// Редирект на VK для авторизации
+app.get("/auth/vk", (req, res) => {
+  const url = `https://oauth.vk.com/authorize?client_id=${VK_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+    VK_REDIRECT_URI
+  )}&response_type=code&scope=email`;
+  res.redirect(url);
+});
+
+// Callback VK после авторизации
+app.get("/auth/vk/callback", async (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.status(400).send("Нет кода авторизации");
+
+  try {
+    // Получаем access_token
+    const tokenResp = await fetch(
+      `https://oauth.vk.com/access_token?client_id=${VK_CLIENT_ID}&client_secret=${VK_CLIENT_SECRET}&redirect_uri=${encodeURIComponent(
+        VK_REDIRECT_URI
+      )}&code=${code}`
+    );
+    const tokenData = await tokenResp.json();
+
+    if (tokenData.error) return res.status(400).json(tokenData);
+
+    // Получаем информацию о пользователе
+    const userResp = await fetch(
+      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
+    );
+    const userData = await userResp.json();
+
+    // Сохраняем в сессии
+    req.session.user = {
+      id: tokenData.user_id,
+      email: tokenData.email,
+      info: userData.response[0],
+    };
+
+    // Редирект на frontend (главную страницу)
+    res.redirect("/");
+  } catch (err) {
+    console.error("VK Auth Error:", err);
+    res.status(500).send("Ошибка авторизации VK");
+  }
+});
+
+// Роут для проверки авторизации
+app.get("/auth/status", (req, res) => {
+  if (req.session.user) res.json({ authenticated: true, user: req.session.user });
+  else res.json({ authenticated: false });
+});
+
+// ---------------------- Marker Routes (защищенные) ----------------------
+app.get("/markers", checkAuth, async (req, res) => {
   const allMarkers = await markersCollection.find().toArray();
   res.json(allMarkers);
 });
 
-app.post("/markers", async (req, res) => {
+app.post("/markers", checkAuth, async (req, res) => {
   const ip = getClientIp(req);
   const allowed = await checkRateLimit(ip, "add");
   if (!allowed) return res.status(429).json({ error: "Слишком частое добавление. Попробуйте позже." });
@@ -121,7 +193,7 @@ app.post("/markers", async (req, res) => {
   res.json(marker);
 });
 
-app.post("/markers/:id/confirm", async (req, res) => {
+app.post("/markers/:id/confirm", checkAuth, async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
   if (!marker) return res.sendStatus(404);
@@ -137,7 +209,7 @@ app.post("/markers/:id/confirm", async (req, res) => {
   res.sendStatus(200);
 });
 
-app.post("/markers/:id/delete", async (req, res) => {
+app.post("/markers/:id/delete", checkAuth, async (req, res) => {
   const ip = getClientIp(req);
   const allowed = await checkRateLimit(ip, "delete");
   if (!allowed) return res.status(429).json({ error: "Слишком частое удаление. Попробуйте позже." });
@@ -174,6 +246,6 @@ setInterval(async () => {
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, "../build")));
 
-app.get(/^\/(?!markers).*/, (req, res) => {
+app.get(/^\/(?!markers|auth).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "../build/index.html"));
 });
