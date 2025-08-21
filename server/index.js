@@ -1,14 +1,21 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const { MongoClient } = require('mongodb');
-const fetch = require('node-fetch');
-require('dotenv').config();
+// server/index.js
+import express from "express";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import { MongoClient } from "mongodb";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// MongoDB
+// ---------------------- MongoDB ----------------------
 const MONGO_URI = process.env.MONGO_URI;
 const client = new MongoClient(MONGO_URI);
 let markersCollection;
@@ -17,46 +24,46 @@ let actionsCollection;
 app.use(cors());
 app.use(express.json());
 
-// Подключение к MongoDB и запуск сервера
 async function startServer() {
   try {
     await client.connect();
-    const db = client.db('dps-map');
-    markersCollection = db.collection('markers');
-    actionsCollection = db.collection('actions');
+    const db = client.db("dps-map");
+    markersCollection = db.collection("markers");
+    actionsCollection = db.collection("actions");
 
     await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
 
-    console.log('✅ Подключено к MongoDB');
+    console.log("✅ Подключено к MongoDB");
+
     app.listen(PORT, () => {
       console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error('❌ Ошибка подключения к MongoDB:', err);
+    console.error("❌ Ошибка подключения к MongoDB:", err);
     process.exit(1);
   }
 }
 
 startServer();
 
-// ---------------------- Helper Functions ----------------------
+// ---------------------- Helpers ----------------------
 async function getAddress(lat, lng) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'DPS-Map-App/1.0 (valerka.korsh@gmail.com)',
-        'Accept-Language': 'ru',
+        "User-Agent": "DPS-Map-App/1.0",
+        "Accept-Language": "ru",
       },
     });
     const data = await response.json();
-    if (!data.address) return 'Адрес не найден';
+    if (!data.address) return "Адрес не найден";
 
     const { house_number, road, suburb, neighbourhood, city, town } = data.address;
-    return [house_number, road, suburb || neighbourhood, city || town].filter(Boolean).join(', ');
+    return [house_number, road, suburb || neighbourhood, city || town].filter(Boolean).join(", ");
   } catch (error) {
-    console.error('Ошибка получения адреса:', error);
-    return 'Адрес не найден';
+    console.error("Ошибка получения адреса:", error);
+    return "Адрес не найден";
   }
 }
 
@@ -77,24 +84,24 @@ async function checkRateLimit(ip, action) {
 }
 
 function getClientIp(req) {
-  const xForwardedFor = req.headers['x-forwarded-for'];
-  if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
+  const xForwardedFor = req.headers["x-forwarded-for"];
+  if (xForwardedFor) return xForwardedFor.split(",")[0].trim();
   return req.socket.remoteAddress;
 }
 
 // ---------------------- Marker Routes ----------------------
-app.get('/markers', async (req, res) => {
+app.get("/markers", async (req, res) => {
   const allMarkers = await markersCollection.find().toArray();
   res.json(allMarkers);
 });
 
-app.post('/markers', async (req, res) => {
+app.post("/markers", async (req, res) => {
   const ip = getClientIp(req);
-  const allowed = await checkRateLimit(ip, 'add');
-  if (!allowed) return res.status(429).json({ error: 'Слишком частое добавление. Попробуйте позже.' });
+  const allowed = await checkRateLimit(ip, "add");
+  if (!allowed) return res.status(429).json({ error: "Слишком частое добавление. Попробуйте позже." });
 
   let { lat, lng, comment } = req.body;
-  if (!comment || comment.trim() === '') comment = '-';
+  if (!comment || comment.trim() === "") comment = "-";
 
   const id = Date.now();
   const address = await getAddress(lat, lng);
@@ -104,7 +111,7 @@ app.post('/markers', async (req, res) => {
     lat,
     lng,
     timestamp: Date.now(),
-    status: 'active',
+    status: "active",
     confirmations: 0,
     address,
     comment,
@@ -114,7 +121,7 @@ app.post('/markers', async (req, res) => {
   res.json(marker);
 });
 
-app.post('/markers/:id/confirm', async (req, res) => {
+app.post("/markers/:id/confirm", async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
   if (!marker) return res.sendStatus(404);
@@ -122,7 +129,7 @@ app.post('/markers/:id/confirm', async (req, res) => {
   await markersCollection.updateOne(
     { id },
     {
-      $set: { status: 'active', timestamp: Date.now() },
+      $set: { status: "active", timestamp: Date.now() },
       $inc: { confirmations: 1 },
     }
   );
@@ -130,10 +137,10 @@ app.post('/markers/:id/confirm', async (req, res) => {
   res.sendStatus(200);
 });
 
-app.post('/markers/:id/delete', async (req, res) => {
+app.post("/markers/:id/delete", async (req, res) => {
   const ip = getClientIp(req);
-  const allowed = await checkRateLimit(ip, 'delete');
-  if (!allowed) return res.status(429).json({ error: 'Слишком частое удаление. Попробуйте позже.' });
+  const allowed = await checkRateLimit(ip, "delete");
+  if (!allowed) return res.status(429).json({ error: "Слишком частое удаление. Попробуйте позже." });
 
   const id = Number(req.params.id);
   const result = await markersCollection.deleteOne({ id });
@@ -150,12 +157,12 @@ setInterval(async () => {
     const age = now - marker.timestamp;
     let updateNeeded = false;
 
-    if (marker.status === 'active' && age > 60 * 60 * 1000) {
-      await markersCollection.updateOne({ id: marker.id }, { $set: { status: 'stale' } });
+    if (marker.status === "active" && age > 60 * 60 * 1000) {
+      await markersCollection.updateOne({ id: marker.id }, { $set: { status: "stale" } });
       updateNeeded = true;
     }
 
-    if (marker.status === 'stale' && age > 80 * 60 * 1000) {
+    if (marker.status === "stale" && age > 80 * 60 * 1000) {
       await markersCollection.deleteOne({ id: marker.id });
       updateNeeded = true;
     }
@@ -165,8 +172,8 @@ setInterval(async () => {
 }, 30 * 1000);
 
 // ---------------------- Serve frontend ----------------------
-app.use(express.static(path.join(__dirname, '../build')));
+app.use(express.static(path.join(__dirname, "../build")));
 
 app.get(/^\/(?!markers).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../build/index.html'));
+  res.sendFile(path.join(__dirname, "../build/index.html"));
 });
