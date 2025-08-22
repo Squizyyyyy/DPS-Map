@@ -126,26 +126,27 @@ app.post("/auth/vk/start", (req, res) => {
   res.json({ url: `https://id.vk.com/authorize?${params.toString()}` });
 });
 
+// Обмен code + code_verifier на токен и сохранение пользователя
 app.post("/auth/vk/exchange", async (req, res) => {
   const { code, code_verifier } = req.body;
   if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
+    // ✅ Используем правильный endpoint VK для PKCE
+    const tokenResp = await fetch("https://oauth.vk.com/access_token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        grant_type: "authorization_code",
-        code,
         client_id: VK_APP_ID,
         client_secret: VK_CLIENT_SECRET,
         redirect_uri: VK_REDIRECT_URI,
+        code,
         code_verifier,
       }),
     });
 
-    const tokenText = await tokenResp.text(); // сначала текст
-    console.log("VK Token Response Text:", tokenText); // логируем ответ VK
+    const tokenText = await tokenResp.text();
+    console.log("VK Token Response Text:", tokenText);
 
     let tokenData;
     try {
