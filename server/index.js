@@ -117,7 +117,7 @@ app.post("/auth/vk/start", (req, res) => {
     client_id: VK_APP_ID,
     redirect_uri: VK_REDIRECT_URI,
     response_type: "code",
-    scope: "email",
+    scope: "openid,email", // ⚡ обязательно openid
     code_challenge,
     code_challenge_method: "S256",
   });
@@ -127,11 +127,12 @@ app.post("/auth/vk/start", (req, res) => {
 
 app.post("/auth/vk/exchange", async (req, res) => {
   const { code, code_verifier } = req.body;
-  if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
+  if (!code || !code_verifier)
+    return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    // ✅ Новый VK ID PKCE endpoint
-    const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
+    // ⚡ правильный endpoint VK ID PKCE
+    const tokenResp = await fetch("https://id.vk.com/oauth2/auth", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -159,11 +160,13 @@ app.post("/auth/vk/exchange", async (req, res) => {
       return res.status(400).json(tokenData);
     }
 
-    // ✅ Разбираем id_token (JWT), чтобы достать user_id (sub)
+    // ⚡ достаем user_id (sub) из id_token
     let userId = null;
     if (tokenData.id_token) {
       try {
-        const payload = JSON.parse(Buffer.from(tokenData.id_token.split(".")[1], "base64").toString());
+        const payload = JSON.parse(
+          Buffer.from(tokenData.id_token.split(".")[1], "base64").toString()
+        );
         userId = payload.sub;
       } catch (e) {
         console.error("Ошибка разбора id_token:", e);
@@ -183,11 +186,7 @@ app.post("/auth/vk/exchange", async (req, res) => {
 
     req.session.user = userObj;
 
-    await usersCollection.updateOne(
-      { id: userObj.id },
-      { $set: userObj },
-      { upsert: true }
-    );
+    await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
 
     res.json({ success: true, user: userObj });
   } catch (err) {
