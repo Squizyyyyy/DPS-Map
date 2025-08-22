@@ -100,7 +100,6 @@ function getClientIp(req) {
 
 // ---------------------- VK ID Authentication ----------------------
 const VK_APP_ID = process.env.VK_CLIENT_ID;
-const VK_CLIENT_SECRET = process.env.VK_CLIENT_SECRET;
 const VK_REDIRECT_URI = process.env.VK_REDIRECT_URI;
 
 // Middleware для защиты роутов
@@ -126,21 +125,20 @@ app.post("/auth/vk/start", (req, res) => {
   res.json({ url: `https://id.vk.com/authorize?${params.toString()}` });
 });
 
-// Обмен code + code_verifier на токен и сохранение пользователя
 app.post("/auth/vk/exchange", async (req, res) => {
   const { code, code_verifier } = req.body;
   if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    // ✅ Используем правильный endpoint VK для PKCE
-    const tokenResp = await fetch("https://oauth.vk.com/access_token", {
+    // ✅ PKCE endpoint без client_secret
+    const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        client_id: VK_APP_ID,
-        client_secret: VK_CLIENT_SECRET,
-        redirect_uri: VK_REDIRECT_URI,
+        grant_type: "authorization_code",
         code,
+        client_id: VK_APP_ID,
+        redirect_uri: VK_REDIRECT_URI,
         code_verifier,
       }),
     });
@@ -161,7 +159,6 @@ app.post("/auth/vk/exchange", async (req, res) => {
       return res.status(400).json(tokenData);
     }
 
-    // Получаем профиль пользователя
     const userResp = await fetch(
       `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
     );
