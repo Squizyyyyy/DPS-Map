@@ -105,13 +105,24 @@ function checkAuth(req, res, next) {
 
 // ---------------------- VK Routes ----------------------
 
-// Фронт получает code через VK ID SDK и шлёт сюда
-app.post("/auth/vk/exchange", async (req, res) => {
-  const { code } = req.body;
-  if (!code) return res.status(400).json({ error: "Нет кода авторизации" });
+// 1. Редиректим пользователя на VK ID
+app.get("/auth/vk", (req, res) => {
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: VK_APP_ID,
+    redirect_uri: VK_REDIRECT_URI,
+    scope: "email",
+  });
+
+  res.redirect(`https://id.vk.com/authorize?${params.toString()}`);
+});
+
+// 2. Callback от VK ID
+app.get("/auth/vk/callback", async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).send("Нет кода авторизации");
 
   try {
-    // новый endpoint VK ID OAuth 2.1
     const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -130,7 +141,7 @@ app.post("/auth/vk/exchange", async (req, res) => {
       return res.status(400).json(tokenData);
     }
 
-    // теперь получаем данные пользователя через VK API
+    // Получаем профиль пользователя
     const userResp = await fetch(
       `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100&access_token=${tokenData.access_token}&v=5.131`
     );
@@ -141,10 +152,11 @@ app.post("/auth/vk/exchange", async (req, res) => {
       info: userData.response ? userData.response[0] : {},
     };
 
-    res.json({ success: true, user: req.session.user });
+    // После успешного логина возвращаем на фронт
+    res.redirect("/");
   } catch (err) {
-    console.error("VK ID Exchange Error:", err);
-    res.status(500).json({ error: "Ошибка VK ID" });
+    console.error("VK ID Callback Error:", err);
+    res.status(500).send("Ошибка авторизации");
   }
 });
 
@@ -152,6 +164,13 @@ app.post("/auth/vk/exchange", async (req, res) => {
 app.get("/auth/status", (req, res) => {
   if (req.session.user) res.json({ authorized: true, user: req.session.user });
   else res.json({ authorized: false });
+});
+
+// Логаут
+app.post("/auth/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.json({ success: true });
+  });
 });
 
 // ---------------------- Marker Routes ----------------------
