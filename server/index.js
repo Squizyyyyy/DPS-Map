@@ -6,6 +6,7 @@ import { MongoClient } from "mongodb";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 import session from "express-session";
+import bodyParser from "body-parser";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ let actionsCollection;
 // ---------------------- Middlewares ----------------------
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "supersecret",
@@ -105,22 +107,27 @@ function checkAuth(req, res, next) {
 
 // ---------------------- VK Routes ----------------------
 
-// 1. Редиректим пользователя на VK ID
-app.get("/auth/vk", (req, res) => {
+// 1. Редиректим пользователя на VK ID (фронт генерирует code_challenge)
+app.post("/auth/vk/start", (req, res) => {
+  const { code_challenge } = req.body;
+  if (!code_challenge) return res.status(400).json({ error: "code_challenge отсутствует" });
+
   const params = new URLSearchParams({
-    response_type: "code",
     client_id: VK_APP_ID,
     redirect_uri: VK_REDIRECT_URI,
+    response_type: "code",
     scope: "email",
+    code_challenge,
+    code_challenge_method: "S256",
   });
 
-  res.redirect(`https://id.vk.com/authorize?${params.toString()}`);
+  res.json({ url: `https://id.vk.com/authorize?${params.toString()}` });
 });
 
 // 2. Callback от VK ID
-app.get("/auth/vk/callback", async (req, res) => {
-  const { code } = req.query;
-  if (!code) return res.status(400).send("Нет кода авторизации");
+app.post("/auth/vk/exchange", async (req, res) => {
+  const { code, code_verifier } = req.body;
+  if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
     const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
@@ -132,14 +139,12 @@ app.get("/auth/vk/callback", async (req, res) => {
         client_id: VK_APP_ID,
         client_secret: VK_CLIENT_SECRET,
         redirect_uri: VK_REDIRECT_URI,
+        code_verifier,
       }),
     });
 
     const tokenData = await tokenResp.json();
-    if (tokenData.error) {
-      console.error("VK Token Error:", tokenData);
-      return res.status(400).json(tokenData);
-    }
+    if (tokenData.error) return res.status(400).json(tokenData);
 
     // Получаем профиль пользователя
     const userResp = await fetch(
@@ -152,11 +157,10 @@ app.get("/auth/vk/callback", async (req, res) => {
       info: userData.response ? userData.response[0] : {},
     };
 
-    // После успешного логина возвращаем на фронт
-    res.redirect("/");
+    res.json({ success: true, user: req.session.user });
   } catch (err) {
-    console.error("VK ID Callback Error:", err);
-    res.status(500).send("Ошибка авторизации");
+    console.error("VK ID Exchange Error:", err);
+    res.status(500).json({ error: "Ошибка VK ID" });
   }
 });
 
