@@ -148,19 +148,27 @@ app.post("/auth/vk/exchange", async (req, res) => {
     });
 
     const tokenData = await tokenResp.json();
-    if (tokenData.error) return res.status(400).json(tokenData);
+    if (tokenData.error) {
+      console.error("VK Token Error:", tokenData);
+      return res.status(400).json(tokenData);
+    }
 
     // Получаем профиль пользователя
     const userResp = await fetch(
-      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100&access_token=${tokenData.access_token}&v=5.131`
+      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
     );
     const userData = await userResp.json();
+    if (!userData.response) {
+      console.error("VK User Error:", userData);
+      return res.status(400).json({ error: "Не удалось получить профиль VK" });
+    }
 
     const userObj = {
       id: tokenData.user_id,
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token || null,
-      info: userData.response ? userData.response[0] : {},
+      email: tokenData.email || "",
+      info: userData.response[0],
     };
 
     // Сохраняем пользователя в сессию

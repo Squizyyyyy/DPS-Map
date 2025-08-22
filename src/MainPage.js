@@ -41,7 +41,6 @@ export default function MainPage() {
         const code = urlParams.get("code");
 
         if (code) {
-          // PKCE code_verifier
           const codeVerifier = localStorage.getItem("vk_code_verifier");
           if (!codeVerifier) {
             console.error("Нет code_verifier в localStorage");
@@ -53,6 +52,7 @@ export default function MainPage() {
               body: JSON.stringify({ code, code_verifier: codeVerifier }),
             });
             const data = await res.json();
+
             if (data.success) {
               setIsAuthorized(true);
               setUser(data.user);
