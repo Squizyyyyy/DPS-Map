@@ -7,6 +7,7 @@ import fetch from "node-fetch";
 import dotenv from "dotenv";
 import session from "express-session";
 import bodyParser from "body-parser";
+import { v4 as uuidv4 } from "uuid"; // для генерации уникального id
 
 dotenv.config();
 
@@ -110,7 +111,7 @@ function checkAuth(req, res, next) {
 
 // ---------------------- VK Routes ----------------------
 
-// 1. Генерация редиректа с code_challenge (фронт шлёт code_challenge)
+// Генерация редиректа с code_challenge
 app.post("/auth/vk/start", (req, res) => {
   const { code_challenge } = req.body;
   if (!code_challenge) return res.status(400).json({ error: "code_challenge отсутствует" });
@@ -127,7 +128,7 @@ app.post("/auth/vk/start", (req, res) => {
   res.json({ url: `https://id.vk.com/authorize?${params.toString()}` });
 });
 
-// 2. Обмен code + code_verifier на токен и сохранение пользователя
+// Обмен code + code_verifier на токен и сохранение пользователя
 app.post("/auth/vk/exchange", async (req, res) => {
   const { code, code_verifier } = req.body;
   if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
@@ -163,8 +164,13 @@ app.post("/auth/vk/exchange", async (req, res) => {
       return res.status(400).json({ error: "Не удалось получить профиль VK" });
     }
 
+    // Генерируем уникальный internal ID для подписки (если новый пользователь)
+    let existingUser = await usersCollection.findOne({ id: tokenData.user_id });
+    let internalId = existingUser ? existingUser.internalId : uuidv4();
+
     const userObj = {
       id: tokenData.user_id,
+      internalId, // новый уникальный ID для подписки
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token || null,
       email: tokenData.email || "",

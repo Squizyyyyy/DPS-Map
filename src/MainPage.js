@@ -27,13 +27,14 @@ function generateCodeChallenge(codeVerifier) {
 }
 
 export default function MainPage() {
-  const [activeTab, setActiveTab] = useState("auth");
+  const [activeTab, setActiveTab] = useState("account");
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
+
   const isMapActive = activeTab === "map";
 
-  // ---------------------- Проверка сессии ----------------------
+  // ---------------------- Проверка сессии и VK авторизация ----------------------
   useEffect(() => {
     async function checkSession() {
       try {
@@ -42,9 +43,7 @@ export default function MainPage() {
 
         if (code) {
           const codeVerifier = localStorage.getItem("vk_code_verifier");
-          if (!codeVerifier) {
-            console.error("Нет code_verifier в localStorage");
-          } else {
+          if (codeVerifier) {
             const res = await fetch("/auth/vk/exchange", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -52,7 +51,6 @@ export default function MainPage() {
               body: JSON.stringify({ code, code_verifier: codeVerifier }),
             });
             const data = await res.json();
-
             if (data.success) {
               setIsAuthorized(true);
               setUser(data.user);
@@ -63,6 +61,8 @@ export default function MainPage() {
             } else {
               console.error("Ошибка обмена токена:", data);
             }
+          } else {
+            console.error("Нет code_verifier в localStorage");
           }
         }
 
@@ -75,12 +75,10 @@ export default function MainPage() {
           setActiveTab("account");
         } else {
           setIsAuthorized(false);
-          setActiveTab("auth");
         }
       } catch (err) {
         console.error("Ошибка проверки авторизации:", err);
         setIsAuthorized(false);
-        setActiveTab("auth");
       }
     }
 
@@ -107,7 +105,7 @@ export default function MainPage() {
     await fetch("/auth/logout", { credentials: "include", method: "POST" });
     setIsAuthorized(false);
     setUser(null);
-    setActiveTab("auth");
+    setActiveTab("account");
   };
 
   // ---------------------- UI ----------------------
@@ -155,38 +153,37 @@ export default function MainPage() {
         flexDirection: "column",
       }}
     >
-      {!isMapActive && (
-        <nav
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            backgroundColor: tabColors.active,
-          }}
-        >
-          {["account", "subscription", "map"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "12px 24px",
-                margin: "8px",
-                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
-                border: "none",
-                borderRadius: "4px",
-                color: tabColors.text,
-                cursor: "pointer",
-                fontWeight: activeTab === tab ? "bold" : "normal",
-                transition: "background-color 0.3s",
-              }}
-            >
-              {tab === "account" && "Аккаунт"}
-              {tab === "subscription" && "Подписка"}
-              {tab === "map" && "Карта"}
-            </button>
-          ))}
-        </nav>
-      )}
+      {/* Навигация по вкладкам */}
+      <nav
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          backgroundColor: tabColors.active,
+        }}
+      >
+        {["account", "subscription", "map"].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: "12px 24px",
+              margin: "8px",
+              backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+              border: "none",
+              borderRadius: "4px",
+              color: tabColors.text,
+              cursor: "pointer",
+              fontWeight: activeTab === tab ? "bold" : "normal",
+            }}
+          >
+            {tab === "account" && "Профиль"}
+            {tab === "subscription" && "Подписка"}
+            {tab === "map" && "Карта"}
+          </button>
+        ))}
+      </nav>
 
+      {/* Контент вкладки */}
       {isMapActive ? (
         hasSubscription ? (
           <MapView />
@@ -199,11 +196,10 @@ export default function MainPage() {
               justifyContent: "center",
               alignItems: "center",
               color: "#fff",
-              position: "relative",
             }}
           >
             <h2>Доступ к карте ограничен</h2>
-            <p>Чтобы использовать карту, необходимо оформить подписку.</p>
+            <p>Оформите подписку, чтобы использовать карту.</p>
             <button
               onClick={() => setActiveTab("subscription")}
               style={{
@@ -226,6 +222,7 @@ export default function MainPage() {
             <div>
               <h2>Добро пожаловать, {user?.info?.first_name}!</h2>
               <img src={user?.info?.photo_100} alt="avatar" />
+              <p>ID пользователя: {user?.id}</p>
               <p>Email: {user?.email || "не указан"}</p>
               <button
                 onClick={handleLogout}
