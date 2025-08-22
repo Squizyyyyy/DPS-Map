@@ -7,7 +7,7 @@ import fetch from "node-fetch";
 import dotenv from "dotenv";
 import session from "express-session";
 import bodyParser from "body-parser";
-import { v4 as uuidv4 } from "uuid"; // для генерации уникального id
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -110,8 +110,6 @@ function checkAuth(req, res, next) {
 }
 
 // ---------------------- VK Routes ----------------------
-
-// Генерация редиректа с code_challenge
 app.post("/auth/vk/start", (req, res) => {
   const { code_challenge } = req.body;
   if (!code_challenge) return res.status(400).json({ error: "code_challenge отсутствует" });
@@ -128,13 +126,11 @@ app.post("/auth/vk/start", (req, res) => {
   res.json({ url: `https://id.vk.com/authorize?${params.toString()}` });
 });
 
-// Обмен code + code_verifier на токен и сохранение пользователя
 app.post("/auth/vk/exchange", async (req, res) => {
   const { code, code_verifier } = req.body;
   if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    // Обмен кода на access_token
     const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -148,8 +144,16 @@ app.post("/auth/vk/exchange", async (req, res) => {
       }),
     });
 
-    const tokenData = await tokenResp.json();
-    console.log("Token Data:", tokenData); // <- добавлено логирование
+    const tokenText = await tokenResp.text(); // сначала текст
+    console.log("VK Token Response Text:", tokenText); // логируем ответ VK
+
+    let tokenData;
+    try {
+      tokenData = JSON.parse(tokenText);
+    } catch (e) {
+      console.error("VK Token Parse Error:", e);
+      return res.status(500).json({ error: "Не удалось распарсить ответ VK", raw: tokenText });
+    }
 
     if (tokenData.error) {
       console.error("VK Token Error:", tokenData);
@@ -161,30 +165,27 @@ app.post("/auth/vk/exchange", async (req, res) => {
       `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
     );
     const userData = await userResp.json();
-    console.log("User Data:", userData); // <- добавлено логирование
+    console.log("User Data:", userData);
 
     if (!userData.response) {
       console.error("VK User Error:", userData);
       return res.status(400).json({ error: "Не удалось получить профиль VK" });
     }
 
-    // Генерируем уникальный internal ID для подписки (если новый пользователь)
     let existingUser = await usersCollection.findOne({ id: tokenData.user_id });
     let internalId = existingUser ? existingUser.internalId : uuidv4();
 
     const userObj = {
       id: tokenData.user_id,
-      internalId, // новый уникальный ID для подписки
+      internalId,
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token || null,
       email: tokenData.email || "",
       info: userData.response[0],
     };
 
-    // Сохраняем пользователя в сессию
     req.session.user = userObj;
 
-    // Сохраняем/обновляем пользователя в базе
     await usersCollection.updateOne(
       { id: userObj.id },
       { $set: userObj },
@@ -198,13 +199,12 @@ app.post("/auth/vk/exchange", async (req, res) => {
   }
 });
 
-// Проверка авторизации
+// ---------------------- Auth Status / Logout ----------------------
 app.get("/auth/status", (req, res) => {
   if (req.session.user) res.json({ authorized: true, user: req.session.user });
   else res.json({ authorized: false });
 });
 
-// Логаут
 app.post("/auth/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ success: true });
