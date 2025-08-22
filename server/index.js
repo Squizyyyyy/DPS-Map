@@ -94,6 +94,7 @@ function getClientIp(req) {
 
 // ---------------------- VK ID Authentication ----------------------
 const VK_APP_ID = process.env.VK_CLIENT_ID;
+const VK_CLIENT_SECRET = process.env.VK_CLIENT_SECRET;
 const VK_REDIRECT_URI = process.env.VK_REDIRECT_URI;
 
 // Middleware для защиты роутов
@@ -104,38 +105,40 @@ function checkAuth(req, res, next) {
 
 // ---------------------- VK Routes ----------------------
 
-// Редирект на VK для авторизации с display=page
-app.get("/auth/vk", (req, res) => {
-  if (!VK_APP_ID || !VK_REDIRECT_URI) {
-    return res.status(500).send("VK_CLIENT_ID или VK_REDIRECT_URI не настроены в .env");
-  }
-
-  const url = `https://oauth.vk.com/authorize?client_id=${VK_APP_ID}&display=page&redirect_uri=${encodeURIComponent(VK_REDIRECT_URI)}&response_type=code&scope=email`;
-  res.redirect(url);
-});
-
-// Роут для обмена кода на токен и сохранения пользователя в сессии
+// Фронт получает code через VK ID SDK и шлёт сюда
 app.post("/auth/vk/exchange", async (req, res) => {
   const { code } = req.body;
   if (!code) return res.status(400).json({ error: "Нет кода авторизации" });
 
   try {
-    const tokenResp = await fetch(
-      `https://oauth.vk.com/access_token?client_id=${VK_APP_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${encodeURIComponent(VK_REDIRECT_URI)}&code=${code}`
-    );
+    // новый endpoint VK ID OAuth 2.1
+    const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        client_id: VK_APP_ID,
+        client_secret: VK_CLIENT_SECRET,
+        redirect_uri: VK_REDIRECT_URI,
+      }),
+    });
+
     const tokenData = await tokenResp.json();
+    if (tokenData.error) {
+      console.error("VK Token Error:", tokenData);
+      return res.status(400).json(tokenData);
+    }
 
-    if (tokenData.error) return res.status(400).json(tokenData);
-
+    // теперь получаем данные пользователя через VK API
     const userResp = await fetch(
-      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
+      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100&access_token=${tokenData.access_token}&v=5.131`
     );
     const userData = await userResp.json();
 
     req.session.user = {
       id: tokenData.user_id,
-      email: tokenData.email,
-      info: userData.response[0],
+      info: userData.response ? userData.response[0] : {},
     };
 
     res.json({ success: true, user: req.session.user });

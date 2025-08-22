@@ -10,16 +10,13 @@ const tabColors = {
 
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState("auth");
-  const [backBtnHover, setBackBtnHover] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [user, setUser] = useState(null);
 
   const isMapActive = activeTab === "map";
 
-  const VK_CLIENT_ID = process.env.REACT_APP_VK_CLIENT_ID; // должен быть в .env
-  const VK_REDIRECT_URI = process.env.REACT_APP_VK_REDIRECT_URI; // тот же, что на сервере
-
-  // Проверка авторизации через сессию
+  // Проверяем сессию при загрузке
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -27,6 +24,7 @@ export default function MainPage() {
         const data = await res.json();
         if (data.authorized) {
           setIsAuthorized(true);
+          setUser(data.user);
           setActiveTab("account");
         } else {
           setIsAuthorized(false);
@@ -41,10 +39,17 @@ export default function MainPage() {
     checkAuth();
   }, []);
 
-  // Обработчик кнопки "Войти через VK"
+  // Кнопка входа через VK ID
   const handleVKLogin = () => {
-    // редирект на серверный роут, который потом редиректит на VK
-    window.location.href = "/auth/vk";
+    window.location.href = "/auth/vk"; // сервер редиректит в VK
+  };
+
+  // Кнопка выхода
+  const handleLogout = async () => {
+    await fetch("/auth/logout", { credentials: "include" });
+    setIsAuthorized(false);
+    setUser(null);
+    setActiveTab("auth");
   };
 
   if (!isAuthorized) {
@@ -61,7 +66,7 @@ export default function MainPage() {
         }}
       >
         <h2>Авторизация</h2>
-        <p>Чтобы пользоваться сайтом, войдите через VK.</p>
+        <p>Чтобы пользоваться сайтом, войдите через VK ID.</p>
         <button
           onClick={handleVKLogin}
           style={{
@@ -81,7 +86,7 @@ export default function MainPage() {
     );
   }
 
-  // Основной UI после авторизации
+  // Основной UI после входа
   return (
     <div
       style={{
@@ -160,7 +165,27 @@ export default function MainPage() {
         )
       ) : (
         <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
-          {activeTab === "account" && <div>Аккаунт</div>}
+          {activeTab === "account" && (
+            <div>
+              <h2>Добро пожаловать, {user?.info?.first_name}!</h2>
+              <img src={user?.info?.photo_100} alt="avatar" />
+              <p>Email: {user?.email || "не указан"}</p>
+              <button
+                onClick={handleLogout}
+                style={{
+                  marginTop: "16px",
+                  padding: "10px 20px",
+                  backgroundColor: "#d9534f",
+                  border: "none",
+                  borderRadius: "4px",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Выйти
+              </button>
+            </div>
+          )}
           {activeTab === "subscription" && <div>Подписка</div>}
         </main>
       )}
