@@ -149,6 +149,8 @@ app.post("/auth/vk/exchange", async (req, res) => {
     });
 
     const tokenData = await tokenResp.json();
+    console.log("Token Data:", tokenData); // <- добавлено логирование
+
     if (tokenData.error) {
       console.error("VK Token Error:", tokenData);
       return res.status(400).json(tokenData);
@@ -159,6 +161,8 @@ app.post("/auth/vk/exchange", async (req, res) => {
       `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
     );
     const userData = await userResp.json();
+    console.log("User Data:", userData); // <- добавлено логирование
+
     if (!userData.response) {
       console.error("VK User Error:", userData);
       return res.status(400).json({ error: "Не удалось получить профиль VK" });
