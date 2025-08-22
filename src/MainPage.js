@@ -10,14 +10,15 @@ const tabColors = {
   text: "#fff",
 };
 
-// Генерация случайной строки для code_verifier
+// ---------------------- PKCE ----------------------
 function generateCodeVerifier() {
   const array = new Uint32Array(56);
   window.crypto.getRandomValues(array);
-  return Array.from(array, dec => ("0" + (dec % 256).toString(16)).slice(-2)).join("");
+  return Array.from(array, (dec) =>
+    ("0" + (dec % 256).toString(16)).slice(-2)
+  ).join("");
 }
 
-// Генерация code_challenge из code_verifier
 function generateCodeChallenge(codeVerifier) {
   const hash = sha256(codeVerifier);
   return Base64.stringify(hash)
@@ -31,6 +32,7 @@ export default function MainPage() {
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
 
   const isMapActive = activeTab === "map";
 
@@ -40,6 +42,14 @@ export default function MainPage() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
+        const errorParam = urlParams.get("error");
+
+        if (errorParam) {
+          console.error("Ошибка от VK:", errorParam);
+          setError("Ошибка авторизации через VK");
+          window.history.replaceState({}, document.title, "/");
+          return;
+        }
 
         if (code) {
           const codeVerifier = localStorage.getItem("vk_code_verifier");
@@ -61,11 +71,12 @@ export default function MainPage() {
               window.history.replaceState({}, document.title, "/");
               return;
             } else {
-              // Логируем весь объект ошибки, чтобы видеть, что вернул сервер
-              console.error("Ошибка обмена токена детально:", data);
+              console.error("Ошибка обмена токена:", data);
+              setError("Не удалось авторизоваться через VK");
             }
           } else {
             console.error("Нет code_verifier в localStorage");
+            setError("Отсутствует code_verifier");
           }
         }
 
@@ -81,6 +92,7 @@ export default function MainPage() {
         }
       } catch (err) {
         console.error("Ошибка проверки авторизации:", err);
+        setError("Ошибка проверки авторизации");
         setIsAuthorized(false);
       }
     }
@@ -90,17 +102,27 @@ export default function MainPage() {
 
   // ---------------------- VK Login ----------------------
   const handleVKLogin = async () => {
-    const codeVerifier = generateCodeVerifier();
-    const codeChallenge = generateCodeChallenge(codeVerifier);
-    localStorage.setItem("vk_code_verifier", codeVerifier);
+    try {
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = generateCodeChallenge(codeVerifier);
+      localStorage.setItem("vk_code_verifier", codeVerifier);
 
-    const res = await fetch("/auth/vk/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code_challenge: codeChallenge }),
-    });
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
+      const res = await fetch("/auth/vk/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code_challenge: codeChallenge }),
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError("Не удалось получить ссылку на VK авторизацию");
+      }
+    } catch (err) {
+      console.error("Ошибка VK Login:", err);
+      setError("Ошибка инициализации VK авторизации");
+    }
   };
 
   // ---------------------- Logout ----------------------
@@ -127,6 +149,7 @@ export default function MainPage() {
       >
         <h2>Авторизация</h2>
         <p>Чтобы пользоваться сайтом, войдите через VK ID.</p>
+        {error && <p style={{ color: "red" }}>{error}</p>}
         <button
           onClick={handleVKLogin}
           style={{
@@ -163,14 +186,15 @@ export default function MainPage() {
           backgroundColor: tabColors.active,
         }}
       >
-        {["account", "subscription", "map"].map(tab => (
+        {["account", "subscription", "map"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{
               padding: "12px 24px",
               margin: "8px",
-              backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+              backgroundColor:
+                activeTab === tab ? tabColors.inactive : tabColors.active,
               border: "none",
               borderRadius: "4px",
               color: tabColors.text,
@@ -221,9 +245,11 @@ export default function MainPage() {
         <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
           {activeTab === "account" && (
             <div>
-              <h2>Добро пожаловать, {user?.info?.first_name}!</h2>
-              <img src={user?.info?.photo_100} alt="avatar" />
-              <p>ID пользователя: {user?.id}</p>
+              <h2>Добро пожаловать, {user?.info?.first_name || "гость"}!</h2>
+              {user?.info?.photo_100 && (
+                <img src={user.info.photo_100} alt="avatar" />
+              )}
+              <p>ID пользователя: {user?.id || "—"}</p>
               <p>Email: {user?.email || "не указан"}</p>
               <button
                 onClick={handleLogout}

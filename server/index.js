@@ -130,7 +130,7 @@ app.post("/auth/vk/exchange", async (req, res) => {
   if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    // ✅ PKCE endpoint без client_secret
+    // ✅ Новый VK ID PKCE endpoint
     const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -159,27 +159,26 @@ app.post("/auth/vk/exchange", async (req, res) => {
       return res.status(400).json(tokenData);
     }
 
-    const userResp = await fetch(
-      `https://api.vk.com/method/users.get?user_ids=${tokenData.user_id}&fields=photo_100,email&access_token=${tokenData.access_token}&v=5.131`
-    );
-    const userData = await userResp.json();
-    console.log("User Data:", userData);
-
-    if (!userData.response) {
-      console.error("VK User Error:", userData);
-      return res.status(400).json({ error: "Не удалось получить профиль VK" });
+    // ✅ Разбираем id_token (JWT), чтобы достать user_id (sub)
+    let userId = null;
+    if (tokenData.id_token) {
+      try {
+        const payload = JSON.parse(Buffer.from(tokenData.id_token.split(".")[1], "base64").toString());
+        userId = payload.sub;
+      } catch (e) {
+        console.error("Ошибка разбора id_token:", e);
+      }
     }
 
-    let existingUser = await usersCollection.findOne({ id: tokenData.user_id });
-    let internalId = existingUser ? existingUser.internalId : uuidv4();
+    if (!userId) {
+      return res.status(400).json({ error: "Не удалось получить user_id из VK ID" });
+    }
 
     const userObj = {
-      id: tokenData.user_id,
-      internalId,
+      id: userId,
+      internalId: uuidv4(),
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token || null,
-      email: tokenData.email || "",
-      info: userData.response[0],
     };
 
     req.session.user = userObj;
