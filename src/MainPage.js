@@ -50,16 +50,19 @@ export default function MainPage() {
               credentials: "include",
               body: JSON.stringify({ code, code_verifier: codeVerifier }),
             });
+
             const data = await res.json();
-            if (data.success) {
+
+            if (res.ok && data.success) {
               setIsAuthorized(true);
               setUser(data.user);
               setActiveTab("account");
               localStorage.removeItem("vk_code_verifier");
-              window.history.replaceState({}, document.title, "/"); // очистка query params
+              window.history.replaceState({}, document.title, "/");
               return;
             } else {
-              console.error("Ошибка обмена токена:", data);
+              // Логируем весь объект ошибки, чтобы видеть, что вернул сервер
+              console.error("Ошибка обмена токена детально:", data);
             }
           } else {
             console.error("Нет code_verifier в localStorage");
@@ -153,7 +156,6 @@ export default function MainPage() {
         flexDirection: "column",
       }}
     >
-      {/* Навигация по вкладкам */}
       <nav
         style={{
           display: "flex",
@@ -183,7 +185,6 @@ export default function MainPage() {
         ))}
       </nav>
 
-      {/* Контент вкладки */}
       {isMapActive ? (
         hasSubscription ? (
           <MapView />
