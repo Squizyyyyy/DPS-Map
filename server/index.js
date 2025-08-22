@@ -21,6 +21,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const client = new MongoClient(MONGO_URI);
 let markersCollection;
 let actionsCollection;
+let usersCollection;
 
 // ---------------------- Middlewares ----------------------
 app.use(cors({ origin: true, credentials: true }));
@@ -41,8 +42,10 @@ async function startServer() {
     const db = client.db("dps-map");
     markersCollection = db.collection("markers");
     actionsCollection = db.collection("actions");
+    usersCollection = db.collection("users");
 
     await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
+    await usersCollection.createIndex({ id: 1 }, { unique: true });
 
     console.log("✅ Подключено к MongoDB");
 
@@ -107,7 +110,7 @@ function checkAuth(req, res, next) {
 
 // ---------------------- VK Routes ----------------------
 
-// 1. Редиректим пользователя на VK ID (фронт генерирует code_challenge)
+// 1. Генерация редиректа с code_challenge (фронт шлёт code_challenge)
 app.post("/auth/vk/start", (req, res) => {
   const { code_challenge } = req.body;
   if (!code_challenge) return res.status(400).json({ error: "code_challenge отсутствует" });
@@ -124,12 +127,13 @@ app.post("/auth/vk/start", (req, res) => {
   res.json({ url: `https://id.vk.com/authorize?${params.toString()}` });
 });
 
-// 2. Callback от VK ID
+// 2. Обмен code + code_verifier на токен и сохранение пользователя
 app.post("/auth/vk/exchange", async (req, res) => {
   const { code, code_verifier } = req.body;
   if (!code || !code_verifier) return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
+    // Обмен кода на access_token
     const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -152,12 +156,24 @@ app.post("/auth/vk/exchange", async (req, res) => {
     );
     const userData = await userResp.json();
 
-    req.session.user = {
+    const userObj = {
       id: tokenData.user_id,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token || null,
       info: userData.response ? userData.response[0] : {},
     };
 
-    res.json({ success: true, user: req.session.user });
+    // Сохраняем пользователя в сессию
+    req.session.user = userObj;
+
+    // Сохраняем/обновляем пользователя в базе
+    await usersCollection.updateOne(
+      { id: userObj.id },
+      { $set: userObj },
+      { upsert: true }
+    );
+
+    res.json({ success: true, user: userObj });
   } catch (err) {
     console.error("VK ID Exchange Error:", err);
     res.status(500).json({ error: "Ошибка VK ID" });

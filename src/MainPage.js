@@ -31,53 +31,47 @@ export default function MainPage() {
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
-
   const isMapActive = activeTab === "map";
 
-  // Проверка сессии и обмен code на токен при редиректе с VK
+  // ---------------------- Проверка сессии ----------------------
   useEffect(() => {
-    async function checkAuth() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get("code");
-
-      if (code) {
-        const codeVerifier = localStorage.getItem("vk_code_verifier");
-        if (!codeVerifier) {
-          console.error("Нет code_verifier в localStorage");
-          return;
-        }
-
-        try {
-          const res = await fetch("/auth/vk/exchange", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ code, code_verifier: codeVerifier }),
-          });
-
-          const data = await res.json();
-          if (data.success) {
-            setIsAuthorized(true);
-            setUser(data.user);
-            setActiveTab("account");
-            localStorage.removeItem("vk_code_verifier");
-            window.history.replaceState({}, document.title, "/"); // очистка query params
-            return;
-          } else {
-            console.error("Ошибка обмена токена:", data);
-          }
-        } catch (err) {
-          console.error("Ошибка VK ID Exchange:", err);
-        }
-      }
-
-      // обычная проверка сессии
+    async function checkSession() {
       try {
-        const res = await fetch("/auth/status", { credentials: "include" });
-        const data = await res.json();
-        if (data.authorized) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+
+        if (code) {
+          // PKCE code_verifier
+          const codeVerifier = localStorage.getItem("vk_code_verifier");
+          if (!codeVerifier) {
+            console.error("Нет code_verifier в localStorage");
+          } else {
+            const res = await fetch("/auth/vk/exchange", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ code, code_verifier: codeVerifier }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              setIsAuthorized(true);
+              setUser(data.user);
+              setActiveTab("account");
+              localStorage.removeItem("vk_code_verifier");
+              window.history.replaceState({}, document.title, "/"); // очистка query params
+              return;
+            } else {
+              console.error("Ошибка обмена токена:", data);
+            }
+          }
+        }
+
+        // Проверка текущей сессии
+        const statusRes = await fetch("/auth/status", { credentials: "include" });
+        const statusData = await statusRes.json();
+        if (statusData.authorized) {
           setIsAuthorized(true);
-          setUser(data.user);
+          setUser(statusData.user);
           setActiveTab("account");
         } else {
           setIsAuthorized(false);
@@ -90,16 +84,15 @@ export default function MainPage() {
       }
     }
 
-    checkAuth();
+    checkSession();
   }, []);
 
-  // Кнопка входа через VK
+  // ---------------------- VK Login ----------------------
   const handleVKLogin = async () => {
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = generateCodeChallenge(codeVerifier);
     localStorage.setItem("vk_code_verifier", codeVerifier);
 
-    // получаем URL для редиректа с сервера
     const res = await fetch("/auth/vk/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -109,7 +102,7 @@ export default function MainPage() {
     if (data.url) window.location.href = data.url;
   };
 
-  // Кнопка выхода
+  // ---------------------- Logout ----------------------
   const handleLogout = async () => {
     await fetch("/auth/logout", { credentials: "include", method: "POST" });
     setIsAuthorized(false);
@@ -117,6 +110,7 @@ export default function MainPage() {
     setActiveTab("auth");
   };
 
+  // ---------------------- UI ----------------------
   if (!isAuthorized) {
     return (
       <div
@@ -176,8 +170,7 @@ export default function MainPage() {
               style={{
                 padding: "12px 24px",
                 margin: "8px",
-                backgroundColor:
-                  activeTab === tab ? tabColors.inactive : tabColors.active,
+                backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
                 border: "none",
                 borderRadius: "4px",
                 color: tabColors.text,
