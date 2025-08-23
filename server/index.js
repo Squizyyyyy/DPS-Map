@@ -134,6 +134,7 @@ app.post("/auth/vk/exchange", async (req, res) => {
     // ✅ PKCE VK: используем GET к oauth.vk.com
     const params = new URLSearchParams({
       client_id: VK_APP_ID,
+	  client_secret: process.env.VK_CLIENT_SECRET,
       redirect_uri: VK_REDIRECT_URI,
       code,
       code_verifier,
