@@ -32,7 +32,7 @@ export default function MainPage() {
       }
     }
 
-    function initVKID() {
+    async function initVKID() {
       if (!vkContainerRef.current) return;
 
       const VKID = window.VKIDSDK;
@@ -55,14 +55,31 @@ export default function MainPage() {
       })
       .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload) => {
         try {
+          // Обмен кода на токен через VKID SDK
           const data = await VKID.Auth.exchangeCode(payload.code, payload.device_id);
-          if (data && data.user) {
-            setUser(data.user);
+
+          if (!data || !data.user) {
+            setError("Не удалось авторизоваться через VK");
+            return;
+          }
+
+          // ---------------------- Отправка на сервер для сохранения сессии ----------------------
+          const response = await fetch("/auth/vkid", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", // Важно для сохранения сессии
+            body: JSON.stringify({ user: data.user }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            setUser(result.user);
             setIsAuthorized(true);
             setActiveTab("account");
             setError(null);
           } else {
-            setError("Не удалось авторизоваться через VK");
+            setError("Не удалось авторизоваться через VK (сервер)");
           }
         } catch (err) {
           console.error("VKID Exchange Error:", err);
