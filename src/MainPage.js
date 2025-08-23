@@ -29,7 +29,7 @@ export default function MainPage() {
         if (data.authorized) {
           setUser(data.user);
           setIsAuthorized(true);
-          setHasSubscription(!!data.user.subscription?.expires && data.user.subscription.expires > Date.now());
+          setHasSubscription(!!data.user.subscription?.expiresAt && data.user.subscription.expiresAt > Date.now());
           setError(null);
         }
       } catch (e) {
@@ -196,7 +196,7 @@ export default function MainPage() {
     }
   };
 
-  // ---- Автообновление токена каждые 1 минуту (проверяем expiry) ----
+  // ---- Автообновление токена каждые 1 минуту ----
   useEffect(() => {
     if (!isAuthorized) return;
     const interval = setInterval(refreshTokenIfNeeded, 60000); // 1 минута
@@ -284,7 +284,42 @@ export default function MainPage() {
 
       {isMapActive ? (
         hasSubscription ? (
-          <MapView />
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 9999,
+            }}
+          >
+            <MapView />
+            <button
+              onClick={() => setActiveTab("account")}
+              style={{
+                position: "absolute",
+                top: 16,
+                left: 16,
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: "none",
+                backgroundColor: "#fff",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                fontSize: 20,
+                fontWeight: "bold",
+                transition: "background-color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f4f4")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
+            >
+              ←
+            </button>
+          </div>
         ) : (
           <div
             style={{
@@ -348,7 +383,7 @@ export default function MainPage() {
             </div>
           )}
           {activeTab === "subscription" && (
-            <div> 
+            <div>
               <h2>Подписка</h2>
               <button
                 onClick={handleBuySubscription}
