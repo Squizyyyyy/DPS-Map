@@ -133,8 +133,8 @@ app.post("/auth/vk/exchange", async (req, res) => {
     return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    // ✅ правильный endpoint для обмена кода на токен
-    const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
+    // ✅ Исправленный endpoint PKCE для обмена кода на токен
+    const tokenResp = await fetch("https://id.vk.com/oauth2/access_token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -162,7 +162,6 @@ app.post("/auth/vk/exchange", async (req, res) => {
       return res.status(400).json(tokenData);
     }
 
-    // ⚡ достаем user_id (sub) из id_token
     let userId = null;
     if (tokenData.id_token) {
       try {
@@ -175,9 +174,7 @@ app.post("/auth/vk/exchange", async (req, res) => {
       }
     }
 
-    if (!userId) {
-      return res.status(400).json({ error: "Не удалось получить user_id из VK ID" });
-    }
+    if (!userId) return res.status(400).json({ error: "Не удалось получить user_id из VK ID" });
 
     const userObj = {
       id: userId,
@@ -187,7 +184,6 @@ app.post("/auth/vk/exchange", async (req, res) => {
     };
 
     req.session.user = userObj;
-
     await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
 
     res.json({ success: true, user: userObj });
