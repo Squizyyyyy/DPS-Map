@@ -18,6 +18,23 @@ export default function MainPage() {
   const vkContainerRef = useRef(null);
   const isMapActive = activeTab === "map";
 
+  // ---- Проверяем сессию при загрузке (если уже логинился ранее) ----
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/auth/status", { credentials: "include" });
+        const data = await res.json();
+        if (data.authorized) {
+          setUser(data.user);
+          setIsAuthorized(true);
+          setError(null);
+        }
+      } catch (e) {
+        console.error("Auth status error:", e);
+      }
+    })();
+  }, []);
+
   // ---------------------- Инициализация VKID ----------------------
   useEffect(() => {
     async function loadVKIDScript() {
@@ -25,74 +42,94 @@ export default function MainPage() {
         initVKID();
       } else {
         const script = document.createElement("script");
-        script.src = "https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js";
+        // важно: убрать "<" из версии пакета
+        script.src = "https://unpkg.com/@vkid/sdk@3.0.0/dist-sdk/umd/index.js";
         script.async = true;
         script.onload = initVKID;
+        script.onerror = () => setError("Не удалось загрузить SDK VKID");
         document.body.appendChild(script);
       }
     }
 
     async function initVKID() {
-      if (!vkContainerRef.current) return;
+      if (!vkContainerRef.current || !window.VKIDSDK) return;
 
       const VKID = window.VKIDSDK;
+
       VKID.Config.init({
         app: 54066340,
-        redirectUrl: window.location.origin,
+        redirectUrl: window.location.origin, // держим на том же домене, где сервер
         responseMode: VKID.ConfigResponseMode.Callback,
         source: VKID.ConfigSource.LOWCODE,
-        scope: "",
+        scope: "email", // просим хотя бы email, чтобы пришли базовые данные
       });
 
+      // Вариант 1: кнопка OneTap (можешь заменить на FloatingOneTap или OAuthList — см. ниже)
       const oneTap = new VKID.OneTap();
-      oneTap.render({
-        container: vkContainerRef.current,
-        showAlternativeLogin: true,
-      })
-      .on(VKID.WidgetEvents.ERROR, (err) => {
-        console.error("VKID Error:", err);
-        setError("Ошибка авторизации через VK");
-      })
-      .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload) => {
-        try {
-          // Обмен кода на токен через VKID SDK
-          const data = await VKID.Auth.exchangeCode(payload.code, payload.device_id);
+      oneTap
+        .render({
+          container: vkContainerRef.current,
+          showAlternativeLogin: true,
+        })
+        .on(VKID.WidgetEvents.ERROR, (err) => {
+          console.error("VKID Widget Error:", err);
+          setError("Ошибка авторизации через VK");
+        })
+        .on(
+          VKID.OneTapInternalEvents.LOGIN_SUCCESS,
+          async (payload) => {
+            try {
+              // Шаг 1: меняем code + device_id на токен/данные
+              const data = await VKID.Auth.exchangeCode(
+                payload.code,
+                payload.device_id
+              );
 
-          if (!data || !data.user) {
-            setError("Не удалось авторизоваться через VK");
-            return;
+              if (!data) {
+                setError("Не удалось авторизоваться через VK (пустой ответ)");
+                return;
+              }
+
+              // data может НЕ содержать полностью user (зависит от scope и настроек)
+              // поэтому отправляем на сервер всё, что есть: access_token и user (если есть)
+              const response = await fetch("/auth/vkid", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                  access_token: data.access_token || null,
+                  user: data.user || null,     // может быть null — сервер сам допросит VK API
+                  email: data.email || null,   // иногда приходит отдельно
+                }),
+              });
+
+              const result = await response.json();
+              if (result.success) {
+                setUser(result.user);
+                setIsAuthorized(true);
+                setActiveTab("account");
+                setError(null);
+              } else {
+                setError(result.error || "Не удалось авторизоваться через VK (сервер)");
+              }
+            } catch (err) {
+              console.error("VKID Exchange Error:", err);
+              setError("Ошибка обмена токена через VKID");
+            }
           }
-
-          // ---------------------- Отправка на сервер для сохранения сессии ----------------------
-          const response = await fetch("/auth/vkid", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include", // Важно для сохранения сессии
-            body: JSON.stringify({ user: data.user }),
-          });
-
-          const result = await response.json();
-
-          if (result.success) {
-            setUser(result.user);
-            setIsAuthorized(true);
-            setActiveTab("account");
-            setError(null);
-          } else {
-            setError("Не удалось авторизоваться через VK (сервер)");
-          }
-        } catch (err) {
-          console.error("VKID Exchange Error:", err);
-          setError("Ошибка обмена токена через VKID");
-        }
-      });
+        );
     }
 
     loadVKIDScript();
   }, []);
 
   // ---------------------- Logout ----------------------
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch("/auth/logout", { method: "POST", credentials: "include" });
+    } catch (e) {
+      // игнорируем сетевую ошибку, локально чистим состояние
+    }
     setIsAuthorized(false);
     setUser(null);
     setActiveTab("account");
@@ -110,12 +147,28 @@ export default function MainPage() {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          padding: 16,
+          textAlign: "center",
         }}
       >
         <h2>Авторизация</h2>
         <p>Чтобы пользоваться сайтом, войдите через VK ID.</p>
         {error && <p style={{ color: "red" }}>{error}</p>}
         <div ref={vkContainerRef} style={{ marginTop: "16px" }} />
+        {/* --- Если захочешь «шторку» вместо OneTap, раскомментируй блок ниже и закомментируй OneTap выше:
+        
+        // const floatingOneTap = new VKID.FloatingOneTap();
+        // floatingOneTap.render({ appName: "DPS Map", showAlternativeLogin: true })
+        //   .on(VKID.WidgetEvents.ERROR, (err) => setError("Ошибка авторизации через VK"))
+        //   .on(VKID.FloatingOneTapInternalEvents.LOGIN_SUCCESS, async (payload) => { ... такой же код обмена и POST на /auth/vkid ...; floatingOneTap.close(); });
+
+        // Или «3-в-1» (OAuthList):
+        // const oAuth = new VKID.OAuthList();
+        // oAuth.render({ container: vkContainerRef.current, oauthList: ["vkid"] })
+        //   .on(VKID.WidgetEvents.ERROR, (err) => setError("Ошибка авторизации через VK"))
+        //   .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, async (payload) => { ... такой же код обмена и POST на /auth/vkid ... });
+        
+        */}
       </div>
     );
   }
@@ -144,7 +197,8 @@ export default function MainPage() {
             style={{
               padding: "12px 24px",
               margin: "8px",
-              backgroundColor: activeTab === tab ? tabColors.inactive : tabColors.active,
+              backgroundColor:
+                activeTab === tab ? tabColors.inactive : tabColors.active,
               border: "none",
               borderRadius: "4px",
               color: tabColors.text,
@@ -171,6 +225,8 @@ export default function MainPage() {
               justifyContent: "center",
               alignItems: "center",
               color: "#fff",
+              padding: 16,
+              textAlign: "center",
             }}
           >
             <h2>Доступ к карте ограничен</h2>
@@ -197,7 +253,11 @@ export default function MainPage() {
             <div>
               <h2>Добро пожаловать, {user?.info?.first_name || "гость"}!</h2>
               {user?.info?.photo_100 && (
-                <img src={user.info.photo_100} alt="avatar" />
+                <img
+                  src={user.info.photo_100}
+                  alt="avatar"
+                  style={{ width: 100, height: 100, borderRadius: "50%" }}
+                />
               )}
               <p>ID пользователя: {user?.id || "—"}</p>
               <p>Email: {user?.email || "не указан"}</p>

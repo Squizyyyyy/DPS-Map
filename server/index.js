@@ -24,6 +24,7 @@ let actionsCollection;
 let usersCollection;
 
 // ---------------------- Middlewares ----------------------
+app.set("trust proxy", 1); // если за прокси/на хостинге — нужно для корректной работы cookie
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,6 +33,12 @@ app.use(
     secret: process.env.SESSION_SECRET || "supersecret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      // если фронт и бэк на одном домене по http — можно оставить по умолчанию
+      // если на https и разные домены — понадобится sameSite: 'none', secure: true
+      // sameSite: "none",
+      // secure: true,
+    },
   })
 );
 
@@ -97,6 +104,27 @@ function getClientIp(req) {
   return xForwardedFor ? xForwardedFor.split(",")[0].trim() : req.socket.remoteAddress;
 }
 
+// ---- Запрашиваем профиль у VK по access_token, если user не пришел полностью ----
+async function fetchVkUserByToken(accessToken) {
+  // email через users.get НЕ приходит; он приходит только в ответе обмена токена (если был scope=email)
+  const url = `https://api.vk.com/method/users.get?v=5.131&access_token=${accessToken}&fields=photo_100,screen_name`;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  if (data?.response && Array.isArray(data.response) && data.response[0]) {
+    const u = data.response[0];
+    return {
+      id: u.id,
+      info: {
+        first_name: u.first_name,
+        last_name: u.last_name,
+        photo_100: u.photo_100,
+        screen_name: u.screen_name,
+      },
+    };
+  }
+  return null;
+}
+
 // ---------------------- VKID Authentication ----------------------
 
 // Middleware для защиты роутов
@@ -107,20 +135,50 @@ function checkAuth(req, res, next) {
 
 // POST /auth/vkid - сохраняем сессию после VKID SDK входа
 app.post("/auth/vkid", async (req, res) => {
-  const { user } = req.body;
-  if (!user || !user.id) return res.status(400).json({ error: "Неверные данные пользователя" });
+  try {
+    const { user: rawUser, access_token, email } = req.body || {};
 
-  const userObj = {
-    id: user.id,
-    internalId: uuidv4(),
-    info: user.info || {},
-    access_token: user.access_token || null,
-  };
+    let userObj = null;
 
-  req.session.user = userObj;
-  await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
+    if (rawUser?.id) {
+      // Если фронт прислал готовые данные о пользователе
+      userObj = {
+        id: rawUser.id,
+        internalId: uuidv4(),
+        info: rawUser.info || {
+          first_name: rawUser.first_name,
+          last_name: rawUser.last_name,
+          photo_100: rawUser.photo_100,
+        },
+        access_token: access_token || rawUser.access_token || null,
+        email: email || rawUser.email || null,
+      };
+    } else if (access_token) {
+      // Если есть только токен — допросим VK API
+      const vkUser = await fetchVkUserByToken(access_token);
+      if (!vkUser || !vkUser.id) {
+        return res.status(400).json({ success: false, error: "Не удалось получить данные пользователя из VK" });
+      }
+      userObj = {
+        id: vkUser.id,
+        internalId: uuidv4(),
+        info: vkUser.info || {},
+        access_token,
+        email: email || null, // email из users.get не приходит — сохраняем то, что прислал фронт (если было)
+      };
+    } else {
+      return res.status(400).json({ success: false, error: "Нет данных VK для авторизации" });
+    }
 
-  res.json({ success: true, user: userObj });
+    // Сохраняем сессию и пользователя
+    req.session.user = userObj;
+    await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
+
+    return res.json({ success: true, user: userObj });
+  } catch (e) {
+    console.error("VKID auth error:", e);
+    return res.status(500).json({ success: false, error: "Серверная ошибка при авторизации" });
+  }
 });
 
 // ---------------------- Auth Status / Logout ----------------------
