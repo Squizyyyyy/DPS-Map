@@ -41,14 +41,11 @@ export default function MainPage() {
     function init() {
       try {
         const VKID = window.VKIDSDK;
-        // ВАЖНО: redirectUrl ДОЛЖЕН в точности совпадать с разрешённым адресом в настройках VK ID
         VKID.Config.init({
           app: 54066340,
-          redirectUrl: window.location.origin, // при проде лучше задать конкретный домен
+          redirectUrl: window.location.origin,
           responseMode: VKID.ConfigResponseMode.Callback,
           source: VKID.ConfigSource.LOWCODE,
-          // scopes можно не указывать — по умолчанию будет vkid.personal_info
-          // Если нужны ещё данные — добавь через пробел, например: "vkid.personal_info email"
           scope: "vkid.personal_info",
         });
         setSdkReady(true);
@@ -64,13 +61,55 @@ export default function MainPage() {
     }
 
     const script = document.createElement("script");
-    // правильный URL без символа "<"
     script.src = "https://unpkg.com/@vkid/sdk/dist-sdk/umd/index.js";
     script.async = true;
     script.onload = init;
     script.onerror = () => setError("Не удалось загрузить SDK VKID");
     document.body.appendChild(script);
   }, []);
+
+  // ---- Умное обновление токена через refresh token ----
+  const refreshTokenIfNeeded = async () => {
+    if (!user || !user.refresh_token) return;
+
+    try {
+      const VKID = window.VKIDSDK;
+      const now = Math.floor(Date.now() / 1000);
+      const payload = user.id_token
+        ? JSON.parse(atob(user.id_token.split(".")[1]))
+        : null;
+
+      if (!payload || payload.exp - now > 300) return; // токен ещё действителен >5 минут
+
+      // Обновляем access token через refresh_token
+      const newTokens = await VKID.Auth.refreshToken(user.refresh_token);
+
+      if (newTokens?.access_token) {
+        const updatedUser = {
+          ...user,
+          access_token: newTokens.access_token,
+          refresh_token: newTokens.refresh_token || user.refresh_token,
+          id_token: newTokens.id_token || user.id_token,
+        };
+        setUser(updatedUser);
+
+        // Сохраняем новые токены на сервере
+        await fetch("/auth/vkid", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            access_token: updatedUser.access_token,
+            refresh_token: updatedUser.refresh_token,
+            id_token: updatedUser.id_token,
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("Ошибка обновления токена:", e);
+      setError("Не удалось обновить токен VK ID");
+    }
+  };
 
   // ---- Процесс логина строго по шагам из инструкции ----
   const handleLogin = async () => {
@@ -83,10 +122,6 @@ export default function MainPage() {
 
     try {
       const VKID = window.VKIDSDK;
-
-      // 1–11. Инициируем авторизацию: SDK сам сгенерит PKCE (code_verifier/challenge), state и scopes
-      // Откроется вкладка https://id.vk.com/authorize, пользователь пройдёт аутентификацию и даст доступ
-      // SDK вернёт { code, state, device_id }
       const { code, state, device_id } = await VKID.Auth.login();
 
       if (!code || !device_id) {
@@ -95,17 +130,13 @@ export default function MainPage() {
         return;
       }
 
-      // 12–13. Обмен кода на токены на фронтенде
       const tokenData = await VKID.Auth.exchangeCode(code, device_id);
-      // ожидаем: { access_token, refresh_token, id_token, ... }
-
       if (!tokenData || !tokenData.access_token) {
         setError("Не удалось обменять код на токены");
         setLoadingLogin(false);
         return;
       }
 
-      // 14. Отправляем токены на сервер для создания сессии и сохранения пользователя в БД
       const response = await fetch("/auth/vkid", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,6 +175,13 @@ export default function MainPage() {
     setActiveTab("account");
   };
 
+  // ---- Автообновление токена каждые 1 минуту (проверяем expiry) ----
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const interval = setInterval(refreshTokenIfNeeded, 60000); // 1 минута
+    return () => clearInterval(interval);
+  }, [isAuthorized, user]);
+
   // ---------------------- UI ----------------------
   if (!isAuthorized) {
     return (
@@ -179,9 +217,6 @@ export default function MainPage() {
         >
           {loadingLogin ? "Входим..." : "Войти через VK ID"}
         </button>
-
-        {/* Если хочешь дополнительно оставить виджет OneTap как альтернативу —
-            его можно отрендерить ниже, но по инструкции достаточно login() */}
       </div>
     );
   }

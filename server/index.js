@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import session from "express-session";
 import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
+import fetch from "node-fetch";
 
 dotenv.config();
 
@@ -33,11 +34,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "supersecret",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      // Для разных доменов/HTTPS раскомментируй:
-      // sameSite: "none",
-      // secure: true,
-    },
+    cookie: {},
   })
 );
 
@@ -87,9 +84,7 @@ async function checkRateLimit(ip, action) {
   const now = Date.now();
   const limitMs = 5 * 60 * 1000;
   const record = await actionsCollection.findOne({ ip, action });
-
   if (record && now - record.timestamp < limitMs) return false;
-
   await actionsCollection.updateOne(
     { ip, action },
     { $set: { timestamp: now } },
@@ -103,21 +98,17 @@ function getClientIp(req) {
   return xForwardedFor ? xForwardedFor.split(",")[0].trim() : req.socket.remoteAddress;
 }
 
-// ---- Парсим ID Token (JWT) без валидации подписи (для прототипа) ----
 function parseIdToken(idToken) {
   try {
     const parts = idToken.split(".");
     if (parts.length !== 3) return null;
-    const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
-    return payload;
+    return JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
   } catch (e) {
     return null;
   }
 }
 
-// ---- Маппинг claim'ов в наш объект пользователя ----
 function mapClaimsToUser(claims) {
-  // OIDC-подобные поля: sub, given_name, family_name, name, picture, email
   const id = claims?.sub || claims?.uid || null;
   const firstName = claims?.given_name || claims?.first_name || null;
   const lastName = claims?.family_name || claims?.last_name || null;
@@ -134,22 +125,48 @@ function mapClaimsToUser(claims) {
 }
 
 // ---------------------- VKID Authentication ----------------------
-
-// Middleware для защиты роутов
 function checkAuth(req, res, next) {
   if (req.session.user) return next();
   res.status(401).json({ error: "Не авторизован" });
 }
 
-// POST /auth/vkid — принимаем токены, собираем профиль из id_token и создаём сессию
+// ---- Функция для автообновления access token через refresh token ----
+async function refreshAccessToken(user) {
+  if (!user?.refresh_token) return user.access_token;
+
+  try {
+    const response = await fetch("https://api.vk.com/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: user.refresh_token,
+        client_id: process.env.VK_APP_ID,
+        client_secret: process.env.VK_APP_SECRET,
+      }),
+    });
+
+    const data = await response.json();
+    if (data.access_token) {
+      user.access_token = data.access_token;
+      if (data.refresh_token) user.refresh_token = data.refresh_token;
+      await usersCollection.updateOne({ id: user.id }, { $set: user });
+      return user.access_token;
+    }
+
+    return user.access_token;
+  } catch (e) {
+    console.error("Ошибка обновления access token:", e);
+    return user.access_token;
+  }
+}
+
+// ---- Авторизация через VKID и создание сессии ----
 app.post("/auth/vkid", async (req, res) => {
   try {
     const { access_token, refresh_token, id_token } = req.body || {};
-    if (!access_token) {
-      return res.status(400).json({ success: false, error: "Нет access_token" });
-    }
+    if (!access_token) return res.status(400).json({ success: false, error: "Нет access_token" });
 
-    // Пытаемся извлечь профиль из id_token
     let userObj = null;
     if (id_token) {
       const claims = parseIdToken(id_token);
@@ -167,10 +184,9 @@ app.post("/auth/vkid", async (req, res) => {
       }
     }
 
-    // Если вдруг id_token пустой/без нужных полей — всё равно создаём «минимального» юзера
     if (!userObj) {
       userObj = {
-        id: `vk_${Math.random().toString(36).slice(2)}`, // временный ID (лучше иметь sub из id_token)
+        id: `vk_${Math.random().toString(36).slice(2)}`,
         internalId: uuidv4(),
         info: { first_name: "", last_name: "", photo_100: "" },
         email: null,
@@ -180,7 +196,6 @@ app.post("/auth/vkid", async (req, res) => {
       };
     }
 
-    // Сохраняем пользователя и сессию
     req.session.user = userObj;
     await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
 
@@ -191,12 +206,15 @@ app.post("/auth/vkid", async (req, res) => {
   }
 });
 
-// ---------------------- Auth Status / Logout ----------------------
-app.get("/auth/status", (req, res) => {
-  if (req.session.user) res.json({ authorized: true, user: req.session.user });
-  else res.json({ authorized: false });
+// ---- Проверка сессии и автообновление токена ----
+app.get("/auth/status", async (req, res) => {
+  if (!req.session.user) return res.json({ authorized: false });
+  const newAccessToken = await refreshAccessToken(req.session.user);
+  req.session.user.access_token = newAccessToken;
+  res.json({ authorized: true, user: req.session.user });
 });
 
+// ---- Logout ----
 app.post("/auth/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ success: true });
