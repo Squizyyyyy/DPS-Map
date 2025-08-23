@@ -25,8 +25,8 @@ export default function MainPage() {
       const VKID = window.VKIDSDK;
 
       VKID.Config.init({
-        app: 54066340,
-        redirectUrl: "https://dps-map-rzn-h0uq.onrender.com",
+        app: 54066340, // Ваш VK App ID
+        redirectUrl: window.location.origin, // URL вашего сайта
         responseMode: VKID.ConfigResponseMode.Callback,
         source: VKID.ConfigSource.LOWCODE,
         scope: "",
@@ -91,7 +91,12 @@ export default function MainPage() {
         <h2>Авторизация</h2>
         <p>Чтобы пользоваться сайтом, войдите через VK ID.</p>
         {error && <p style={{ color: "red" }}>{error}</p>}
+
+        {/* Контейнер для VKID кнопки */}
         <div id="vk-login-container" style={{ marginTop: "16px" }} />
+        
+        {/* Подключение VKID SDK */}
+        <script src="https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js"></script>
       </div>
     );
   }
