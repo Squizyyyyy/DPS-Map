@@ -298,8 +298,8 @@ export default function MainPage() {
               onClick={() => setActiveTab("account")}
               style={{
                 position: "absolute",
-                top: 15,
-                right: 15,
+                top: 13,
+                right: 13,
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
@@ -313,6 +313,7 @@ export default function MainPage() {
                 fontWeight: "bold",
                 transition: "background-color 0.2s",
                 zIndex: 10000,
+				color: "black",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f4f4")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
