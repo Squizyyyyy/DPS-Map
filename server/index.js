@@ -71,9 +71,7 @@ async function getAddress(lat, lng) {
     const data = await response.json();
     if (!data.address) return "Адрес не найден";
     const { house_number, road, suburb, neighbourhood, city, town } = data.address;
-    return [house_number, road, suburb || neighbourhood, city || town]
-      .filter(Boolean)
-      .join(", ");
+    return [house_number, road, suburb || neighbourhood, city || town].filter(Boolean).join(", ");
   } catch (error) {
     console.error("Ошибка получения адреса:", error);
     return "Адрес не найден";
@@ -133,17 +131,17 @@ app.post("/auth/vk/exchange", async (req, res) => {
     return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    // ✅ Исправленный endpoint PKCE для обмена кода на токен
-    const tokenResp = await fetch("https://id.vk.com/oauth2/access_token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        grant_type: "authorization_code",
-        code,
-        client_id: VK_APP_ID,
-        redirect_uri: VK_REDIRECT_URI,
-        code_verifier,
-      }),
+    // ✅ PKCE VK: используем GET к oauth.vk.com
+    const params = new URLSearchParams({
+      client_id: VK_APP_ID,
+      redirect_uri: VK_REDIRECT_URI,
+      code,
+      code_verifier,
+      grant_type: "authorization_code",
+    });
+
+    const tokenResp = await fetch(`https://oauth.vk.com/access_token?${params.toString()}`, {
+      method: "GET",
     });
 
     const tokenText = await tokenResp.text();
@@ -165,9 +163,7 @@ app.post("/auth/vk/exchange", async (req, res) => {
     let userId = null;
     if (tokenData.id_token) {
       try {
-        const payload = JSON.parse(
-          Buffer.from(tokenData.id_token.split(".")[1], "base64").toString()
-        );
+        const payload = JSON.parse(Buffer.from(tokenData.id_token.split(".")[1], "base64").toString());
         userId = payload.sub;
       } catch (e) {
         console.error("Ошибка разбора id_token:", e);

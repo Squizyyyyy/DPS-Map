@@ -14,17 +14,12 @@ const tabColors = {
 function generateCodeVerifier() {
   const array = new Uint32Array(56);
   window.crypto.getRandomValues(array);
-  return Array.from(array, (dec) =>
-    ("0" + (dec % 256).toString(16)).slice(-2)
-  ).join("");
+  return Array.from(array, (dec) => ("0" + (dec % 256).toString(16)).slice(-2)).join("");
 }
 
 function generateCodeChallenge(codeVerifier) {
   const hash = sha256(codeVerifier);
-  return Base64.stringify(hash)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return Base64.stringify(hash).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 export default function MainPage() {
@@ -53,7 +48,6 @@ export default function MainPage() {
 
         if (code) {
           const codeVerifier = localStorage.getItem("vk_code_verifier");
-
           if (codeVerifier) {
             const res = await fetch("/auth/vk/exchange", {
               method: "POST",
