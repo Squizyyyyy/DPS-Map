@@ -300,7 +300,7 @@ export default function MainPage() {
               style={{
                 position: "absolute",
                 top: 16,
-                left: 16,
+                right: 16,
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
