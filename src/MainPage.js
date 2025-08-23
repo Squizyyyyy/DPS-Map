@@ -298,8 +298,8 @@ export default function MainPage() {
               onClick={() => setActiveTab("account")}
               style={{
                 position: "absolute",
-                top: 18,
-                right: 18,
+                top: 15,
+                right: 15,
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
