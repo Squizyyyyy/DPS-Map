@@ -3,7 +3,6 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { MongoClient } from "mongodb";
-import fetch from "node-fetch";
 import dotenv from "dotenv";
 import session from "express-session";
 import bodyParser from "body-parser";
@@ -98,9 +97,7 @@ function getClientIp(req) {
   return xForwardedFor ? xForwardedFor.split(",")[0].trim() : req.socket.remoteAddress;
 }
 
-// ---------------------- VK ID Authentication ----------------------
-const VK_APP_ID = process.env.VK_CLIENT_ID;
-const VK_REDIRECT_URI = process.env.VK_REDIRECT_URI;
+// ---------------------- VKID Authentication ----------------------
 
 // Middleware для защиты роутов
 function checkAuth(req, res, next) {
@@ -108,86 +105,22 @@ function checkAuth(req, res, next) {
   res.status(401).json({ error: "Не авторизован" });
 }
 
-// ---------------------- VK Routes ----------------------
-app.post("/auth/vk/start", (req, res) => {
-  const { code_challenge } = req.body;
-  if (!code_challenge) return res.status(400).json({ error: "code_challenge отсутствует" });
+// POST /auth/vkid - сохраняем сессию после VKID SDK входа
+app.post("/auth/vkid", async (req, res) => {
+  const { user } = req.body;
+  if (!user || !user.id) return res.status(400).json({ error: "Неверные данные пользователя" });
 
-  const params = new URLSearchParams({
-    client_id: VK_APP_ID,
-    redirect_uri: VK_REDIRECT_URI,
-    response_type: "code",
-    scope: "openid,email",
-    code_challenge,
-    code_challenge_method: "S256",
-  });
+  const userObj = {
+    id: user.id,
+    internalId: uuidv4(),
+    info: user.info || {},
+    access_token: user.access_token || null,
+  };
 
-  res.json({ url: `https://id.vk.com/authorize?${params.toString()}` });
-});
+  req.session.user = userObj;
+  await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
 
-app.post("/auth/vk/exchange", async (req, res) => {
-  const { code, code_verifier } = req.body;
-  if (!code || !code_verifier)
-    return res.status(400).json({ error: "code или code_verifier отсутствует" });
-
-  try {
-    // ✅ PKCE VK: используем GET к oauth.vk.com
-    const params = new URLSearchParams({
-      client_id: VK_APP_ID,
-	  client_secret: process.env.VK_CLIENT_SECRET,
-      redirect_uri: VK_REDIRECT_URI,
-      code,
-      code_verifier,
-      grant_type: "authorization_code",
-    });
-
-    const tokenResp = await fetch(`https://oauth.vk.com/access_token?${params.toString()}`, {
-      method: "GET",
-    });
-
-    const tokenText = await tokenResp.text();
-    console.log("VK Token Response Text:", tokenText);
-
-    let tokenData;
-    try {
-      tokenData = JSON.parse(tokenText);
-    } catch (e) {
-      console.error("VK Token Parse Error:", e);
-      return res.status(500).json({ error: "Не удалось распарсить ответ VK", raw: tokenText });
-    }
-
-    if (tokenData.error) {
-      console.error("VK Token Error:", tokenData);
-      return res.status(400).json(tokenData);
-    }
-
-    let userId = null;
-    if (tokenData.id_token) {
-      try {
-        const payload = JSON.parse(Buffer.from(tokenData.id_token.split(".")[1], "base64").toString());
-        userId = payload.sub;
-      } catch (e) {
-        console.error("Ошибка разбора id_token:", e);
-      }
-    }
-
-    if (!userId) return res.status(400).json({ error: "Не удалось получить user_id из VK ID" });
-
-    const userObj = {
-      id: userId,
-      internalId: uuidv4(),
-      access_token: tokenData.access_token,
-      refresh_token: tokenData.refresh_token || null,
-    };
-
-    req.session.user = userObj;
-    await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
-
-    res.json({ success: true, user: userObj });
-  } catch (err) {
-    console.error("VK ID Exchange Error:", err);
-    res.status(500).json({ error: "Ошибка VK ID" });
-  }
+  res.json({ success: true, user: userObj });
 });
 
 // ---------------------- Auth Status / Logout ----------------------
