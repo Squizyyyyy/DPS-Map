@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
 
 const tabColors = {
@@ -29,7 +29,10 @@ export default function MainPage() {
         if (data.authorized) {
           setUser(data.user);
           setIsAuthorized(true);
-          setHasSubscription(!!data.user.subscription?.expiresAt && data.user.subscription.expiresAt > Date.now());
+          setHasSubscription(
+            !!data.user.subscription?.expiresAt &&
+              data.user.subscription.expiresAt > Date.now()
+          );
           setError(null);
         }
       } catch (e) {
@@ -81,7 +84,7 @@ export default function MainPage() {
         ? JSON.parse(atob(user.id_token.split(".")[1]))
         : null;
 
-      if (!payload || payload.exp - now > 300) return; // токен ещё действителен >5 минут
+      if (!payload || payload.exp - now > 300) return;
 
       const newTokens = await VKID.Auth.refreshToken(user.refresh_token);
 
@@ -111,7 +114,6 @@ export default function MainPage() {
     }
   };
 
-  // ---- Процесс логина строго по шагам из инструкции ----
   const handleLogin = async () => {
     if (!window.VKIDSDK) {
       setError("SDK VKID не загружен");
@@ -165,7 +167,6 @@ export default function MainPage() {
     }
   };
 
-  // ---- Logout ----
   const handleLogout = async () => {
     try {
       await fetch("/auth/logout", { method: "POST", credentials: "include" });
@@ -176,7 +177,6 @@ export default function MainPage() {
     setHasSubscription(false);
   };
 
-  // ---- Покупка подписки ----
   const handleBuySubscription = async () => {
     setLoadingSubscription(true);
     try {
@@ -196,10 +196,9 @@ export default function MainPage() {
     }
   };
 
-  // ---- Автообновление токена каждые 1 минуту ----
   useEffect(() => {
     if (!isAuthorized) return;
-    const interval = setInterval(refreshTokenIfNeeded, 60000); // 1 минута
+    const interval = setInterval(refreshTokenIfNeeded, 60000);
     return () => clearInterval(interval);
   }, [isAuthorized, user]);
 
@@ -299,8 +298,8 @@ export default function MainPage() {
               onClick={() => setActiveTab("account")}
               style={{
                 position: "absolute",
-                top: 16,
-                right: 16,
+                top: 17,
+                right: 17,
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
@@ -313,6 +312,7 @@ export default function MainPage() {
                 fontSize: 20,
                 fontWeight: "bold",
                 transition: "background-color 0.2s",
+                zIndex: 10000,
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f4f4")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
