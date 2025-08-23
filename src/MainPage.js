@@ -52,12 +52,9 @@ export default function MainPage() {
         }
 
         if (code) {
-          // ✅ всегда только localStorage
           const codeVerifier = localStorage.getItem("vk_code_verifier");
 
           if (codeVerifier) {
-            console.log("Отправляю на сервер:", { code, codeVerifier });
-
             const res = await fetch("/auth/vk/exchange", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -71,10 +68,7 @@ export default function MainPage() {
               setIsAuthorized(true);
               setUser(data.user);
               setActiveTab("account");
-
-              // ✅ удаляем только после успешной авторизации
               localStorage.removeItem("vk_code_verifier");
-
               window.history.replaceState({}, document.title, "/");
               return;
             } else {
@@ -105,15 +99,13 @@ export default function MainPage() {
     }
 
     checkSession();
-  }, []); // ✅ без [localVerifier]
+  }, []);
 
   // ---------------------- VK Login ----------------------
   const handleVKLogin = async () => {
     try {
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = generateCodeChallenge(codeVerifier);
-
-      // сохраняем только в localStorage
       localStorage.setItem("vk_code_verifier", codeVerifier);
 
       const res = await fetch("/auth/vk/start", {
