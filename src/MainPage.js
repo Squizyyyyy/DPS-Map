@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import MapView from "./MapView";
 
 const tabColors = {
@@ -15,18 +15,29 @@ export default function MainPage() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
 
+  const vkContainerRef = useRef(null);
   const isMapActive = activeTab === "map";
 
   // ---------------------- Инициализация VKID ----------------------
   useEffect(() => {
-    async function initVKID() {
-      if (!("VKIDSDK" in window)) return;
+    async function loadVKID() {
+      if (!vkContainerRef.current) return;
 
+      if (!window.VKIDSDK) {
+        const script = document.createElement("script");
+        script.src = "https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js";
+        script.onload = initVKID;
+        document.body.appendChild(script);
+      } else {
+        initVKID();
+      }
+    }
+
+    function initVKID() {
       const VKID = window.VKIDSDK;
-
       VKID.Config.init({
-        app: 54066340, // Ваш VK App ID
-        redirectUrl: window.location.origin, // URL вашего сайта
+        app: 54066340,
+        redirectUrl: window.location.origin,
         responseMode: VKID.ConfigResponseMode.Callback,
         source: VKID.ConfigSource.LOWCODE,
         scope: "",
@@ -34,7 +45,7 @@ export default function MainPage() {
 
       const oneTap = new VKID.OneTap();
       oneTap.render({
-        container: document.getElementById("vk-login-container"),
+        container: vkContainerRef.current,
         showAlternativeLogin: true,
       })
       .on(VKID.WidgetEvents.ERROR, (err) => {
@@ -43,20 +54,13 @@ export default function MainPage() {
       })
       .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload) => {
         try {
-          const code = payload.code;
-          const deviceId = payload.device_id;
-
-          // Обмен кода на токен через VKID SDK
-          const data = await VKID.Auth.exchangeCode(code, deviceId);
-
+          const data = await VKID.Auth.exchangeCode(payload.code, payload.device_id);
           if (data && data.user) {
             setUser(data.user);
             setIsAuthorized(true);
             setActiveTab("account");
             setError(null);
-          } else {
-            setError("Не удалось авторизоваться через VK");
-          }
+          } else setError("Не удалось авторизоваться через VK");
         } catch (err) {
           console.error("VKID Exchange Error:", err);
           setError("Ошибка обмена токена через VKID");
@@ -64,7 +68,7 @@ export default function MainPage() {
       });
     }
 
-    initVKID();
+    loadVKID();
   }, []);
 
   // ---------------------- Logout ----------------------
@@ -91,12 +95,7 @@ export default function MainPage() {
         <h2>Авторизация</h2>
         <p>Чтобы пользоваться сайтом, войдите через VK ID.</p>
         {error && <p style={{ color: "red" }}>{error}</p>}
-
-        {/* Контейнер для VKID кнопки */}
-        <div id="vk-login-container" style={{ marginTop: "16px" }} />
-        
-        {/* Подключение VKID SDK */}
-        <script src="https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js"></script>
+        <div ref={vkContainerRef} style={{ marginTop: "16px" }} />
       </div>
     );
   }
