@@ -24,7 +24,7 @@ let actionsCollection;
 let usersCollection;
 
 // ---------------------- Middlewares ----------------------
-app.set("trust proxy", 1); // если за прокси/на хостинге — нужно для корректной работы cookie
+app.set("trust proxy", 1);
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,8 +34,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      // если фронт и бэк на одном домене по http — можно оставить по умолчанию
-      // если на https и разные домены — понадобится sameSite: 'none', secure: true
+      // Для разных доменов/HTTPS раскомментируй:
       // sameSite: "none",
       // secure: true,
     },
@@ -104,25 +103,34 @@ function getClientIp(req) {
   return xForwardedFor ? xForwardedFor.split(",")[0].trim() : req.socket.remoteAddress;
 }
 
-// ---- Запрашиваем профиль у VK по access_token, если user не пришел полностью ----
-async function fetchVkUserByToken(accessToken) {
-  // email через users.get НЕ приходит; он приходит только в ответе обмена токена (если был scope=email)
-  const url = `https://api.vk.com/method/users.get?v=5.131&access_token=${accessToken}&fields=photo_100,screen_name`;
-  const resp = await fetch(url);
-  const data = await resp.json();
-  if (data?.response && Array.isArray(data.response) && data.response[0]) {
-    const u = data.response[0];
-    return {
-      id: u.id,
-      info: {
-        first_name: u.first_name,
-        last_name: u.last_name,
-        photo_100: u.photo_100,
-        screen_name: u.screen_name,
-      },
-    };
+// ---- Парсим ID Token (JWT) без валидации подписи (для прототипа) ----
+function parseIdToken(idToken) {
+  try {
+    const parts = idToken.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+    return payload;
+  } catch (e) {
+    return null;
   }
-  return null;
+}
+
+// ---- Маппинг claim'ов в наш объект пользователя ----
+function mapClaimsToUser(claims) {
+  // OIDC-подобные поля: sub, given_name, family_name, name, picture, email
+  const id = claims?.sub || claims?.uid || null;
+  const firstName = claims?.given_name || claims?.first_name || null;
+  const lastName = claims?.family_name || claims?.last_name || null;
+  const photo = claims?.picture || claims?.photo_100 || null;
+  return {
+    id,
+    info: {
+      first_name: firstName || "",
+      last_name: lastName || "",
+      photo_100: photo || "",
+    },
+    email: claims?.email || null,
+  };
 }
 
 // ---------------------- VKID Authentication ----------------------
@@ -133,44 +141,46 @@ function checkAuth(req, res, next) {
   res.status(401).json({ error: "Не авторизован" });
 }
 
-// POST /auth/vkid - сохраняем сессию после VKID SDK входа
+// POST /auth/vkid — принимаем токены, собираем профиль из id_token и создаём сессию
 app.post("/auth/vkid", async (req, res) => {
   try {
-    const { user: rawUser, access_token, email } = req.body || {};
-
-    let userObj = null;
-
-    if (rawUser?.id) {
-      // Если фронт прислал готовые данные о пользователе
-      userObj = {
-        id: rawUser.id,
-        internalId: uuidv4(),
-        info: rawUser.info || {
-          first_name: rawUser.first_name,
-          last_name: rawUser.last_name,
-          photo_100: rawUser.photo_100,
-        },
-        access_token: access_token || rawUser.access_token || null,
-        email: email || rawUser.email || null,
-      };
-    } else if (access_token) {
-      // Если есть только токен — допросим VK API
-      const vkUser = await fetchVkUserByToken(access_token);
-      if (!vkUser || !vkUser.id) {
-        return res.status(400).json({ success: false, error: "Не удалось получить данные пользователя из VK" });
-      }
-      userObj = {
-        id: vkUser.id,
-        internalId: uuidv4(),
-        info: vkUser.info || {},
-        access_token,
-        email: email || null, // email из users.get не приходит — сохраняем то, что прислал фронт (если было)
-      };
-    } else {
-      return res.status(400).json({ success: false, error: "Нет данных VK для авторизации" });
+    const { access_token, refresh_token, id_token } = req.body || {};
+    if (!access_token) {
+      return res.status(400).json({ success: false, error: "Нет access_token" });
     }
 
-    // Сохраняем сессию и пользователя
+    // Пытаемся извлечь профиль из id_token
+    let userObj = null;
+    if (id_token) {
+      const claims = parseIdToken(id_token);
+      if (claims) {
+        const mapped = mapClaimsToUser(claims);
+        if (mapped.id) {
+          userObj = {
+            ...mapped,
+            internalId: uuidv4(),
+            access_token,
+            refresh_token: refresh_token || null,
+            id_token,
+          };
+        }
+      }
+    }
+
+    // Если вдруг id_token пустой/без нужных полей — всё равно создаём «минимального» юзера
+    if (!userObj) {
+      userObj = {
+        id: `vk_${Math.random().toString(36).slice(2)}`, // временный ID (лучше иметь sub из id_token)
+        internalId: uuidv4(),
+        info: { first_name: "", last_name: "", photo_100: "" },
+        email: null,
+        access_token,
+        refresh_token: refresh_token || null,
+        id_token: id_token || null,
+      };
+    }
+
+    // Сохраняем пользователя и сессию
     req.session.user = userObj;
     await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
 
