@@ -71,7 +71,9 @@ async function getAddress(lat, lng) {
     const data = await response.json();
     if (!data.address) return "Адрес не найден";
     const { house_number, road, suburb, neighbourhood, city, town } = data.address;
-    return [house_number, road, suburb || neighbourhood, city || town].filter(Boolean).join(", ");
+    return [house_number, road, suburb || neighbourhood, city || town]
+      .filter(Boolean)
+      .join(", ");
   } catch (error) {
     console.error("Ошибка получения адреса:", error);
     return "Адрес не найден";
@@ -117,7 +119,7 @@ app.post("/auth/vk/start", (req, res) => {
     client_id: VK_APP_ID,
     redirect_uri: VK_REDIRECT_URI,
     response_type: "code",
-    scope: "openid,email", // ⚡ обязательно openid
+    scope: "openid,email",
     code_challenge,
     code_challenge_method: "S256",
   });
@@ -131,8 +133,8 @@ app.post("/auth/vk/exchange", async (req, res) => {
     return res.status(400).json({ error: "code или code_verifier отсутствует" });
 
   try {
-    // ⚡ правильный endpoint VK ID PKCE
-    const tokenResp = await fetch("https://id.vk.com/oauth2/auth", {
+    // ✅ правильный endpoint для обмена кода на токен
+    const tokenResp = await fetch("https://id.vk.com/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -224,7 +226,16 @@ app.post("/markers", checkAuth, async (req, res) => {
   const id = Date.now();
   const address = await getAddress(lat, lng);
 
-  const marker = { id, lat, lng, timestamp: Date.now(), status: "active", confirmations: 0, address, comment };
+  const marker = {
+    id,
+    lat,
+    lng,
+    timestamp: Date.now(),
+    status: "active",
+    confirmations: 0,
+    address,
+    comment,
+  };
   await markersCollection.insertOne(marker);
   res.json(marker);
 });
@@ -233,7 +244,10 @@ app.post("/markers/:id/confirm", checkAuth, async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
   if (!marker) return res.sendStatus(404);
-  await markersCollection.updateOne({ id }, { $set: { status: "active", timestamp: Date.now() }, $inc: { confirmations: 1 } });
+  await markersCollection.updateOne(
+    { id },
+    { $set: { status: "active", timestamp: Date.now() }, $inc: { confirmations: 1 } }
+  );
   res.sendStatus(200);
 });
 

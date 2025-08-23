@@ -33,7 +33,6 @@ export default function MainPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
-  const [localVerifier, setLocalVerifier] = useState(null);
 
   const isMapActive = activeTab === "map";
 
@@ -53,11 +52,12 @@ export default function MainPage() {
         }
 
         if (code) {
-          // Берём из localStorage или из state
-          const codeVerifier =
-            localStorage.getItem("vk_code_verifier") || localVerifier;
+          // ✅ всегда только localStorage
+          const codeVerifier = localStorage.getItem("vk_code_verifier");
 
           if (codeVerifier) {
+            console.log("Отправляю на сервер:", { code, codeVerifier });
+
             const res = await fetch("/auth/vk/exchange", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -71,7 +71,10 @@ export default function MainPage() {
               setIsAuthorized(true);
               setUser(data.user);
               setActiveTab("account");
+
+              // ✅ удаляем только после успешной авторизации
               localStorage.removeItem("vk_code_verifier");
+
               window.history.replaceState({}, document.title, "/");
               return;
             } else {
@@ -102,7 +105,7 @@ export default function MainPage() {
     }
 
     checkSession();
-  }, [localVerifier]);
+  }, []); // ✅ без [localVerifier]
 
   // ---------------------- VK Login ----------------------
   const handleVKLogin = async () => {
@@ -110,9 +113,8 @@ export default function MainPage() {
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = generateCodeChallenge(codeVerifier);
 
-      // сохраняем в localStorage и в state
+      // сохраняем только в localStorage
       localStorage.setItem("vk_code_verifier", codeVerifier);
-      setLocalVerifier(codeVerifier);
 
       const res = await fetch("/auth/vk/start", {
         method: "POST",
