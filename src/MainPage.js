@@ -43,7 +43,7 @@ export default function MainPage() {
       } else {
         const script = document.createElement("script");
         // важно: убрать "<" из версии пакета
-        script.src = "https://unpkg.com/@vkid/sdk@3.0.0/dist-sdk/umd/index.js";
+        script.src = "https://unpkg.com/@vkid/sdk@2.3.0/dist-sdk/umd/index.js";
         script.async = true;
         script.onload = initVKID;
         script.onerror = () => setError("Не удалось загрузить SDK VKID");
