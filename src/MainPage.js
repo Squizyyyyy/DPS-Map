@@ -33,6 +33,7 @@ export default function MainPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [localVerifier, setLocalVerifier] = useState(null);
 
   const isMapActive = activeTab === "map";
 
@@ -52,7 +53,10 @@ export default function MainPage() {
         }
 
         if (code) {
-          const codeVerifier = localStorage.getItem("vk_code_verifier");
+          // Берём из localStorage или из state
+          const codeVerifier =
+            localStorage.getItem("vk_code_verifier") || localVerifier;
+
           if (codeVerifier) {
             const res = await fetch("/auth/vk/exchange", {
               method: "POST",
@@ -98,14 +102,17 @@ export default function MainPage() {
     }
 
     checkSession();
-  }, []);
+  }, [localVerifier]);
 
   // ---------------------- VK Login ----------------------
   const handleVKLogin = async () => {
     try {
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = generateCodeChallenge(codeVerifier);
+
+      // сохраняем в localStorage и в state
       localStorage.setItem("vk_code_verifier", codeVerifier);
+      setLocalVerifier(codeVerifier);
 
       const res = await fetch("/auth/vk/start", {
         method: "POST",
