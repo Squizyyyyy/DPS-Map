@@ -16,6 +16,7 @@ export default function MainPage() {
   const [error, setError] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
 
   const isMapActive = activeTab === "map";
 
@@ -28,6 +29,7 @@ export default function MainPage() {
         if (data.authorized) {
           setUser(data.user);
           setIsAuthorized(true);
+          setHasSubscription(!!data.user.subscription?.expires && data.user.subscription.expires > Date.now());
           setError(null);
         }
       } catch (e) {
@@ -81,7 +83,6 @@ export default function MainPage() {
 
       if (!payload || payload.exp - now > 300) return; // токен ещё действителен >5 минут
 
-      // Обновляем access token через refresh_token
       const newTokens = await VKID.Auth.refreshToken(user.refresh_token);
 
       if (newTokens?.access_token) {
@@ -93,7 +94,6 @@ export default function MainPage() {
         };
         setUser(updatedUser);
 
-        // Сохраняем новые токены на сервере
         await fetch("/auth/vkid", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -173,6 +173,27 @@ export default function MainPage() {
     setIsAuthorized(false);
     setUser(null);
     setActiveTab("account");
+    setHasSubscription(false);
+  };
+
+  // ---- Покупка подписки ----
+  const handleBuySubscription = async () => {
+    setLoadingSubscription(true);
+    try {
+      const res = await fetch("/subscription/buy", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (data.success) {
+        setHasSubscription(true);
+        setActiveTab("map");
+      } else {
+        setError(data.error || "Не удалось оформить подписку");
+      }
+    } catch (e) {
+      console.error("Subscription buy error:", e);
+      setError("Ошибка при оформлении подписки");
+    } finally {
+      setLoadingSubscription(false);
+    }
   };
 
   // ---- Автообновление токена каждые 1 минуту (проверяем expiry) ----
@@ -280,7 +301,8 @@ export default function MainPage() {
             <h2>Доступ к карте ограничен</h2>
             <p>Оформите подписку, чтобы использовать карту.</p>
             <button
-              onClick={() => setActiveTab("subscription")}
+              onClick={handleBuySubscription}
+              disabled={loadingSubscription}
               style={{
                 padding: "12px 24px",
                 marginTop: "16px",
@@ -291,7 +313,7 @@ export default function MainPage() {
                 cursor: "pointer",
               }}
             >
-              Оформить подписку
+              {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
             </button>
           </div>
         )
@@ -325,7 +347,26 @@ export default function MainPage() {
               </button>
             </div>
           )}
-          {activeTab === "subscription" && <div>Подписка</div>}
+          {activeTab === "subscription" && (
+            <div> 
+              <h2>Подписка</h2>
+              <button
+                onClick={handleBuySubscription}
+                disabled={loadingSubscription}
+                style={{
+                  padding: "12px 24px",
+                  marginTop: "16px",
+                  backgroundColor: "#063353",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
+              </button>
+            </div>
+          )}
         </main>
       )}
     </div>

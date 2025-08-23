@@ -209,9 +209,21 @@ app.post("/auth/vkid", async (req, res) => {
 // ---- Проверка сессии и автообновление токена ----
 app.get("/auth/status", async (req, res) => {
   if (!req.session.user) return res.json({ authorized: false });
+
+  // автообновление токена
   const newAccessToken = await refreshAccessToken(req.session.user);
   req.session.user.access_token = newAccessToken;
-  res.json({ authorized: true, user: req.session.user });
+
+  // проверка подписки
+  const user = req.session.user;
+  if (user.subscription && user.subscription.expiresAt) {
+    if (Date.now() > user.subscription.expiresAt) {
+      user.subscription.active = false;
+      await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+    }
+  }
+
+  res.json({ authorized: true, user });
 });
 
 // ---- Logout ----
@@ -219,6 +231,29 @@ app.post("/auth/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ success: true });
   });
+});
+
+// ---- Покупка подписки (1 месяц) ----
+app.post("/subscription/buy", checkAuth, async (req, res) => {
+  try {
+    const user = req.session.user;
+    const now = Date.now();
+    const expiresAt = now + 30 * 24 * 60 * 60 * 1000; // 30 дней
+
+    user.subscription = {
+      active: true,
+      plan: "basic",
+      expiresAt,
+    };
+
+    await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+    req.session.user = user;
+
+    res.json({ success: true, subscription: user.subscription });
+  } catch (e) {
+    console.error("Ошибка при покупке подписки:", e);
+    res.status(500).json({ success: false, error: "Серверная ошибка при покупке подписки" });
+  }
 });
 
 // ---------------------- Marker Routes ----------------------
@@ -276,6 +311,6 @@ app.post("/markers/:id/delete", checkAuth, async (req, res) => {
 
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, "../build")));
-app.get(/^\/(?!markers|auth).*/, (req, res) => {
+app.get(/^\/(?!markers|auth|subscription).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "../build/index.html"));
 });
