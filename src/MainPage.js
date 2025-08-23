@@ -20,20 +20,21 @@ export default function MainPage() {
 
   // ---------------------- Инициализация VKID ----------------------
   useEffect(() => {
-    async function loadVKID() {
-      if (!vkContainerRef.current) return;
-
-      if (!window.VKIDSDK) {
+    async function loadVKIDScript() {
+      if (window.VKIDSDK) {
+        initVKID();
+      } else {
         const script = document.createElement("script");
         script.src = "https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js";
+        script.async = true;
         script.onload = initVKID;
         document.body.appendChild(script);
-      } else {
-        initVKID();
       }
     }
 
     function initVKID() {
+      if (!vkContainerRef.current) return;
+
       const VKID = window.VKIDSDK;
       VKID.Config.init({
         app: 54066340,
@@ -60,7 +61,9 @@ export default function MainPage() {
             setIsAuthorized(true);
             setActiveTab("account");
             setError(null);
-          } else setError("Не удалось авторизоваться через VK");
+          } else {
+            setError("Не удалось авторизоваться через VK");
+          }
         } catch (err) {
           console.error("VKID Exchange Error:", err);
           setError("Ошибка обмена токена через VKID");
@@ -68,7 +71,7 @@ export default function MainPage() {
       });
     }
 
-    loadVKID();
+    loadVKIDScript();
   }, []);
 
   // ---------------------- Logout ----------------------
