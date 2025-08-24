@@ -147,7 +147,7 @@ export default function MapView() {
   return (
     <div style={{ height: '100vh' }}>
       <MapContainer
-        center={[54.62, 39.72]}
+        center={[54.6296, 39.7412]}
         zoom={13}
         minZoom={11}
         maxZoom={19}
