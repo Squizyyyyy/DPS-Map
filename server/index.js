@@ -240,6 +240,24 @@ app.post("/auth/logout", (req, res) => {
   });
 });
 
+// ---- Сохранение выбранного города пользователя ----
+app.post("/auth/set-city", checkAuth, async (req, res) => {
+  try {
+    const { city } = req.body;
+    if (!city || typeof city !== "string") return res.status(400).json({ success: false, error: "Неверный город" });
+
+    const user = req.session.user;
+    user.city = city;
+    await usersCollection.updateOne({ id: user.id }, { $set: { city } });
+    req.session.user = user;
+
+    res.json({ success: true, city });
+  } catch (err) {
+    console.error("Ошибка при сохранении города:", err);
+    res.status(500).json({ success: false, error: "Серверная ошибка при сохранении города" });
+  }
+});
+
 // ---- Покупка подписки (1 месяц) ----
 app.post("/subscription/buy", checkAuth, async (req, res) => {
   try {
