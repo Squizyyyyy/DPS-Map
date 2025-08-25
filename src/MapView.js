@@ -30,47 +30,55 @@ const staleIcon = new L.Icon({
 let lastAddTime = 0;
 let lastDeleteTime = 0;
 
+// Исправленный LocationMarker
 function LocationMarker({ onAddMarker }) {
   const map = useMap();
 
-  map.on('click', (e) => {
-    const { lat, lng } = e.latlng;
-    const now = Date.now();
+  useEffect(() => {
+    const handleClick = (e) => {
+      const { lat, lng } = e.latlng;
+      const now = Date.now();
 
-    if (now - lastAddTime < 5 * 60 * 1000) {
-      toast.warn('Добавлять метки можно раз в 5 минут');
-      return;
-    }
+      if (now - lastAddTime < 5 * 60 * 1000) {
+        toast.warn('Добавлять метки можно раз в 5 минут');
+        return;
+      }
 
-    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
-    if (!confirmAdd) return;
+      const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
+      if (!confirmAdd) return;
 
-    const addComment = window.confirm("Добавить комментарий к метке?");
-    let comment = '';
-    if (addComment) {
-      comment = window.prompt("Введите комментарий к метке:") || '';
-    }
+      const addComment = window.confirm("Добавить комментарий к метке?");
+      let comment = '';
+      if (addComment) {
+        comment = window.prompt("Введите комментарий к метке:") || '';
+      }
 
-    fetch('https://dps-map-rzn-h0uq.onrender.com/markers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lat, lng, comment }),
-    })
-      .then(async (res) => {
-        if (res.status === 429) {
-          toast.warn('Добавлять метки можно раз в 5 минут');
-          return;
-        }
-        if (!res.ok) throw new Error('Ошибка при добавлении');
-        await res.json();
-        lastAddTime = Date.now();
-        onAddMarker();
-        toast.success('Метка добавлена');
+      fetch('https://dps-map-rzn-h0uq.onrender.com/markers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat, lng, comment }),
       })
-      .catch(() => {
-        toast.error('Ошибка при добавлении метки');
-      });
-  });
+        .then(async (res) => {
+          if (res.status === 429) {
+            toast.warn('Добавлять метки можно раз в 5 минут');
+            return;
+          }
+          if (!res.ok) throw new Error('Ошибка при добавлении');
+          await res.json();
+          lastAddTime = Date.now();
+          onAddMarker();
+          toast.success('Метка добавлена');
+        })
+        .catch(() => {
+          toast.error('Ошибка при добавлении метки');
+        });
+    };
+
+    map.on('click', handleClick);
+    return () => {
+      map.off('click', handleClick); // удаляем обработчик при размонтировании
+    };
+  }, [map, onAddMarker]);
 
   return null;
 }
