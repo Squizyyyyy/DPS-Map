@@ -4,7 +4,7 @@ import {
   TileLayer,
   Marker,
   Popup,
-  useMapEvents
+  useMap
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -27,61 +27,68 @@ const staleIcon = new L.Icon({
   className: 'grayscale-icon',
 });
 
-// Локальные ограничения
 let lastAddTime = 0;
 let lastDeleteTime = 0;
 
 function LocationMarker({ onAddMarker }) {
-  useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      const now = Date.now();
+  const map = useMap();
 
-      if (now - lastAddTime < 5 * 60 * 1000) {
-        toast.warn('Добавлять метки можно раз в 5 минут');
-        return;
-      }
+  map.on('click', (e) => {
+    const { lat, lng } = e.latlng;
+    const now = Date.now();
 
-      const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
-      if (!confirmAdd) return;
+    if (now - lastAddTime < 5 * 60 * 1000) {
+      toast.warn('Добавлять метки можно раз в 5 минут');
+      return;
+    }
 
-      const addComment = window.confirm("Добавить комментарий к метке?");
-      let comment = '';
-      if (addComment) {
-        comment = window.prompt("Введите комментарий к метке:");
-        if (comment === null) {
-          comment = '';
+    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
+    if (!confirmAdd) return;
+
+    const addComment = window.confirm("Добавить комментарий к метке?");
+    let comment = '';
+    if (addComment) {
+      comment = window.prompt("Введите комментарий к метке:") || '';
+    }
+
+    fetch('https://dps-map-rzn-h0uq.onrender.com/markers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat, lng, comment }),
+    })
+      .then(async (res) => {
+        if (res.status === 429) {
+          toast.warn('Добавлять метки можно раз в 5 минут');
+          return;
         }
-      }
-
-      fetch('https://dps-map-rzn-h0uq.onrender.com/markers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lng, comment }),
+        if (!res.ok) throw new Error('Ошибка при добавлении');
+        await res.json();
+        lastAddTime = Date.now();
+        onAddMarker();
+        toast.success('Метка добавлена');
       })
-        .then(async (res) => {
-          if (res.status === 429) {
-            toast.warn('Добавлять метки можно раз в 5 минут');
-            return;
-          }
-
-          if (!res.ok) throw new Error('Ошибка при добавлении');
-
-          await res.json();
-          lastAddTime = Date.now();
-          onAddMarker();
-          toast.success('Метка добавлена');
-        })
-        .catch(() => {
-          toast.error('Ошибка при добавлении метки');
-        });
-    },
+      .catch(() => {
+        toast.error('Ошибка при добавлении метки');
+      });
   });
 
   return null;
 }
 
-export default function MapView() {
+// Центрирование карты
+function CenterMap({ city }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (city && city.coords) {
+      map.setView(city.coords, 13);
+    }
+  }, [city, map]);
+
+  return null;
+}
+
+export default function MapView({ city }) {
   const [markers, setMarkers] = useState([]);
 
   useEffect(() => {
@@ -102,12 +109,10 @@ export default function MapView() {
       });
   };
 
-  // Мгновенное обновление confirmations
   const handleConfirm = (id) => {
     fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`, { method: 'POST' })
       .then((res) => {
         if (!res.ok) throw new Error('Ошибка подтверждения');
-        // Обновляем confirmations локально без перезагрузки всех меток
         setMarkers((prev) =>
           prev.map((m) =>
             m.id === id ? { ...m, confirmations: (m.confirmations || 0) + 1 } : m
@@ -144,14 +149,25 @@ export default function MapView() {
     fetchMarkers();
   };
 
+  // Радиус границ карты
+  const BOUND_LAT_DIFF = 0.21;
+  const BOUND_LNG_DIFF = 0.40;
+
+  const maxBounds = city?.coords
+    ? [
+        [city.coords[0] - BOUND_LAT_DIFF, city.coords[1] - BOUND_LNG_DIFF],
+        [city.coords[0] + BOUND_LAT_DIFF, city.coords[1] + BOUND_LNG_DIFF],
+      ]
+    : [[54.42, 39.32], [54.82, 40.12]];
+
   return (
     <div style={{ height: '100vh' }}>
       <MapContainer
-        center={[54.6296, 39.7412]}
+        center={city?.coords || [54.6296, 39.7412]}
         zoom={13}
         minZoom={11}
         maxZoom={19}
-        maxBounds={[[54.42, 39.32], [54.82, 40.12]]}
+        maxBounds={maxBounds}
         maxBoundsViscosity={1.0}
         style={{ height: '100%' }}
       >
@@ -162,7 +178,9 @@ export default function MapView() {
           detectRetina={false}
         />
 
+        <CenterMap city={city} />
         <LocationMarker onAddMarker={onAddMarker} />
+
         {markers.map((marker) => (
           <Marker
             key={marker.id}
@@ -182,7 +200,6 @@ export default function MapView() {
                 <p><b>Комментарий:</b> {marker.comment}</p>
               )}
 
-              {/* Счётчик подтверждений */}
               <p><b>Подтверждений:</b> {marker.confirmations || 0}</p>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
@@ -207,8 +224,6 @@ export default function MapView() {
         .leaflet-marker-icon.grayscale-icon {
           filter: grayscale(100%);
         }
-
-        /* Убираем флаг Украины */
         .leaflet-control-attribution .leaflet-attribution-flag {
           display: none !important;
         }

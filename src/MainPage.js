@@ -9,6 +9,13 @@ const tabColors = {
   highlight: "#2787f5",
 };
 
+const cities = [
+  { name: "Рязань", coords: [54.6296, 39.7412] },
+  { name: "Тула", coords: [54.1920, 37.6156] },
+  { name: "Липецк", coords: [52.6106, 39.5946] },
+  { name: "Тамбов", coords: [52.7216, 41.4523] },
+];
+
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState("account");
   const [hasSubscription, setHasSubscription] = useState(false);
@@ -18,10 +25,11 @@ export default function MainPage() {
   const [sdkReady, setSdkReady] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(cities[0]);
 
   const isMapActive = activeTab === "map";
 
-  // ---- Проверка сессии при загрузке ----
+  // Проверка сессии при загрузке
   useEffect(() => {
     (async () => {
       try {
@@ -35,6 +43,11 @@ export default function MainPage() {
               data.user.subscription.expiresAt > Date.now()
           );
           setError(null);
+
+          if (data.user.city) {
+            const city = cities.find((c) => c.name === data.user.city);
+            if (city) setSelectedCity(city);
+          }
         }
       } catch (e) {
         console.error("Auth status error:", e);
@@ -42,7 +55,7 @@ export default function MainPage() {
     })();
   }, []);
 
-  // ---- Загрузка SDK VK ID ----
+  // Загрузка SDK VK ID
   useEffect(() => {
     function init() {
       try {
@@ -243,7 +256,6 @@ export default function MainPage() {
     );
   }
 
-  // ---------------------- UI ----------------------
   return (
     <div
       style={{
@@ -254,7 +266,6 @@ export default function MainPage() {
         flexDirection: "column",
       }}
     >
-      {/* ---------------------- Навигация ---------------------- */}
       <nav
         style={{
           display: "flex",
@@ -271,9 +282,10 @@ export default function MainPage() {
             style={{
               padding: "12px 28px",
               margin: "0 8px",
-              background: activeTab === tab
-                ? `linear-gradient(135deg, #2787f5, #0a90ff)`
-                : tabColors.inactive,
+              background:
+                activeTab === tab
+                  ? `linear-gradient(135deg, #2787f5, #0a90ff)`
+                  : tabColors.inactive,
               border: "none",
               borderRadius: "8px",
               color: tabColors.text,
@@ -286,12 +298,10 @@ export default function MainPage() {
               transition: "all 0.3s",
             }}
             onMouseEnter={(e) => {
-              if (activeTab !== tab)
-                e.currentTarget.style.background = "#0d4c82";
+              if (activeTab !== tab) e.currentTarget.style.background = "#0d4c82";
             }}
             onMouseLeave={(e) => {
-              if (activeTab !== tab)
-                e.currentTarget.style.background = tabColors.inactive;
+              if (activeTab !== tab) e.currentTarget.style.background = tabColors.inactive;
             }}
           >
             {tab === "account" && "Профиль"}
@@ -301,7 +311,6 @@ export default function MainPage() {
         ))}
       </nav>
 
-      {/* ---------------------- Вкладки ---------------------- */}
       {isMapActive ? (
         hasSubscription ? (
           <div
@@ -314,7 +323,7 @@ export default function MainPage() {
               zIndex: 9999,
             }}
           >
-            <MapView />
+            <MapView city={selectedCity} />
             <button
               onClick={() => setActiveTab("account")}
               style={{
@@ -336,9 +345,7 @@ export default function MainPage() {
                 zIndex: 10000,
                 color: "black",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#f4f4f4")
-              }
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f4f4")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
             >
               ←
@@ -395,12 +402,41 @@ export default function MainPage() {
                   }}
                 />
               )}
-              <p>ID пользователя: {user?.id || "—"}</p>
-              <p>Email: {user?.email || "не указан"}</p>
+              <p><b>ID пользователя:</b> {user?.id || "—"}</p>
+              <p><b>Дата регистрации:</b> {user?.createdAt ? new Date(user.createdAt).toLocaleString() : "—"}</p>
+
+              <div style={{ marginTop: 24 }}>
+                <h3>Ваш город</h3>
+                <select
+                  value={selectedCity.name}
+                  onChange={(e) => {
+                    const city = cities.find((c) => c.name === e.target.value);
+                    if (city) setSelectedCity(city);
+                  }}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    border: "1px solid #fff",
+                    backgroundColor: "#063353",
+                    color: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  {cities.map((city) => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+                <p style={{ marginTop: 8 }}>
+                  Выбран город: <b>{selectedCity.name}</b>
+                </p>
+              </div>
+
               <button
                 onClick={handleLogout}
                 style={{
-                  marginTop: "16px",
+                  marginTop: 24,
                   padding: "10px 20px",
                   background: "#d9534f",
                   border: "none",
@@ -417,6 +453,7 @@ export default function MainPage() {
               </button>
             </div>
           )}
+
           {activeTab === "subscription" && (
             <div>
               <h2>Подписка</h2>
