@@ -6,6 +6,7 @@ const tabColors = {
   active: "#063353",
   inactive: "#0a3b66",
   text: "#fff",
+  highlight: "#2787f5",
 };
 
 export default function MainPage() {
@@ -72,47 +73,6 @@ export default function MainPage() {
     script.onerror = () => setError("Не удалось загрузить SDK VKID");
     document.body.appendChild(script);
   }, []);
-
-  // ---- Умное обновление токена через refresh token ----
-  const refreshTokenIfNeeded = async () => {
-    if (!user || !user.refresh_token) return;
-
-    try {
-      const VKID = window.VKIDSDK;
-      const now = Math.floor(Date.now() / 1000);
-      const payload = user.id_token
-        ? JSON.parse(atob(user.id_token.split(".")[1]))
-        : null;
-
-      if (!payload || payload.exp - now > 300) return;
-
-      const newTokens = await VKID.Auth.refreshToken(user.refresh_token);
-
-      if (newTokens?.access_token) {
-        const updatedUser = {
-          ...user,
-          access_token: newTokens.access_token,
-          refresh_token: newTokens.refresh_token || user.refresh_token,
-          id_token: newTokens.id_token || user.id_token,
-        };
-        setUser(updatedUser);
-
-        await fetch("/auth/vkid", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            access_token: updatedUser.access_token,
-            refresh_token: updatedUser.refresh_token,
-            id_token: updatedUser.id_token,
-          }),
-        });
-      }
-    } catch (e) {
-      console.error("Ошибка обновления токена:", e);
-      setError("Не удалось обновить токен VK ID");
-    }
-  };
 
   const handleLogin = async () => {
     if (!window.VKIDSDK) {
@@ -196,13 +156,52 @@ export default function MainPage() {
     }
   };
 
+  const refreshTokenIfNeeded = async () => {
+    if (!user || !user.refresh_token) return;
+
+    try {
+      const VKID = window.VKIDSDK;
+      const now = Math.floor(Date.now() / 1000);
+      const payload = user.id_token
+        ? JSON.parse(atob(user.id_token.split(".")[1]))
+        : null;
+
+      if (!payload || payload.exp - now > 300) return;
+
+      const newTokens = await VKID.Auth.refreshToken(user.refresh_token);
+
+      if (newTokens?.access_token) {
+        const updatedUser = {
+          ...user,
+          access_token: newTokens.access_token,
+          refresh_token: newTokens.refresh_token || user.refresh_token,
+          id_token: newTokens.id_token || user.id_token,
+        };
+        setUser(updatedUser);
+
+        await fetch("/auth/vkid", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            access_token: updatedUser.access_token,
+            refresh_token: updatedUser.refresh_token,
+            id_token: updatedUser.id_token,
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("Ошибка обновления токена:", e);
+      setError("Не удалось обновить токен VK ID");
+    }
+  };
+
   useEffect(() => {
     if (!isAuthorized) return;
     const interval = setInterval(refreshTokenIfNeeded, 60000);
     return () => clearInterval(interval);
   }, [isAuthorized, user]);
 
-  // ---------------------- UI ----------------------
   if (!isAuthorized) {
     return (
       <div
@@ -227,12 +226,15 @@ export default function MainPage() {
           style={{
             marginTop: 16,
             padding: "12px 24px",
-            backgroundColor: sdkReady ? "#2787f5" : "#6c757d",
+            background: sdkReady
+              ? `linear-gradient(90deg, #2787f5, #0a90ff)`
+              : "#6c757d",
             color: "#fff",
             border: "none",
             borderRadius: 8,
             cursor: sdkReady && !loadingLogin ? "pointer" : "default",
             fontWeight: 600,
+            transition: "all 0.2s",
           }}
         >
           {loadingLogin ? "Входим..." : "Войти через VK ID"}
@@ -241,6 +243,7 @@ export default function MainPage() {
     );
   }
 
+  // ---------------------- UI ----------------------
   return (
     <div
       style={{
@@ -251,11 +254,14 @@ export default function MainPage() {
         flexDirection: "column",
       }}
     >
+      {/* ---------------------- Навигация ---------------------- */}
       <nav
         style={{
           display: "flex",
           justifyContent: "center",
           backgroundColor: tabColors.active,
+          padding: "8px 0",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
         }}
       >
         {["account", "subscription", "map"].map((tab) => (
@@ -263,15 +269,29 @@ export default function MainPage() {
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{
-              padding: "12px 24px",
-              margin: "8px",
-              backgroundColor:
-                activeTab === tab ? tabColors.inactive : tabColors.active,
+              padding: "12px 28px",
+              margin: "0 8px",
+              background: activeTab === tab
+                ? `linear-gradient(135deg, #2787f5, #0a90ff)`
+                : tabColors.inactive,
               border: "none",
-              borderRadius: "4px",
+              borderRadius: "8px",
               color: tabColors.text,
               cursor: "pointer",
-              fontWeight: activeTab === tab ? "bold" : "normal",
+              fontWeight: activeTab === tab ? "700" : "500",
+              boxShadow:
+                activeTab === tab
+                  ? "0 4px 12px rgba(0,0,0,0.4)"
+                  : "0 2px 4px rgba(0,0,0,0.2)",
+              transition: "all 0.3s",
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== tab)
+                e.currentTarget.style.background = "#0d4c82";
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== tab)
+                e.currentTarget.style.background = tabColors.inactive;
             }}
           >
             {tab === "account" && "Профиль"}
@@ -281,6 +301,7 @@ export default function MainPage() {
         ))}
       </nav>
 
+      {/* ---------------------- Вкладки ---------------------- */}
       {isMapActive ? (
         hasSubscription ? (
           <div
@@ -313,9 +334,11 @@ export default function MainPage() {
                 fontWeight: "bold",
                 transition: "background-color 0.2s",
                 zIndex: 10000,
-				color: "black",
+                color: "black",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f4f4")}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#f4f4f4")
+              }
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
             >
               ←
@@ -342,11 +365,13 @@ export default function MainPage() {
               style={{
                 padding: "12px 24px",
                 marginTop: "16px",
-                backgroundColor: "#063353",
+                background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
                 color: "#fff",
                 border: "none",
-                borderRadius: "4px",
+                borderRadius: "8px",
                 cursor: "pointer",
+                fontWeight: 600,
+                transition: "all 0.2s",
               }}
             >
               {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
@@ -362,7 +387,12 @@ export default function MainPage() {
                 <img
                   src={user.info.photo_100}
                   alt="avatar"
-                  style={{ width: 100, height: 100, borderRadius: "50%" }}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: "50%",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                  }}
                 />
               )}
               <p>ID пользователя: {user?.id || "—"}</p>
@@ -372,12 +402,16 @@ export default function MainPage() {
                 style={{
                   marginTop: "16px",
                   padding: "10px 20px",
-                  backgroundColor: "#d9534f",
+                  background: "#d9534f",
                   border: "none",
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                   color: "#fff",
                   cursor: "pointer",
+                  fontWeight: 600,
+                  transition: "all 0.2s",
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
               >
                 Выйти
               </button>
@@ -392,11 +426,13 @@ export default function MainPage() {
                 style={{
                   padding: "12px 24px",
                   marginTop: "16px",
-                  backgroundColor: "#063353",
+                  background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
                   color: "#fff",
                   border: "none",
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                   cursor: "pointer",
+                  fontWeight: 600,
+                  transition: "all 0.2s",
                 }}
               >
                 {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
