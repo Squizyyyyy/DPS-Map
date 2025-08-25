@@ -8,6 +8,7 @@ import session from "express-session";
 import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
 import fetch from "node-fetch";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -168,7 +169,7 @@ async function refreshAccessToken(user) {
   }
 }
 
-// ---- Авторизация через VKID и создание сессии ----
+// ---- Авторизация через VKID ----
 app.post("/auth/vkid", async (req, res) => {
   try {
     const { access_token, refresh_token, id_token } = req.body || {};
@@ -213,15 +214,59 @@ app.post("/auth/vkid", async (req, res) => {
   }
 });
 
-// ---- Проверка сессии и автообновление токена ----
+// ---- Авторизация через Telegram ----
+app.post("/auth/telegram", async (req, res) => {
+  try {
+    const { id, first_name, last_name, username, photo_url, auth_date, hash } = req.body;
+
+    if (!id || !hash) {
+      return res.status(400).json({ success: false, error: "Недостаточно данных" });
+    }
+
+    // Проверяем подпись
+    const secret = crypto.createHash("sha256").update(process.env.TELEGRAM_BOT_TOKEN).digest();
+    const checkString = Object.keys(req.body)
+      .filter((key) => key !== "hash")
+      .sort()
+      .map((key) => `${key}=${req.body[key]}`)
+      .join("\n");
+    const hmac = crypto.createHmac("sha256", secret).update(checkString).digest("hex");
+
+    if (hmac !== hash) {
+      return res.status(403).json({ success: false, error: "Неверная подпись Telegram" });
+    }
+
+    // Создаём объект пользователя
+    const userObj = {
+      id: `tg_${id}`,
+      internalId: uuidv4(),
+      info: {
+        first_name: first_name || "",
+        last_name: last_name || "",
+        username: username || "",
+        photo_100: photo_url || "",
+      },
+      telegram: { id, username, auth_date },
+    };
+
+    // Сохраняем в БД и сессию
+    req.session.user = userObj;
+    await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
+
+    return res.json({ success: true, user: userObj });
+  } catch (e) {
+    console.error("Telegram auth error:", e);
+    return res.status(500).json({ success: false, error: "Серверная ошибка при авторизации" });
+  }
+});
+
+// ---- Проверка сессии ----
 app.get("/auth/status", async (req, res) => {
   if (!req.session.user) return res.json({ authorized: false });
 
-  // автообновление токена
   const newAccessToken = await refreshAccessToken(req.session.user);
   req.session.user.access_token = newAccessToken;
 
-  // проверка подписки
   const user = req.session.user;
   if (user.subscription && user.subscription.expiresAt) {
     if (Date.now() > user.subscription.expiresAt) {
@@ -240,7 +285,7 @@ app.post("/auth/logout", (req, res) => {
   });
 });
 
-// ---- Сохранение выбранного города пользователя ----
+// ---- Сохранение выбранного города ----
 app.post("/auth/set-city", checkAuth, async (req, res) => {
   try {
     const { city } = req.body;
@@ -258,12 +303,12 @@ app.post("/auth/set-city", checkAuth, async (req, res) => {
   }
 });
 
-// ---- Покупка подписки (1 месяц) ----
+// ---- Подписка ----
 app.post("/subscription/buy", checkAuth, async (req, res) => {
   try {
     const user = req.session.user;
     const now = Date.now();
-    const expiresAt = now + 30 * 24 * 60 * 60 * 1000; // 30 дней
+    const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
 
     user.subscription = {
       active: true,
@@ -339,13 +384,11 @@ async function updateMarkersStatus() {
   try {
     const now = Date.now();
 
-    // 1) через час → unconfirmed
     await markersCollection.updateMany(
       { status: "active", timestamp: { $lt: now - 60 * 60 * 1000 } },
       { $set: { status: "unconfirmed" } }
     );
 
-    // 2) через 1:30 → удалить
     await markersCollection.deleteMany({
       timestamp: { $lt: now - 90 * 60 * 1000 },
     });

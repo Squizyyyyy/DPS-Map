@@ -147,6 +147,38 @@ export default function MainPage() {
     }
   };
 
+  // ---- Новая функция авторизации через Telegram ----
+  const handleTelegramLogin = async (telegramData) => {
+    setLoadingLogin(true);
+    setError(null);
+    try {
+      const res = await fetch("/auth/telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(telegramData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUser(data.user);
+        setIsAuthorized(true);
+        setActiveTab("account");
+        setError(null);
+        if (data.user.city) {
+          const city = cities.find((c) => c.name === data.user.city);
+          if (city) setSelectedCity(city);
+        }
+      } else {
+        setError(data.error || "Не удалось авторизоваться через Telegram");
+      }
+    } catch (e) {
+      console.error("Telegram login error:", e);
+      setError("Ошибка авторизации через Telegram");
+    } finally {
+      setLoadingLogin(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch("/auth/logout", { method: "POST", credentials: "include" });
@@ -238,8 +270,10 @@ export default function MainPage() {
         }}
       >
         <h2>Авторизация</h2>
-        <p>Чтобы пользоваться сайтом, войдите через VK ID.</p>
+        <p>Чтобы пользоваться сайтом, войдите через VK ID или Telegram.</p>
         {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
+
+        {/* Кнопка VK ID */}
         <button
           onClick={handleLogin}
           disabled={!sdkReady || loadingLogin}
@@ -259,10 +293,45 @@ export default function MainPage() {
         >
           {loadingLogin ? "Входим..." : "Войти через VK ID"}
         </button>
+
+        {/* Кнопка Telegram */}
+        <div style={{ marginTop: 16 }}>
+          <script
+            async
+            src="https://telegram.org/js/telegram-widget.js?15"
+            data-telegram-login={process.env.REACT_APP_TELEGRAM_BOT_USERNAME}
+            data-size="large"
+            data-userpic="false"
+            data-radius="8"
+            data-auth-url=""
+            data-request-access="write"
+            data-on-auth="handleTelegramAuth"
+          ></script>
+        </div>
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              function handleTelegramAuth(user) {
+                window.dispatchEvent(new CustomEvent('telegramAuth', { detail: user }));
+              }
+            `,
+          }}
+        />
       </div>
     );
   }
 
+  // ---- Обработка события от Telegram виджета ----
+  useEffect(() => {
+    const handler = (e) => {
+      handleTelegramLogin(e.detail);
+    };
+    window.addEventListener("telegramAuth", handler);
+    return () => window.removeEventListener("telegramAuth", handler);
+  }, []);
+
+  // ----------------- Основной рендер (профиль, карта, подписка) -----------------
   return (
     <div
       style={{
@@ -440,7 +509,6 @@ export default function MainPage() {
                   Выбран город: <b>{selectedCity.name}</b>
                 </p>
 
-                {/* Кнопка сохранения города */}
                 <button
                   onClick={async () => {
                     try {
