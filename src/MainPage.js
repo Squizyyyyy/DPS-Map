@@ -24,6 +24,7 @@ export default function MainPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [sdkReady, setSdkReady] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [selectedCity, setSelectedCity] = useState(cities[0]);
@@ -56,65 +57,92 @@ export default function MainPage() {
     })();
   }, []);
 
-  // Авторизация через Telegram
-  const handleTelegramLogin = async () => {
+  // Загрузка SDK VK ID
+  useEffect(() => {
+    function init() {
+      try {
+        const VKID = window.VKIDSDK;
+        VKID.Config.init({
+          app: 54066340,
+          redirectUrl: window.location.origin,
+          responseMode: VKID.ConfigResponseMode.Callback,
+          source: VKID.ConfigSource.LOWCODE,
+          scope: "vkid.personal_info",
+        });
+        setSdkReady(true);
+      } catch (e) {
+        console.error("VKID init error:", e);
+        setError("Не удалось инициализировать VK ID");
+      }
+    }
+
+    if (window.VKIDSDK) {
+      init();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/@vkid/sdk/dist-sdk/umd/index.js";
+    script.async = true;
+    script.onload = init;
+    script.onerror = () => setError("Не удалось загрузить SDK VKID");
+    document.body.appendChild(script);
+  }, []);
+
+  const handleLogin = async () => {
+    if (!window.VKIDSDK) {
+      setError("SDK VKID не загружен");
+      return;
+    }
     setLoadingLogin(true);
     setError(null);
-    try {
-      const width = 450;
-      const height = 600;
-      const left = window.screenX + (window.innerWidth - width) / 2;
-      const top = window.screenY + (window.innerHeight - height) / 2;
-      const tgWindow = window.open(
-        `https://t.me/${process.env.REACT_APP_TELEGRAM_BOT_USERNAME}?start=auth`,
-        "_blank",
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
 
-      if (!tgWindow) {
-        setError("Не удалось открыть окно Telegram");
+    try {
+      const VKID = window.VKIDSDK;
+      const { code, state, device_id } = await VKID.Auth.login();
+
+      if (!code || !device_id) {
+        setError("Не удалось получить код авторизации от VK");
         setLoadingLogin(false);
         return;
       }
 
-      const handleMessage = async (event) => {
-        if (event.origin !== window.location.origin) return;
-        if (event.data?.telegramAuth) {
-          try {
-            const response = await fetch("/auth/telegram", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify(event.data.telegramAuth),
-            });
-            const data = await response.json();
-            if (data.success) {
-              setUser(data.user);
-              setIsAuthorized(true);
-              setActiveTab("account");
-              setError(null);
-              if (data.user.city) {
-                const city = cities.find((c) => c.name === data.user.city);
-                if (city) setSelectedCity(city);
-              }
-            } else {
-              setError(data.error || "Не удалось авторизоваться через Telegram");
-            }
-          } catch (e) {
-            console.error("Telegram login POST error:", e);
-            setError("Ошибка авторизации через Telegram");
-          } finally {
-            setLoadingLogin(false);
-            tgWindow.close();
-          }
-          window.removeEventListener("message", handleMessage);
-        }
-      };
+      const tokenData = await VKID.Auth.exchangeCode(code, device_id);
+      if (!tokenData || !tokenData.access_token) {
+        setError("Не удалось обменять код на токены");
+        setLoadingLogin(false);
+        return;
+      }
 
-      window.addEventListener("message", handleMessage);
+      const response = await fetch("/auth/vkid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          access_token: tokenData.access_token || null,
+          refresh_token: tokenData.refresh_token || null,
+          id_token: tokenData.id_token || null,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setUser(result.user);
+        setIsAuthorized(true);
+        setActiveTab("account");
+        setError(null);
+
+        if (result.user.city) {
+          const city = cities.find((c) => c.name === result.user.city);
+          if (city) setSelectedCity(city);
+        }
+      } else {
+        setError(result.error || "Не удалось авторизоваться через VK (сервер)");
+      }
     } catch (e) {
-      console.error("Telegram login error:", e);
-      setError("Ошибка авторизации через Telegram");
+      console.error("VKID login error:", e);
+      setError("Ошибка авторизации через VK");
+    } finally {
       setLoadingLogin(false);
     }
   };
@@ -127,6 +155,38 @@ export default function MainPage() {
     setUser(null);
     setActiveTab("account");
     setHasSubscription(false);
+  };
+  
+  // ---- Telegram JS-виджет ----
+  const handleTelegramLogin = async (telegramData) => {
+	setLoadingLogin(true);
+	setError(null);
+	try {
+	  const res = await fetch("/auth/telegram", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		credentials: "include",
+		body: JSON.stringify(telegramData),
+	  });
+	  const data = await res.json();
+	  if (data.success) {
+	    setUser(data.user);
+		setIsAuthorized(true);
+		setActiveTab("account");
+		setError(null);
+		if (data.user.city) {
+		  const city = cities.find((c) => c.name === data.user.city);
+		  if (city) setSelectedCity(city);
+		}
+	  } else {
+		setError(data.error || "Не удалось авторизоваться через Telegram");
+	  }
+	} catch (e) {
+	  console.error("Telegram login error:", e);
+	  setError("Ошибка авторизации через Telegram");
+	} finally {
+	  setLoadingLogin(false);
+	}
   };
 
   const handleBuySubscription = async () => {
@@ -148,6 +208,76 @@ export default function MainPage() {
     }
   };
 
+  const refreshTokenIfNeeded = async () => {
+    if (!user || !user.refresh_token) return;
+
+    try {
+      const VKID = window.VKIDSDK;
+      const now = Math.floor(Date.now() / 1000);
+      const payload = user.id_token
+        ? JSON.parse(atob(user.id_token.split(".")[1]))
+        : null;
+
+      if (!payload || payload.exp - now > 300) return;
+
+      const newTokens = await VKID.Auth.refreshToken(user.refresh_token);
+
+      if (newTokens?.access_token) {
+        const updatedUser = {
+          ...user,
+          access_token: newTokens.access_token,
+          refresh_token: newTokens.refresh_token || user.refresh_token,
+          id_token: newTokens.id_token || user.id_token,
+        };
+        setUser(updatedUser);
+
+        await fetch("/auth/vkid", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            access_token: updatedUser.access_token,
+            refresh_token: updatedUser.refresh_token,
+            id_token: updatedUser.id_token,
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("Ошибка обновления токена:", e);
+      setError("Не удалось обновить токен VK ID");
+    }
+  };
+
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const interval = setInterval(refreshTokenIfNeeded, 60000);
+    return () => clearInterval(interval);
+  }, [isAuthorized, user]);
+  
+  // ---- Подключение Telegram JS-виджета ----
+  useEffect(() => {
+	window.handleTelegramAuth = (user) => {
+	  handleTelegramLogin(user);
+	};
+	
+	const script = document.createElement("script");
+	script.src = "https://telegram.org/js/telegram-widget.js?15";
+	script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
+    script.setAttribute("data-size", "large");
+    script.setAttribute("data-userpic", "false");
+    script.setAttribute("data-radius", "8");
+    script.setAttribute("data-request-access", "write");
+    script.setAttribute("data-onauth", "handleTelegramAuth(user)");
+	script.async = true;
+	
+	document.getElementById("telegram-button-container")?.appendChild(script);
+	
+	return () => {
+	  const container = document.getElementById("telegram-button-container");
+	  if (container) container.innerHTML = "";
+	};
+  }, []);
+
   if (!isAuthorized) {
     return (
       <div
@@ -164,25 +294,30 @@ export default function MainPage() {
         }}
       >
         <h2>Авторизация</h2>
-        <p>Чтобы пользоваться сайтом, войдите через Telegram.</p>
+        <p>Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.</p>
         {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
         <button
-          onClick={handleTelegramLogin}
-          disabled={loadingLogin}
+          onClick={handleLogin}
+          disabled={!sdkReady || loadingLogin}
           style={{
             marginTop: 16,
             padding: "12px 24px",
-            background: `#34A853`,
+            background: sdkReady
+              ? `linear-gradient(90deg, #2787f5, #0a90ff)`
+              : "#6c757d",
             color: "#fff",
             border: "none",
             borderRadius: 8,
-            cursor: !loadingLogin ? "pointer" : "default",
+            cursor: sdkReady && !loadingLogin ? "pointer" : "default",
             fontWeight: 600,
             transition: "all 0.2s",
           }}
         >
-          {loadingLogin ? "Входим..." : "Войти через Telegram"}
+          {loadingLogin ? "Входим..." : "Войти через VK ID"}
         </button>
+		
+		{/* Telegram */}
+		<div id="telegram-button-container" style={{ marginTop: 16 }} />
       </div>
     );
   }
@@ -364,6 +499,7 @@ export default function MainPage() {
                   Выбран город: <b>{selectedCity.name}</b>
                 </p>
 
+                {/* Кнопка сохранения города */}
                 <button
                   onClick={async () => {
                     try {
