@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const tabColors = {
   background: "#001c39",
@@ -129,6 +131,11 @@ export default function MainPage() {
         setIsAuthorized(true);
         setActiveTab("account");
         setError(null);
+
+        if (result.user.city) {
+          const city = cities.find((c) => c.name === result.user.city);
+          if (city) setSelectedCity(city);
+        }
       } else {
         setError(result.error || "Не удалось авторизоваться через VK (сервер)");
       }
@@ -266,6 +273,7 @@ export default function MainPage() {
         flexDirection: "column",
       }}
     >
+      <ToastContainer position="bottom-right" autoClose={3000} />
       <nav
         style={{
           display: "flex",
@@ -431,6 +439,41 @@ export default function MainPage() {
                 <p style={{ marginTop: 8 }}>
                   Выбран город: <b>{selectedCity.name}</b>
                 </p>
+
+                {/* Кнопка сохранения города */}
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/auth/set-city", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ city: selectedCity.name }),
+                      });
+                      const data = await res.json();
+                      if (data.success) {
+                        toast.success("Город сохранён");
+                      } else {
+                        toast.error(data.error || "Не удалось сохранить город");
+                      }
+                    } catch (e) {
+                      console.error("Ошибка при сохранении города:", e);
+                      toast.error("Ошибка сети при сохранении города");
+                    }
+                  }}
+                  style={{
+                    marginTop: 8,
+                    padding: "8px 16px",
+                    background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Сохранить
+                </button>
               </div>
 
               <button
