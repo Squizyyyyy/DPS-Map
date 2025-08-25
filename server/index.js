@@ -56,6 +56,9 @@ async function startServer() {
 
     console.log("✅ Подключено к MongoDB");
 
+    // Запускаем проверку статусов меток каждые 5 минут
+    setInterval(updateMarkersStatus, 5 * 60 * 1000);
+
     app.listen(PORT, () => {
       console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
     });
@@ -312,6 +315,28 @@ app.post("/markers/:id/delete", checkAuth, async (req, res) => {
   if (result.deletedCount > 0) res.sendStatus(200);
   else res.sendStatus(404);
 });
+
+// ---------------------- Автообновление статуса меток ----------------------
+async function updateMarkersStatus() {
+  try {
+    const now = Date.now();
+
+    // 1) через час → unconfirmed
+    await markersCollection.updateMany(
+      { status: "active", timestamp: { $lt: now - 60 * 60 * 1000 } },
+      { $set: { status: "unconfirmed" } }
+    );
+
+    // 2) через 1:30 → удалить
+    await markersCollection.deleteMany({
+      timestamp: { $lt: now - 90 * 60 * 1000 },
+    });
+
+    console.log("🔄 Проверка меток выполнена");
+  } catch (err) {
+    console.error("Ошибка обновления статусов меток:", err);
+  }
+}
 
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, "../build")));

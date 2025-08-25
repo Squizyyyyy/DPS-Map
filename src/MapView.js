@@ -90,6 +90,34 @@ export default function MapView() {
     return () => clearInterval(interval);
   }, []);
 
+  // Проверка времени жизни меток
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMarkers((prev) =>
+        prev
+          .map((m) => {
+            const now = Date.now();
+            const createdAt = new Date(m.timestamp).getTime();
+            const diff = now - createdAt;
+
+            if (diff >= 90 * 60 * 1000) {
+              // старше 1.5 часа — удалить
+              return null;
+            } else if (diff >= 60 * 60 * 1000) {
+              // старше часа — устарела (стала серой)
+              return { ...m, status: 'stale' };
+            } else {
+              // моложе часа — цветная
+              return { ...m, status: 'active' };
+            }
+          })
+          .filter(Boolean) // убираем null (просроченные метки)
+      );
+    }, 60 * 1000); // проверяем раз в минуту
+
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchMarkers = () => {
     fetch('https://dps-map-rzn-h0uq.onrender.com/markers')
       .then((res) => {
@@ -102,15 +130,22 @@ export default function MapView() {
       });
   };
 
-  // Мгновенное обновление confirmations
+  // Подтверждение метки
   const handleConfirm = (id) => {
     fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`, { method: 'POST' })
       .then((res) => {
         if (!res.ok) throw new Error('Ошибка подтверждения');
-        // Обновляем confirmations локально без перезагрузки всех меток
+        // Обновляем локально: сбрасываем таймер
         setMarkers((prev) =>
           prev.map((m) =>
-            m.id === id ? { ...m, confirmations: (m.confirmations || 0) + 1 } : m
+            m.id === id
+              ? {
+                  ...m,
+                  confirmations: (m.confirmations || 0) + 1,
+                  timestamp: new Date().toISOString(), // обновляем время
+                  status: 'active', // снова цветная
+                }
+              : m
           )
         );
         toast.success('Метка подтверждена');
@@ -182,7 +217,6 @@ export default function MapView() {
                 <p><b>Комментарий:</b> {marker.comment}</p>
               )}
 
-              {/* Счётчик подтверждений */}
               <p><b>Подтверждений:</b> {marker.confirmations || 0}</p>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
