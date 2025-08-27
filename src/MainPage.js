@@ -455,125 +455,131 @@ export default function MainPage() {
       ) : (
         <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
           {activeTab === "account" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: 16 }}>
-			
-			  {/* ---- Профиль ---- */}
-			  <div style={{
-				backgroundColor: "#0a1f33",
-                borderRadius: 16,
-                padding: 16,
-                boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12
-			  }}>
-			    <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: "#fff" }}>Профиль</h2>
-				<p style={{ color: "#aaa", margin: 0 }}>
-				  <b>ID пользователя:</b> {user?.id || "—"}
-				</p>
-			  </div>
-			  
-			  {/* ---- Выбор города ---- */}
-			  <div style={{
-				backgroundColor: "#0a1f33",
-                borderRadius: 16,
-                padding: 16,
-                boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-                display: "flex",
-                alignItems: "center",
-                gap: 12
-			  }}>
-			    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-				  <label style={{ color: "#fff", fontWeight: 600 }}>Ваш город</label>
-				  <select
-				    value={selectedCity.name}
-					onChange={(e) => {
-					  const city = cities.find((c) => c.name === e.target.value);
-                      if (city) setSelectedCity(city);
-					}}
-					style={{
-					  padding: "10px 14px",
-                      borderRadius: 10,
-                      border: "1px solid #1f3a5f",
-                      backgroundColor: "#063353",
-                      color: "#fff",
-                      fontWeight: 500,
-                      cursor: "pointer",
-                      appearance: "none",
-                      WebkitAppearance: "none",
-                      MozAppearance: "none",
-					}}
-				  >
-				    {cities.map((city) => (
-					  <option key={city.name} value={city.name}>{city.name}</option>
-					))}
-				  </select>
-				</div>
-				<button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch("/auth/set-city", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({ city: selectedCity.name }),
-                      });
-                      const data = await res.json();
-                      if (data.success) toast.success("Город сохранён");
-                      else toast.error(data.error || "Не удалось сохранить город");
-                    } catch (e) {
-                      console.error("Ошибка при сохранении города:", e);
-                      toast.error("Ошибка сети при сохранении города");
-                    }
-                  }}
-                  style={{
-                    padding: "10px 20px",
-                    background: "linear-gradient(90deg, #2787f5, #0a90ff)",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 10,
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #0a90ff)")}
-                >
-                  Сохранить
-                </button>
-              </div>
+  <div style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 24,
+    padding: 32,
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+  }}>
 
-              {/* ---- Действия ---- */}
-              <div style={{
-                backgroundColor: "#0a1f33",
-                borderRadius: 16,
-                padding: 16,
-                boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-                display: "flex",
-                justifyContent: "flex-start"
-              }}>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    padding: "10px 20px",
-                    background: "#d9534f",
-                    border: "none",
-                    borderRadius: 10,
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
-                >
-                  Выйти
-                </button>
-              </div>
+    {/* ---- Профиль ---- */}
+    <div style={{
+      backgroundColor: "#0a1f33",
+      borderRadius: 20,
+      padding: 24,
+      width: 360,
+      textAlign: "center",
+      boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+    }}>
+      <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#fff" }}>Профиль</h2>
+      <p style={{ color: "#aaa", fontSize: 18, marginTop: 12 }}>
+        <b>ID пользователя:</b> {user?.id || "—"}
+      </p>
+    </div>
 
-            </div>
-          )}
+    {/* ---- Выбор города ---- */}
+    <div style={{
+      backgroundColor: "#0a1f33",
+      borderRadius: 20,
+      padding: 24,
+      width: 360,
+      textAlign: "center",
+      boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 16
+    }}>
+      <label style={{ color: "#fff", fontWeight: 700, fontSize: 18 }}>Ваш город</label>
+      <select
+        value={selectedCity.name}
+        onChange={(e) => {
+          const city = cities.find((c) => c.name === e.target.value);
+          if (city) setSelectedCity(city);
+        }}
+        style={{
+          padding: "14px 16px",
+          borderRadius: 12,
+          border: "1px solid #1f3a5f",
+          backgroundColor: "#063353",
+          color: "#fff",
+          fontSize: 16,
+          fontWeight: 500,
+          cursor: "pointer",
+          width: "100%",
+          appearance: "none",
+          WebkitAppearance: "none",
+          MozAppearance: "none"
+        }}
+      >
+        {cities.map((city) => (
+          <option key={city.name} value={city.name}>{city.name}</option>
+        ))}
+      </select>
+      <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
+        Выбран город: <b>{selectedCity.name}</b>
+      </p>
+      <button
+        onClick={async () => {
+          try {
+            const res = await fetch("/auth/set-city", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ city: selectedCity.name }),
+            });
+            const data = await res.json();
+            if (data.success) toast.success("Город сохранён");
+            else toast.error(data.error || "Не удалось сохранить город");
+          } catch (e) {
+            console.error("Ошибка при сохранении города:", e);
+            toast.error("Ошибка сети при сохранении города");
+          }
+        }}
+        style={{
+          padding: "12px 0",
+          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 12,
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: 16,
+          width: "100%",
+          marginTop: 8,
+          transition: "all 0.2s"
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #0a90ff)")}
+      >
+        Сохранить
+      </button>
+    </div>
 
+    {/* ---- Выйти ---- */}
+    <button
+      onClick={handleLogout}
+      style={{
+        padding: "14px 0",
+        background: "#d9534f",
+        border: "none",
+        borderRadius: 12,
+        color: "#fff",
+        cursor: "pointer",
+        fontWeight: 700,
+        fontSize: 16,
+        width: 360,
+        transition: "all 0.2s"
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
+    >
+      Выйти
+    </button>
+
+  </div>
+)}
 
           {activeTab === "subscription" && (
             <div>
