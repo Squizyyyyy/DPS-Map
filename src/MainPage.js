@@ -156,38 +156,6 @@ export default function MainPage() {
     setActiveTab("account");
     setHasSubscription(false);
   };
-  
-  // ---- Telegram JS-виджет ----
-  const handleTelegramLogin = async (telegramData) => {
-	setLoadingLogin(true);
-	setError(null);
-	try {
-	  const res = await fetch("/auth/telegram", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(telegramData),
-	  });
-	  const data = await res.json();
-	  if (data.success) {
-	    setUser(data.user);
-		setIsAuthorized(true);
-		setActiveTab("account");
-		setError(null);
-		if (data.user.city) {
-		  const city = cities.find((c) => c.name === data.user.city);
-		  if (city) setSelectedCity(city);
-		}
-	  } else {
-		setError(data.error || "Не удалось авторизоваться через Telegram");
-	  }
-	} catch (e) {
-	  console.error("Telegram login error:", e);
-	  setError("Ошибка авторизации через Telegram");
-	} finally {
-	  setLoadingLogin(false);
-	}
-  };
 
   const handleBuySubscription = async () => {
     setLoadingSubscription(true);
