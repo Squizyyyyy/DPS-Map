@@ -156,6 +156,38 @@ export default function MainPage() {
     setActiveTab("account");
     setHasSubscription(false);
   };
+  
+  // ---- Telegram JS-виджет ----
+  const handleTelegramLogin = async (telegramData) => {
+	setLoadingLogin(true);
+	setError(null);
+	try {
+	  const res = await fetch("/auth/telegram", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		credentials: "include",
+		body: JSON.stringify(telegramData),
+	  });
+	  const data = await res.json();
+	  if (data.success) {
+	    setUser(data.user);
+		setIsAuthorized(true);
+		setActiveTab("account");
+		setError(null);
+		if (data.user.city) {
+		  const city = cities.find((c) => c.name === data.user.city);
+		  if (city) setSelectedCity(city);
+		}
+	  } else {
+		setError(data.error || "Не удалось авторизоваться через Telegram");
+	  }
+	} catch (e) {
+	  console.error("Telegram login error:", e);
+	  setError("Ошибка авторизации через Telegram");
+	} finally {
+	  setLoadingLogin(false);
+	}
+  };
 
   const handleBuySubscription = async () => {
     setLoadingSubscription(true);
@@ -222,18 +254,15 @@ export default function MainPage() {
     return () => clearInterval(interval);
   }, [isAuthorized, user]);
   
-  // ---- Функция для инициализации Telegram JS-виджета ----
-  const initTelegramWidget = () => {
-	const container = document.getElementById("telegram-button-container");
-	if (!container) return;
-	
-	container.innerHTML = ""; // очищаем старый виджет
-	
-	window.handleTelegramAuth = (user) => handleTelegramLogin(user);
+  // ---- Подключение Telegram JS-виджета ----
+  useEffect(() => {
+	window.handleTelegramAuth = (user) => {
+	  handleTelegramLogin(user);
+	};
 	
 	const script = document.createElement("script");
 	script.src = "https://telegram.org/js/telegram-widget.js?15";
-    script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
+	script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
     script.setAttribute("data-size", "large");
     script.setAttribute("data-userpic", "false");
     script.setAttribute("data-radius", "8");
@@ -241,28 +270,14 @@ export default function MainPage() {
     script.setAttribute("data-onauth", "handleTelegramAuth(user)");
 	script.async = true;
 	
-	container.appendChild(script);
-  };
-  
-  // ---- Вызываем виджет при монтировании страницы ----
-  useEffect(() => {
-	initTelegramWidget();
-  }, []);
-  
-  // ---- Logout ----
-  const handleLogout = async () => {
-	try {
-	  await fetch("/auth/logout", { method: "POST", credentials: "include" });
-	} catch (_) {}
-	setIsAuthorized(false);
-    setUser(null);
-    setActiveTab("account");
-    setHasSubscription(false);
+	document.getElementById("telegram-button-container")?.appendChild(script);
 	
-	// 🔄 восстановление кнопки Telegram после выхода
-	initTelegramWidget();
-  };
-  
+	return () => {
+	  const container = document.getElementById("telegram-button-container");
+	  if (container) container.innerHTML = "";
+	};
+  }, []);
+
   if (!isAuthorized) {
     return (
       <div
