@@ -460,7 +460,7 @@ export default function MainPage() {
     flexDirection: "column",
     alignItems: "center",
     gap: 24,
-    padding: 32,
+    padding: 16,
     fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
   }}>
 
@@ -469,7 +469,8 @@ export default function MainPage() {
       backgroundColor: "#0a1f33",
       borderRadius: 20,
       padding: 24,
-      width: 360,
+      width: "100%",
+	  maxWidth: 360,
       textAlign: "center",
       boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
     }}>
@@ -569,7 +570,8 @@ export default function MainPage() {
         cursor: "pointer",
         fontWeight: 700,
         fontSize: 16,
-        width: 360,
+        width: "100%",
+		maxWidth: 360,
         transition: "all 0.2s"
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
