@@ -193,10 +193,10 @@ export default function MapView({ city }) {
           <Marker
             key={marker.id}
             position={[marker.lat, marker.lng]}
-            icon={marker.status === 'stale' ? staleIcon : policeIcon}
+            icon={marker.status === 'unconfirmed' ? staleIcon : policeIcon}
           >
             <Popup>
-              {marker.status === 'stale' ? (
+              {marker.status === 'unconfirmed' ? (
                 <p>⚠️ Метка устарела (не подтверждена)</p>
               ) : (
                 <p>🚓 ДПС здесь</p>
