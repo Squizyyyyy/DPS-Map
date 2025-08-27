@@ -256,27 +256,27 @@ export default function MainPage() {
   
   // ---- Подключение Telegram JS-виджета ----
   useEffect(() => {
-	window.handleTelegramAuth = (user) => {
-	  handleTelegramLogin(user);
-	};
+	window.handleTelegramAuth = (user) => handleTelegramLogin(user);
 	
-	const script = document.createElement("script");
-	script.src = "https://telegram.org/js/telegram-widget.js?15";
-	script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
-    script.setAttribute("data-size", "large");
-    script.setAttribute("data-userpic", "false");
-    script.setAttribute("data-radius", "8");
-    script.setAttribute("data-request-access", "write");
-    script.setAttribute("data-onauth", "handleTelegramAuth(user)");
-	script.async = true;
+	const container = document.getElementById("telegram-button-container");
+	if (!container) return;
 	
-	document.getElementById("telegram-button-container")?.appendChild(script);
+	container.innerHTML = "";
 	
-	return () => {
-	  const container = document.getElementById("telegram-button-container");
-	  if (container) container.innerHTML = "";
-	};
-  }, []);
+	if (!isAuthorized) {
+	  const script = document.createElement("script");
+	  script.src = "https://telegram.org/js/telegram-widget.js?15";
+      script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
+      script.setAttribute("data-size", "large");
+      script.setAttribute("data-userpic", "false");
+      script.setAttribute("data-radius", "8");
+      script.setAttribute("data-request-access", "write");
+      script.setAttribute("data-onauth", "handleTelegramAuth(user)");
+	  script.async = true;
+	  
+	  container.appendChild(script);
+	}
+  }, [isAuthorized]);
 
   if (!isAuthorized) {
     return (
