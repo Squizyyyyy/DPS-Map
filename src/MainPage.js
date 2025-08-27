@@ -254,15 +254,18 @@ export default function MainPage() {
     return () => clearInterval(interval);
   }, [isAuthorized, user]);
   
-  // ---- Подключение Telegram JS-виджета ----
-  useEffect(() => {
-	window.handleTelegramAuth = (user) => {
-	  handleTelegramLogin(user);
-	};
+  // ---- Функция для инициализации Telegram JS-виджета ----
+  const initTelegramWidget = () => {
+	const container = document.getElementById("telegram-button-container");
+	if (!container) return;
+	
+	container.innerHTML = ""; // очищаем старый виджет
+	
+	window.handleTelegramAuth = (user) => handleTelegramLogin(user);
 	
 	const script = document.createElement("script");
 	script.src = "https://telegram.org/js/telegram-widget.js?15";
-	script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
+    script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
     script.setAttribute("data-size", "large");
     script.setAttribute("data-userpic", "false");
     script.setAttribute("data-radius", "8");
@@ -270,14 +273,28 @@ export default function MainPage() {
     script.setAttribute("data-onauth", "handleTelegramAuth(user)");
 	script.async = true;
 	
-	document.getElementById("telegram-button-container")?.appendChild(script);
-	
-	return () => {
-	  const container = document.getElementById("telegram-button-container");
-	  if (container) container.innerHTML = "";
-	};
+	container.appendChild(script);
+  };
+  
+  // ---- Вызываем виджет при монтировании страницы ----
+  useEffect(() => {
+	initTelegramWidget();
   }, []);
-
+  
+  // ---- Logout ----
+  const handleLogout = async () => {
+	try {
+	  await fetch("/auth/logout", { method: "POST", credentials: "include" });
+	} catch (_) {}
+	setIsAuthorized(false);
+    setUser(null);
+    setActiveTab("account");
+    setHasSubscription(false);
+	
+	// 🔄 восстановление кнопки Telegram после выхода
+	initTelegramWidget();
+  };
+  
   if (!isAuthorized) {
     return (
       <div
