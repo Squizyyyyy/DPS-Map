@@ -542,7 +542,6 @@ export default function MainPage() {
             </div>
           )}
         </main>
-      )}
     </div>
   );
 }
