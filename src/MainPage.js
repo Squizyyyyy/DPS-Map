@@ -459,23 +459,23 @@ export default function MainPage() {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: 24,
-    padding: 16,
+    gap: 16,
+    padding: 12,
     fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
   }}>
 
     {/* ---- Профиль ---- */}
     <div style={{
       backgroundColor: "#0a1f33",
-      borderRadius: 20,
-      padding: 24,
+      borderRadius: 16,
+      padding: 16,
       width: "100%",
-	  maxWidth: 360,
+	  maxWidth: 300,
       textAlign: "center",
-      boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
     }}>
-      <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#fff" }}>Профиль</h2>
-      <p style={{ color: "#aaa", fontSize: 18, marginTop: 12 }}>
+      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>Профиль</h2>
+      <p style={{ color: "#aaa", fontSize: 16, marginTop: 8 }}>
         <b>ID пользователя:</b> {user?.id || "—"}
       </p>
     </div>
@@ -483,16 +483,17 @@ export default function MainPage() {
     {/* ---- Выбор города ---- */}
     <div style={{
       backgroundColor: "#0a1f33",
-      borderRadius: 20,
-      padding: 24,
-      width: 360,
+      borderRadius: 16,
+      padding: 16,
+      width: "100%",
+	  maxWidth: 300,
       textAlign: "center",
-      boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       display: "flex",
       flexDirection: "column",
-      gap: 16
+      gap: 12
     }}>
-      <label style={{ color: "#fff", fontWeight: 700, fontSize: 18 }}>Ваш город</label>
+      <label style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>Ваш город</label>
       <select
         value={selectedCity.name}
         onChange={(e) => {
@@ -500,25 +501,23 @@ export default function MainPage() {
           if (city) setSelectedCity(city);
         }}
         style={{
-          padding: "14px 16px",
-          borderRadius: 12,
+          padding: "10px 12px",
+          borderRadius: 10,
           border: "1px solid #1f3a5f",
           backgroundColor: "#063353",
           color: "#fff",
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: 500,
           cursor: "pointer",
           width: "100%",
           appearance: "none",
-          WebkitAppearance: "none",
-          MozAppearance: "none"
         }}
       >
         {cities.map((city) => (
           <option key={city.name} value={city.name}>{city.name}</option>
         ))}
       </select>
-      <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
+      <p style={{ color: "#aaa", fontSize: 14, margin: 0 }}>
         Выбран город: <b>{selectedCity.name}</b>
       </p>
       <button
@@ -539,16 +538,15 @@ export default function MainPage() {
           }
         }}
         style={{
-          padding: "12px 0",
+          padding: "10px 0",
           background: "linear-gradient(90deg, #2787f5, #0a90ff)",
           color: "#fff",
           border: "none",
-          borderRadius: 12,
+          borderRadius: 10,
           cursor: "pointer",
           fontWeight: 600,
-          fontSize: 16,
+          fontSize: 14,
           width: "100%",
-          marginTop: 8,
           transition: "all 0.2s"
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")}
@@ -562,16 +560,16 @@ export default function MainPage() {
     <button
       onClick={handleLogout}
       style={{
-        padding: "14px 0",
+        padding: "12px 0",
         background: "#d9534f",
         border: "none",
-        borderRadius: 12,
+        borderRadius: 10,
         color: "#fff",
         cursor: "pointer",
         fontWeight: 700,
-        fontSize: 16,
+        fontSize: 14,
         width: "100%",
-		maxWidth: 360,
+		maxWidth: 300,
         transition: "all 0.2s"
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
