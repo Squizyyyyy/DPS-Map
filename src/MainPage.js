@@ -343,6 +343,8 @@ export default function MainPage() {
           padding: "8px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
 		  width: "100%",
+		  height: 50,
+		  boxSizing: "border-box",
         }}
       >
 	    <div
@@ -468,7 +470,7 @@ export default function MainPage() {
           </div>
         )
       ) : (
-        <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
+        <main style={{ flexGrow: 1, padding: "16px", overflow: "auto", boxSizing: "border-box" }}>
           {activeTab === "account" && (
   <div style={{
     display: "flex",
