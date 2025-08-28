@@ -28,6 +28,8 @@ export default function MainPage() {
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [selectedCity, setSelectedCity] = useState(cities[0]);
+  const outerPadding = window.innerWidth < 400 ? 20 : 12; // общий padding для main и nav
+  const blockPadding = window.innerWidth < 400 ? 20 : 16; // padding внутри блоков
 
   const isMapActive = activeTab === "map";
 
