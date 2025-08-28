@@ -341,7 +341,8 @@ export default function MainPage() {
           padding: "10px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
 		  width: "100%",
-		  borderRadius: "16px",
+		  borderBottomLeftRadius: "16px",
+		  borderBottomRightRadius: "16px",
         }}
       >
 	    <div
