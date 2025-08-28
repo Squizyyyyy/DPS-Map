@@ -369,7 +369,7 @@ export default function MainPage() {
                   : tabColors.inactive,
 			  boxShadow:
                 activeTab === tab
-                  ? "0 0 12px rgba(40, 200, 255, 0.8), 0 4px 12px rgba(0,0,0,0.4)" // мягкий неон сверху и тень
+                  ? "0 0 8px rgba(40, 200, 255, 0.6), 0 4px 12px rgba(0,0,0,0.4)" // мягкий неон сверху и тень
                   : "0 2px 4px rgba(0,0,0,0.2)",
               border: "none",
               borderRadius: "8px",
