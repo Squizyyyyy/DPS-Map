@@ -473,7 +473,7 @@ export default function MainPage() {
     flexDirection: "column",
     alignItems: "center",
 	gap: 16,
-    padding: "0 48px",
+    padding: "0 30px",
 	maxWidth: 500,
 	margin: "0 auto",
 	fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -586,7 +586,7 @@ export default function MainPage() {
         width: "100%",
 		maxWidth: 300,
         transition: "all 0.2s",
-		marginTop: 72,
+		marginTop: 90,
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
       onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
