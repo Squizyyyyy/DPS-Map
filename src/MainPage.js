@@ -391,6 +391,7 @@ return (
 
     {/* Основной контент */}
     <main style={{ flex: 1, padding: `${outerPadding}px`, overflow: "auto" }}>
+	  <>
       {activeTab === "account" && (
         <div style={{
           display: "flex",
@@ -517,6 +518,7 @@ return (
           </button>
 		  
         </div>
+	  )}
 	  
       {activeTab === "subscription" && (
             <div>
@@ -540,4 +542,5 @@ return (
               </button>
             </div>
           )}
+		</>
         </main>
