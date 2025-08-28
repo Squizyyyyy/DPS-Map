@@ -348,7 +348,7 @@ export default function MainPage() {
             display: "flex",
             maxWidth: 600, // ограничение ширины, как блоки профиля
             width: "100%",
-            gap: 100, // расстояние между кнопками
+            gap: 12, // расстояние между кнопками
             overflowX: "auto", // горизонтальная прокрутка на маленьких экранах
             padding: "0 8px", // немного отступа слева и справа
             margin: "0 auto", // центрирование
@@ -360,13 +360,14 @@ export default function MainPage() {
             onClick={() => setActiveTab(tab)}
             style={{
 			  flex: "1 0 0", // кнопка может растягиваться и сжиматься
-              padding: "12px 0",
+              padding: "18px 0",
+			  fontSize: 18,
               background:
                 activeTab === tab
                   ? `linear-gradient(135deg, #2787f5, #0a90ff)`
                   : tabColors.inactive,
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "12px",
               color: tabColors.text,
               cursor: "pointer",
               fontWeight: activeTab === tab ? "700" : "500",
@@ -375,13 +376,13 @@ export default function MainPage() {
                   ? "0 4px 12px rgba(0,0,0,0.4)"
                   : "0 2px 4px rgba(0,0,0,0.2)",
               transition: "all 0.3s",
-			  transform: "scale(1.2)",
+			  transform: "scale(1)",
             }}
             onMouseEnter={(e) => {
-              if (activeTab !== tab) e.currentTarget.style.background = "#0d4c82";
+              if (activeTab !== tab) e.currentTarget.style.transform = "scale(1.05)";
             }}
             onMouseLeave={(e) => {
-              if (activeTab !== tab) e.currentTarget.style.background = tabColors.inactive;
+              if (activeTab !== tab) e.currentTarget.style.transform = "scale(1)";
             }}
           >
             {tab === "account" && "Профиль"}
