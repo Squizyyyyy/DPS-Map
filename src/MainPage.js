@@ -291,6 +291,7 @@ export default function MainPage() {
           alignItems: "center",
           padding: 16,
           textAlign: "center",
+		  boxSizing: "border-box",
         }}
       >
         <h2>Авторизация</h2>
@@ -330,6 +331,7 @@ export default function MainPage() {
         color: tabColors.text,
         display: "flex",
         flexDirection: "column",
+		boxSizing: "border-box",
       }}
     >
       <ToastContainer position="bottom-right" autoClose={3000} />
