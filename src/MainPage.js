@@ -517,7 +517,6 @@ return (
           </button>
 		  
         </div>
-	  )}
 
       {activeTab === "subscription" && (
             <div>
