@@ -483,13 +483,13 @@ export default function MainPage() {
     <div style={{
       backgroundColor: "#0a1f33",
 	  borderRadius: 16,
-      padding: 18,
+      padding: 16,
       width: "100%",
 	  maxWidth: 300,
 	  textAlign: "center",
 	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
     }}>
-	  <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#fff" }}>Профиль</h2>
+	  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>Профиль</h2>
       <p style={{ color: "#aaa", fontSize: 16, marginTop: 8 }}>
         <b>ID пользователя:</b> {user?.id || "—"}
       </p>
