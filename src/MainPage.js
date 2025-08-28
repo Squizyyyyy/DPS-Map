@@ -334,64 +334,69 @@ export default function MainPage() {
     >
       <ToastContainer position="bottom-right" autoClose={3000} />
       <nav
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    **background: "linear-gradient(90deg, #0d4c82, #2787f5, #0a90ff)", // 🔥 флагманский градиент**
+    **boxShadow: "0 4px 20px rgba(0,0,0,0.35)", // 🔥 более заметная тень**
+    **borderBottomLeftRadius: 12, // 🔥 скругление нижних углов**
+    **borderBottomRightRadius: 12, // 🔥 скругление нижних углов**
+    padding: "12px 0", // 🔥 чуть больше, чтобы кнопки "дышали"
+    width: "100%",
+    backdropFilter: "blur(10px)", // 🔥 легкое размытие фона
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      maxWidth: 650, // 🔥 чуть шире для ПК
+      width: "100%",
+      gap: 12, // 🔥 больше расстояния между кнопками
+      overflowX: "auto",
+      padding: "0 8px",
+      margin: "0 auto",
+    }}
+  >
+    {["account", "subscription", "map"].map((tab) => (
+      <button
+        key={tab}
+        onClick={() => setActiveTab(tab)}
         style={{
-          display: "flex",
-          justifyContent: "center",
-          backgroundColor: tabColors.active,
-          padding: "14px 0",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-		  width: "100%",
+          flex: "1 0 0",
+          **padding: "14px 0", // 🔥 чуть выше, чтобы кнопки визуально крупнее**
+          background:
+            activeTab === tab
+              ? `linear-gradient(135deg, #2787f5, #0a90ff)`
+              : tabColors.inactive,
+          border: "none",
+          borderRadius: "10px", // 🔥 более мягкие углы
+          color: tabColors.text,
+          cursor: "pointer",
+          fontWeight: activeTab === tab ? "700" : "500",
+          **boxShadow: activeTab === tab ? "0 6px 20px rgba(40,150,255,0.6)" : "0 2px 6px rgba(0,0,0,0.2)", // 🔥 подсветка активной кнопки**
+          **transition: "all 0.3s ease", // 🔥 плавная анимация**
+          **transform: "scale(1)", // 🔥 базовый масштаб**
+        }}
+        onMouseEnter={(e) => {
+          if (activeTab !== tab) {
+            e.currentTarget.style.background = "#0d4c82";
+            **e.currentTarget.style.transform = "scale(1.05)"; // 🔥 увеличение при наведении**
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (activeTab !== tab) {
+            e.currentTarget.style.background = tabColors.inactive;
+            **e.currentTarget.style.transform = "scale(1)"; // 🔥 возврат масштаба**
+          }
         }}
       >
-	    <div
-          style={{
-            display: "flex",
-            maxWidth: 1000, // ограничение ширины, как блоки профиля
-            width: "100%",
-            gap: 12, // расстояние между кнопками
-            overflowX: "auto", // горизонтальная прокрутка на маленьких экранах
-            padding: "0 8px", // немного отступа слева и справа
-            margin: "0 auto", // центрирование
-          }}
-        >
-        {["account", "subscription", "map"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-			  flex: "1 0 0", // кнопка может растягиваться и сжиматься
-              padding: "14px 0",
-			  fontSize: 16,
-              background:
-                activeTab === tab
-                  ? `linear-gradient(135deg, #2787f5, #0a90ff)`
-                  : tabColors.inactive,
-              border: "none",
-              borderRadius: "10px",
-              color: tabColors.text,
-              cursor: "pointer",
-              fontWeight: activeTab === tab ? "700" : "500",
-              boxShadow:
-                activeTab === tab
-                  ? "0 4px 12px rgba(0,0,0,0.4)"
-                  : "0 2px 4px rgba(0,0,0,0.2)",
-              transition: "all 0.3s",
-			  transform: "scale(1)",
-            }}
-            onMouseEnter={(e) => {
-              if (activeTab !== tab) e.currentTarget.style.transform = "scale(1.04)";
-            }}
-            onMouseLeave={(e) => {
-              if (activeTab !== tab) e.currentTarget.style.transform = "scale(1)";
-            }}
-          >
-            {tab === "account" && "Профиль"}
-            {tab === "subscription" && "Подписка"}
-            {tab === "map" && "Карта"}
-          </button>
-        ))}
-	  </div>
-    </nav>
+        {tab === "account" && "Профиль"}
+        {tab === "subscription" && "Подписка"}
+        {tab === "map" && "Карта"}
+      </button>
+    ))}
+  </div>
+</nav>
 
       {isMapActive ? (
         hasSubscription ? (
