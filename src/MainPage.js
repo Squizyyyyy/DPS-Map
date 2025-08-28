@@ -337,10 +337,10 @@ export default function MainPage() {
   style={{
     display: "flex",
     justifyContent: "center",
-    **background: "linear-gradient(90deg, #0d4c82, #2787f5, #0a90ff)", // 🔥 флагманский градиент**
-    **boxShadow: "0 4px 20px rgba(0,0,0,0.35)", // 🔥 более заметная тень**
-    **borderBottomLeftRadius: 12, // 🔥 скругление нижних углов**
-    **borderBottomRightRadius: 12, // 🔥 скругление нижних углов**
+    background: "linear-gradient(90deg, #0d4c82, #2787f5, #0a90ff)", // 🔥 флагманский градиент**
+    boxShadow: "0 4px 20px rgba(0,0,0,0.35)", // 🔥 более заметная тень**
+    borderBottomLeftRadius: 12, // 🔥 скругление нижних углов**
+    borderBottomRightRadius: 12, // 🔥 скругление нижних углов**
     padding: "12px 0", // 🔥 чуть больше, чтобы кнопки "дышали"
     width: "100%",
     backdropFilter: "blur(10px)", // 🔥 легкое размытие фона
