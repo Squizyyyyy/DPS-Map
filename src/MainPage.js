@@ -335,7 +335,7 @@ return (
     }}
   >
     <ToastContainer position="bottom-right" autoClose={3000} />
-    
+
     {/* Навигация (верхние вкладки) */}
     <nav
       style={{
