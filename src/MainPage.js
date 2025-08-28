@@ -346,7 +346,7 @@ export default function MainPage() {
 	    <div
           style={{
             display: "flex",
-            maxWidth: 800, // ограничение ширины, как блоки профиля
+            maxWidth: 1200, // ограничение ширины, как блоки профиля
             width: "100%",
             gap: 8, // расстояние между кнопками
             overflowX: "auto", // горизонтальная прокрутка на маленьких экранах
