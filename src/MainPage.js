@@ -367,6 +367,10 @@ export default function MainPage() {
                 activeTab === tab
                   ? `linear-gradient(135deg, #2787f5, #0a90ff)`
                   : tabColors.inactive,
+			  boxShadow:
+                activeTab === tab
+                  ? "0 0 8px rgba(40, 200, 255, 0.6), 0 4px 12px rgba(0,0,0,0.4)" // мягкий неон сверху и тень
+                  : "0 2px 4px rgba(0,0,0,0.2)",
               border: "none",
               borderRadius: "8px",
               color: tabColors.text,
