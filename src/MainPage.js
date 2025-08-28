@@ -484,7 +484,7 @@ return (
                 fontWeight: 600,
                 fontSize: 14,
                 width: "100%",
-                transition: "all 0.2s"
+                transition: "all 0.2s",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #0a90ff)")}
