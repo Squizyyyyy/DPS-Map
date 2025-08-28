@@ -348,7 +348,7 @@ export default function MainPage() {
             display: "flex",
             maxWidth: 600, // ограничение ширины, как блоки профиля
             width: "100%",
-            gap: 8, // расстояние между кнопками
+            gap: 10, // расстояние между кнопками
             overflowX: "auto", // горизонтальная прокрутка на маленьких экранах
             padding: "0 8px", // немного отступа слева и справа
             margin: "0 auto", // центрирование
@@ -375,6 +375,7 @@ export default function MainPage() {
                   ? "0 4px 12px rgba(0,0,0,0.4)"
                   : "0 2px 4px rgba(0,0,0,0.2)",
               transition: "all 0.3s",
+			  transform: "scale(1.2)",
             }}
             onMouseEnter={(e) => {
               if (activeTab !== tab) e.currentTarget.style.background = "#0d4c82";
