@@ -508,6 +508,7 @@ return (
               width: "100%",
               maxWidth: 300,
               transition: "all 0.2s",
+			  marginTop: 24
             }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
@@ -516,7 +517,6 @@ return (
           </button>
 
         </div>
-      )}
 
           {activeTab === "subscription" && (
             <div>
