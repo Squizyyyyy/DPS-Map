@@ -338,7 +338,7 @@ export default function MainPage() {
           display: "flex",
           justifyContent: "center",
           backgroundColor: tabColors.active,
-          padding: "10px 0",
+          padding: "11px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
 		  width: "100%",
 		  borderBottomLeftRadius: "16px",
