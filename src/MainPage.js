@@ -363,7 +363,7 @@ export default function MainPage() {
         onClick={() => setActiveTab(tab)}
         style={{
           flex: "1 0 0",
-          **padding: "14px 0", // 🔥 чуть выше, чтобы кнопки визуально крупнее**
+          padding: "14px 0", // 🔥 чуть выше, чтобы кнопки визуально крупнее**
           background:
             activeTab === tab
               ? `linear-gradient(135deg, #2787f5, #0a90ff)`
@@ -373,20 +373,20 @@ export default function MainPage() {
           color: tabColors.text,
           cursor: "pointer",
           fontWeight: activeTab === tab ? "700" : "500",
-          **boxShadow: activeTab === tab ? "0 6px 20px rgba(40,150,255,0.6)" : "0 2px 6px rgba(0,0,0,0.2)", // 🔥 подсветка активной кнопки**
-          **transition: "all 0.3s ease", // 🔥 плавная анимация**
-          **transform: "scale(1)", // 🔥 базовый масштаб**
+          boxShadow: activeTab === tab ? "0 6px 20px rgba(40,150,255,0.6)" : "0 2px 6px rgba(0,0,0,0.2)", // 🔥 подсветка активной кнопки**
+          transition: "all 0.3s ease", // 🔥 плавная анимация**
+          transform: "scale(1)", // 🔥 базовый масштаб**
         }}
         onMouseEnter={(e) => {
           if (activeTab !== tab) {
             e.currentTarget.style.background = "#0d4c82";
-            **e.currentTarget.style.transform = "scale(1.05)"; // 🔥 увеличение при наведении**
+            e.currentTarget.style.transform = "scale(1.05)"; // 🔥 увеличение при наведении**
           }
         }}
         onMouseLeave={(e) => {
           if (activeTab !== tab) {
             e.currentTarget.style.background = tabColors.inactive;
-            **e.currentTarget.style.transform = "scale(1)"; // 🔥 возврат масштаба**
+            e.currentTarget.style.transform = "scale(1)"; // 🔥 возврат масштаба**
           }
         }}
       >
