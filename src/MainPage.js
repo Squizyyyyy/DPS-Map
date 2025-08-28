@@ -606,4 +606,5 @@ export default function MainPage() {
         </main>
       )}
     </div>
-);
+   );
+}
