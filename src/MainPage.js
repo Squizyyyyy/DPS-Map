@@ -338,9 +338,10 @@ export default function MainPage() {
           display: "flex",
           justifyContent: "center",
           backgroundColor: tabColors.active,
-          padding: "8px 0",
+          padding: "10px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
 		  width: "100%",
+		  borderRadius: "16px",
         }}
       >
 	    <div
@@ -476,7 +477,7 @@ export default function MainPage() {
     padding: "0 30px",
 	maxWidth: 500,
 	margin: "0 auto",
-	marginTop: "40px",
+	marginTop: "30px",
 	fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
   }}>
 
