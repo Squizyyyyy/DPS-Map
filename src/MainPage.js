@@ -520,24 +520,29 @@ return (
 	  )}
 
       {activeTab === "subscription" && (
-        <div>
-          <h2>Подписка</h2>
-          <button
-            onClick={handleBuySubscription}
-            disabled={loadingSubscription}
-            style={{
-              padding: "12px 24px",
-              marginTop: "16px",
-              background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: 600,
-              transition: "all 0.2s",
-            }}
-          >
-            {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-          </button>
-        </div>
+            <div>
+              <h2>Подписка</h2>
+              <button
+                onClick={handleBuySubscription}
+                disabled={loadingSubscription}
+                style={{
+                  padding: "12px 24px",
+                  marginTop: "16px",
+                  background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  transition: "all 0.2s",
+                }}
+              >
+                {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
+              </button>
+            </div>
+          )}
+        </main>
       )}
+    </div>
+   );
+}
