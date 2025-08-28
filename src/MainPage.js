@@ -282,7 +282,7 @@ export default function MainPage() {
     return (
       <div
         style={{
-          height: "100vh",
+          minHeight: 100vh
           backgroundColor: tabColors.background,
           color: tabColors.text,
           display: "flex",
@@ -326,7 +326,7 @@ export default function MainPage() {
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: 100vh
         backgroundColor: tabColors.background,
         color: tabColors.text,
         display: "flex",
