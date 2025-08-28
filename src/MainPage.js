@@ -282,7 +282,7 @@ export default function MainPage() {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          height: "100vh",
           backgroundColor: tabColors.background,
           color: tabColors.text,
           display: "flex",
@@ -291,7 +291,6 @@ export default function MainPage() {
           alignItems: "center",
           padding: 16,
           textAlign: "center",
-		  boxSizing: "border-box",
         }}
       >
         <h2>Авторизация</h2>
@@ -326,12 +325,11 @@ export default function MainPage() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100vh",
         backgroundColor: tabColors.background,
         color: tabColors.text,
         display: "flex",
         flexDirection: "column",
-		boxSizing: "border-box",
       }}
     >
       <ToastContainer position="bottom-right" autoClose={3000} />
@@ -343,8 +341,6 @@ export default function MainPage() {
           padding: "8px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
 		  width: "100%",
-		  height: 50,
-		  boxSizing: "border-box",
         }}
       >
 	    <div
@@ -470,7 +466,7 @@ export default function MainPage() {
           </div>
         )
       ) : (
-        <main style={{ flexGrow: 1, padding: "16px", overflow: "auto", boxSizing: "border-box" }}>
+        <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
           {activeTab === "account" && (
   <div style={{
     display: "flex",
