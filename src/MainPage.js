@@ -585,7 +585,7 @@ export default function MainPage() {
 		fontSize: 14,
         width: "100%",
 		maxWidth: 300,
-        transition: "all 0.2s"
+        transition: "all 0.2s",
 		marginTop: 24,
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
