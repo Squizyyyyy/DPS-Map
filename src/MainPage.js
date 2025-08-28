@@ -338,7 +338,7 @@ export default function MainPage() {
           display: "flex",
           justifyContent: "center",
           backgroundColor: tabColors.active,
-          padding: "11px 0",
+          padding: "12px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
 		  width: "100%",
 		  borderBottomLeftRadius: "16px",
@@ -367,10 +367,6 @@ export default function MainPage() {
                 activeTab === tab
                   ? `linear-gradient(135deg, #2787f5, #0a90ff)`
                   : tabColors.inactive,
-			  boxShadow:
-                activeTab === tab
-                  ? "0 0 8px rgba(0, 200, 255, 0.6), 0 0 16px rgba(0, 200, 255, 0.4)" // мягкий неон сверху и тень
-                  : "0 2px 4px rgba(0,0,0,0.2)",
               border: "none",
               borderRadius: "8px",
               color: tabColors.text,
