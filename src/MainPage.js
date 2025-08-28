@@ -360,14 +360,14 @@ export default function MainPage() {
             onClick={() => setActiveTab(tab)}
             style={{
 			  flex: "1 0 0", // кнопка может растягиваться и сжиматься
-              padding: "18px 0",
-			  fontSize: 18,
+              padding: "14px 0",
+			  fontSize: 16,
               background:
                 activeTab === tab
                   ? `linear-gradient(135deg, #2787f5, #0a90ff)`
                   : tabColors.inactive,
               border: "none",
-              borderRadius: "12px",
+              borderRadius: "10px",
               color: tabColors.text,
               cursor: "pointer",
               fontWeight: activeTab === tab ? "700" : "500",
@@ -379,7 +379,7 @@ export default function MainPage() {
 			  transform: "scale(1)",
             }}
             onMouseEnter={(e) => {
-              if (activeTab !== tab) e.currentTarget.style.transform = "scale(1.05)";
+              if (activeTab !== tab) e.currentTarget.style.transform = "scale(1.04)";
             }}
             onMouseLeave={(e) => {
               if (activeTab !== tab) e.currentTarget.style.transform = "scale(1)";
