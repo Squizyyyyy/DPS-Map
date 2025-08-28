@@ -340,15 +340,27 @@ export default function MainPage() {
           backgroundColor: tabColors.active,
           padding: "8px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+		  width: "100%",
         }}
       >
+	    <div
+          style={{
+            display: "flex",
+            maxWidth: 600, // ограничение ширины, как блоки профиля
+            width: "100%",
+            gap: 8, // расстояние между кнопками
+            overflowX: "auto", // горизонтальная прокрутка на маленьких экранах
+            padding: "0 8px", // немного отступа слева и справа
+            margin: "0 auto", // центрирование
+          }}
+        >
         {["account", "subscription", "map"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{
-              padding: "12px 28px",
-              margin: "0 8px",
+			  flex: "1 0 0", // кнопка может растягиваться и сжиматься
+              padding: "12px 0",
               background:
                 activeTab === tab
                   ? `linear-gradient(135deg, #2787f5, #0a90ff)`
@@ -376,7 +388,8 @@ export default function MainPage() {
             {tab === "map" && "Карта"}
           </button>
         ))}
-      </nav>
+	  </div>
+    </nav>
 
       {isMapActive ? (
         hasSubscription ? (
