@@ -294,8 +294,8 @@ export default function MainPage() {
 		  boxSizing: "border-box",
         }}
       >
-        <h2>Авторизация</h2>
-        <p>Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.</p>
+        <h2 style={{ margin: 0 }}>Авторизация</h2>
+        <p style={{ margin: 0 }}>Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.</p>
         {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
         <button
           onClick={handleLogin}
@@ -312,6 +312,7 @@ export default function MainPage() {
             cursor: sdkReady && !loadingLogin ? "pointer" : "default",
             fontWeight: 600,
             transition: "all 0.2s",
+			margin: 0,
           }}
         >
           {loadingLogin ? "Входим..." : "Войти через VK ID"}
@@ -377,6 +378,7 @@ export default function MainPage() {
                   ? "0 4px 12px rgba(0,0,0,0.4)"
                   : "0 2px 4px rgba(0,0,0,0.2)",
               transition: "all 0.3s",
+			  margin: 0,
             }}
             onMouseEnter={(e) => {
               if (activeTab !== tab) e.currentTarget.style.background = "#0d4c82";
@@ -468,7 +470,7 @@ export default function MainPage() {
           </div>
         )
       ) : (
-        <main style={{ flex: 1, padding: "16px", overflow: "auto", minHeight: "100vh", boxSizing: "border-box", }}>
+        <main style={{ flex: 1, padding: "16px", overflow: "auto", minHeight: 0, boxSizing: "border-box", }}>
           {activeTab === "account" && (
   <div style={{
     display: "flex",
@@ -489,7 +491,8 @@ export default function MainPage() {
       width: "100%",
 	  maxWidth: 300,
 	  textAlign: "center",
-	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
+	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+	  margin: 0,
     }}>
 	  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>Профиль</h2>
       <p style={{ color: "#aaa", fontSize: 16, marginTop: 8 }}>
@@ -508,7 +511,8 @@ export default function MainPage() {
 	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       display: "flex",
       flexDirection: "column",
-	  gap: 12
+	  gap: 12,
+	  margin: 0,
     }}>
 	  <label style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>Ваш город</label>
       <select
