@@ -516,8 +516,8 @@ return (
             Выйти из профиля
           </button>
 
-        </div>
-	)}
+          </div>
+
           {activeTab === "subscription" && (
             <div>
               <h2>Подписка</h2>
