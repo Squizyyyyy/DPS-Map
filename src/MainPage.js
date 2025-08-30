@@ -301,7 +301,7 @@ if (!isAuthorized) {
           padding: "40px 24px",
           boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
           textAlign: "center",
-          backdropFilter: "blur(10px)", // красивый iOS-блюр
+          backdropFilter: "blur(10px)",
         }}
       >
         <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: "#fff" }}>Добро пожаловать</h1>
@@ -323,6 +323,10 @@ if (!isAuthorized) {
             marginTop: 24,
             width: "100%",
             padding: "14px 0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
             background: sdkReady
               ? "linear-gradient(90deg, #2787f5, #0a90ff)"
               : "#6c757d",
@@ -342,11 +346,39 @@ if (!isAuthorized) {
             e.currentTarget.style.transform = "scale(1)";
           }}
         >
+          {/* Иконка VK */}
+          <img src="/icons/vk.svg" alt="VK" style={{ width: 20, height: 20 }} />
           {loadingLogin ? "Входим..." : "Войти через VK ID"}
         </button>
 
         {/* Telegram */}
-        <div id="telegram-button-container" style={{ marginTop: 16 }} />
+        <button
+          onClick={handleTelegramLogin}
+          style={{
+            marginTop: 16,
+            width: "100%",
+            padding: "14px 0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            background: "linear-gradient(90deg, #0088cc, #00aaff)",
+            border: "none",
+            borderRadius: 14,
+            color: "#fff",
+            fontSize: 16,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            boxShadow: "0 6px 12px rgba(0, 170, 255, 0.5)",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        >
+          {/* Иконка Telegram */}
+          <img src="/icons/telegram.svg" alt="Telegram" style={{ width: 20, height: 20 }} />
+          Войти через Telegram
+        </button>
       </div>
     </div>
   );
