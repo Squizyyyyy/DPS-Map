@@ -283,7 +283,7 @@ if (!isAuthorized) {
     <div
       style={{
         height: "100vh",
-        backgroundColor: "#0a1f33", // 🔥 темный фон страницы
+        backgroundColor: "#0a1f33", // темный фон страницы
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -296,7 +296,7 @@ if (!isAuthorized) {
         style={{
           width: "100%",
           maxWidth: 360,
-          background: "#0c274f", // 🔥 мягкий градиент или сплошной
+          background: "#0c274f", // мягкий градиент или сплошной
           borderRadius: 24,
           padding: 24,
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
@@ -346,7 +346,7 @@ if (!isAuthorized) {
             display: "flex",
             flexDirection: "column",
             gap: 12,
-            border: "1px solid rgba(255,255,255,0.1)", // лёгкая граница для разделения
+            border: "1px solid rgba(255,255,255,0.1)", // лёгкая граница
           }}
         >
           {/* VK кнопка */}
@@ -369,8 +369,46 @@ if (!isAuthorized) {
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
 
-          {/* Telegram кнопка */}
-          <div id="telegram-button-container" style={{ marginTop: 0 }} />
+          {/* Telegram кастомная кнопка */}
+          <button
+            onClick={async () => {
+              try {
+                const tgUser = window.Telegram?.WebApp?.initDataUnsafe;
+                if (!tgUser) {
+                  alert("Откройте через Telegram или используйте VK ID");
+                  return;
+                }
+
+                const res = await fetch("/auth/telegram", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(tgUser),
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                  setUser(data.user);
+                } else {
+                  alert(data.error || "Ошибка авторизации через Telegram");
+                }
+              } catch (e) {
+                console.error(e);
+                alert("Ошибка сети при авторизации через Telegram");
+              }
+            }}
+            style={{
+              padding: "12px 32px", // совпадает с VK
+              background: "#00a2ff", // Telegram фирменный цвет
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              cursor: "pointer",
+              fontWeight: 600,
+              transition: "all 0.2s",
+            }}
+          >
+            Войти через Telegram
+          </button>
         </div>
       </div>
     </div>
