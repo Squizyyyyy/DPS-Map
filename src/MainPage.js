@@ -372,7 +372,7 @@ if (!isAuthorized) {
           {/* Telegram кастомная кнопка */}
           <button
             onClick={async () => {
-              const tgBotUsername = "YOUR_BOT_USERNAME"; // замените на юзернейм вашего бота
+              const tgBotUsername = "dps_map_auth_bot"; // замените на юзернейм вашего бота
               const redirectUri = encodeURIComponent(window.location.origin + "/tg-callback"); // страница для получения данных
               const oauthUrl = `https://telegram.me/${tgBotUsername}?start=auth&redirect=${redirectUri}`;
               window.open(oauthUrl, "_blank", "width=500,height=600");
