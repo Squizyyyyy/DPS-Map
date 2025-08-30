@@ -340,12 +340,12 @@ export default function MainPage() {
           backgroundColor: tabColors.active,
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
           width: "100%",
-          borderBottomLeftRadius: "16px", // 🔥 только нижние углы
+          borderBottomLeftRadius: "16px",
           borderBottomRightRadius: "16px",
           overflow: "hidden", // чтобы скругление работало
         }}
       >
-        {/* 🔥 панель поделена на 3 равные зоны */}
+        {/* панель поделена на 3 равные зоны */}
         {["account", "subscription", "map"].map((tab) => (
           <div
             key={tab}
@@ -365,7 +365,9 @@ export default function MainPage() {
               fontWeight: activeTab === tab ? "700" : "500",
               fontSize: activeTab === tab ? "16px" : "15px",
               transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
-              transition: "all 0.25s ease",
+              transition: "all 0.10s ease",
+			  fontFamily:
+			    "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
             }}
           >
             {tab === "account" && "Профиль"}
