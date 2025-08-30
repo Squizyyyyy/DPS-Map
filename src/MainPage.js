@@ -373,7 +373,7 @@ if (!isAuthorized) {
           <button
             onClick={async () => {
               const sessionToken = Math.random().toString(36).substring(2);
-              const botUsername = "YOUR_BOT_USERNAME";
+              const botUsername = "dps_map_auth_bot";
               const callbackUrl = encodeURIComponent(
                 `${window.location.origin}/tg-callback?session=${sessionToken}`
               );
