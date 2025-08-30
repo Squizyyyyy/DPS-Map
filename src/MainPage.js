@@ -372,10 +372,14 @@ if (!isAuthorized) {
           {/* Telegram кастомная кнопка */}
           <button
             onClick={async () => {
-              const tgBotUsername = "dps_map_auth_bot"; // замените на юзернейм вашего бота
-              const redirectUri = encodeURIComponent(window.location.origin + "/tg-callback"); // страница для получения данных
-              const oauthUrl = `https://telegram.me/${tgBotUsername}?start=auth&redirect=${redirectUri}`;
-              window.open(oauthUrl, "_blank", "width=500,height=600");
+              const sessionToken = Math.random().toString(36).substring(2);
+              const botUsername = "YOUR_BOT_USERNAME";
+              const callbackUrl = encodeURIComponent(
+                `${window.location.origin}/tg-callback?session=${sessionToken}`
+              );
+			  
+			  const tgLink = `https://t.me/${botUsername}?start=${sessionToken}`;
+              window.open(tgLink, "_blank");
 			}}
             style={{
               padding: "12px 32px", // совпадает с VK
