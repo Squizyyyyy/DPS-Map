@@ -283,71 +283,96 @@ if (!isAuthorized) {
     <div
       style={{
         height: "100vh",
-        backgroundColor: tabColors.background,
-        color: tabColors.text,
+        backgroundColor: "#0a1f33", // 🔥 темный фон страницы
         display: "flex",
-        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         padding: 16,
-        textAlign: "center",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif", // 🔥 стиль iOS
       }}
     >
-      {/* Заголовок */}
-      <h2 style={{ 
-        fontSize: 28, 
-        fontWeight: 700, 
-        marginBottom: 8, 
-        color: "#fff" // 🔥 чистый белый текст
-      }}>
-        Авторизация
-      </h2>
-
-      {/* Подзаголовок */}
-      <p style={{ 
-        fontSize: 16, 
-        color: "#ccc", 
-        marginBottom: 24, 
-        maxWidth: 320 
-      }}>
-        Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
-      </p>
-
-      {/* Ошибка */}
-      {error && (
-        <p style={{ 
-          color: "#ff3b30", 
-          maxWidth: 320, 
-          marginBottom: 16 
-        }}>
-          {error}
-        </p>
-      )}
-
-      {/* VK кнопка — оставляем как есть */}
-      <button
-        onClick={handleLogin}
-        disabled={!sdkReady || loadingLogin}
+      {/* Центральный блок */}
+      <div
         style={{
-          marginTop: 16,
-          padding: "12px 32px",
-          background: sdkReady
-            ? `linear-gradient(90deg, #2787f5, #0a90ff)`
-            : "#6c757d",
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          cursor: sdkReady && !loadingLogin ? "pointer" : "default",
-          fontWeight: 600,
-          transition: "all 0.2s",
+          width: "100%",
+          maxWidth: 360,
+          background: "#0c274f", // 🔥 мягкий градиент или сплошной
+          borderRadius: 24,
+          padding: 24,
+          boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        {loadingLogin ? "Входим..." : "Войти через VK ID"}
-      </button>
+        {/* Заголовок */}
+        <h2 style={{ 
+          fontSize: 28, 
+          fontWeight: 700, 
+          marginBottom: 8, 
+          color: "#fff" 
+        }}>
+          Авторизация
+        </h2>
 
-      {/* Telegram */}
-      <div id="telegram-button-container" style={{ marginTop: 16 }} />
+        {/* Подзаголовок */}
+        <p style={{ 
+          fontSize: 16, 
+          color: "#ccc", 
+          marginBottom: 24, 
+          textAlign: "center" 
+        }}>
+          Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
+        </p>
+
+        {/* Ошибка */}
+        {error && (
+          <p style={{ 
+            color: "#ff3b30", 
+            marginBottom: 16, 
+            textAlign: "center" 
+          }}>
+            {error}
+          </p>
+        )}
+
+        {/* 🔥 Блок кнопок */}
+        <div
+          style={{
+            width: "100%",
+            background: "#0a1f33",
+            borderRadius: 16,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            border: "1px solid rgba(255,255,255,0.1)", // лёгкая граница для разделения
+          }}
+        >
+          {/* VK кнопка */}
+          <button
+            onClick={handleLogin}
+            disabled={!sdkReady || loadingLogin}
+            style={{
+              padding: "12px 32px",
+              background: sdkReady
+                ? `linear-gradient(90deg, #2787f5, #0a90ff)`
+                : "#6c757d",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+              fontWeight: 600,
+              transition: "all 0.2s",
+            }}
+          >
+            {loadingLogin ? "Входим..." : "Войти через VK ID"}
+          </button>
+
+          {/* Telegram кнопка */}
+          <div id="telegram-button-container" style={{ marginTop: 0 }} />
+        </div>
+      </div>
     </div>
   );
 }
