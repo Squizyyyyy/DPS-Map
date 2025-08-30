@@ -372,30 +372,11 @@ if (!isAuthorized) {
           {/* Telegram кастомная кнопка */}
           <button
             onClick={async () => {
-              try {
-                const tgUser = window.Telegram?.WebApp?.initDataUnsafe;
-                if (!tgUser) {
-                  alert("Откройте через Telegram или используйте VK ID");
-                  return;
-                }
-
-                const res = await fetch("/auth/telegram", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(tgUser),
-                });
-
-                const data = await res.json();
-                if (data.success) {
-                  setUser(data.user);
-                } else {
-                  alert(data.error || "Ошибка авторизации через Telegram");
-                }
-              } catch (e) {
-                console.error(e);
-                alert("Ошибка сети при авторизации через Telegram");
-              }
-            }}
+              const tgBotUsername = "YOUR_BOT_USERNAME"; // замените на юзернейм вашего бота
+              const redirectUri = encodeURIComponent(window.location.origin + "/tg-callback"); // страница для получения данных
+              const oauthUrl = `https://telegram.me/${tgBotUsername}?start=auth&redirect=${redirectUri}`;
+              window.open(oauthUrl, "_blank", "width=500,height=600");
+			}}
             style={{
               padding: "12px 32px", // совпадает с VK
               background: "#00a2ff", // Telegram фирменный цвет
