@@ -301,7 +301,7 @@ export default function MainPage() {
           disabled={!sdkReady || loadingLogin}
           style={{
             marginTop: 16,
-            padding: "14px 24px",
+            padding: "18px 36px",
             background: sdkReady
               ? `linear-gradient(90deg, #2787f5, #0a90ff)`
               : "#6c757d",
