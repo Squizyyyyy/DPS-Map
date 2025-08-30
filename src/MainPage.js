@@ -278,95 +278,49 @@ export default function MainPage() {
 	}
   }, [isAuthorized]);
 
-if (!isAuthorized) {
-  return (
-    <div
-      style={{
-        height: "100vh",
-        backgroundColor: tabColors.background,
-        color: tabColors.text,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 16,
-        textAlign: "center",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif", // 🔥 IOS-шрифт
-      }}
-    >
-      <h2 style={{ fontWeight: 700, fontSize: 24 }}>Авторизация</h2>
-      <p style={{ color: "#aaa", maxWidth: 400 }}>
-        Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
-      </p>
-      {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
-
-      {/* 🔥 VK ID */}
-      <button
-        onClick={handleLogin}
-        disabled={!sdkReady || loadingLogin}
+  if (!isAuthorized) {
+    return (
+      <div
         style={{
-          marginTop: 16,
-          padding: "12px 24px",
-          background: sdkReady
-            ? `linear-gradient(90deg, #2787f5, #0a90ff)`
-            : "#6c757d",
-          color: "#fff",
-          border: "none",
-          borderRadius: 12,
-          cursor: sdkReady && !loadingLogin ? "pointer" : "default",
-          fontWeight: 600,
-          transition: "all 0.2s",
-          fontSize: 16,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          height: "100vh",
+          backgroundColor: tabColors.background,
+          color: tabColors.text,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 16,
+          textAlign: "center",
         }}
       >
-        {loadingLogin ? "Входим..." : "Войти через VK ID"}
-      </button>
-
-      {/* 🔥 Telegram */}
-      <div
-        id="telegram-login-button"
-        style={{ marginTop: 16 }}
-      ></div>
-
-      <script
-        async
-        src="https://telegram.org/js/telegram-widget.js?15"
-        data-telegram-login="YOUR_BOT_USERNAME" // 🔥 замените на имя вашего бота
-        data-size="large"
-        data-userpic="false"
-        data-request-access="write"
-        data-callback="handleTelegramCallback"
-      ></script>
-
-      {/* 🔥 Обработчик колбека */}
-      <script>
-        {`
-          window.handleTelegramCallback = function(user) {
-            fetch('/auth/telegram-login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify(user)
-            })
-            .then(res => res.json())
-            .then(data => {
-              if (data.success) {
-                window.location.reload(); // обновляем страницу
-              } else {
-                alert(data.error || 'Ошибка авторизации через Telegram');
-              }
-            })
-            .catch(err => {
-              console.error(err);
-              alert('Ошибка авторизации через Telegram');
-            });
-          }
-        `}
-      </script>
-    </div>
-  );
-}
+        <h2>Авторизация</h2>
+        <p>Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.</p>
+        {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
+        <button
+          onClick={handleLogin}
+          disabled={!sdkReady || loadingLogin}
+          style={{
+            marginTop: 16,
+            padding: "12px 24px",
+            background: sdkReady
+              ? `linear-gradient(90deg, #2787f5, #0a90ff)`
+              : "#6c757d",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+            fontWeight: 600,
+            transition: "all 0.2s",
+          }}
+        >
+          {loadingLogin ? "Входим..." : "Войти через VK ID"}
+        </button>
+		
+		{/* Telegram */}
+		<div id="telegram-button-container" style={{ marginTop: 16 }} />
+      </div>
+    );
+  }
 
   return (
     <div
