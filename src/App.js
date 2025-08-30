@@ -1,53 +1,6 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import MainPage from "./MainPage";
-
-// Страница для обработки Telegram callback
-function TelegramCallback() {
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tgData = Object.fromEntries(params.entries());
-
-    if (!tgData.id || !tgData.hash) {
-      alert("Ошибка авторизации через Telegram");
-      navigate("/");
-      return;
-    }
-
-    fetch("/auth/telegram", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(tgData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          // Здесь можно обновить состояние пользователя, если нужно
-          navigate("/"); // Возврат на главную
-        } else {
-          alert(data.error || "Ошибка авторизации через Telegram");
-          navigate("/");
-        }
-      })
-      .catch((e) => {
-        console.error(e);
-        alert("Ошибка сети при авторизации через Telegram");
-        navigate("/");
-      });
-  }, [navigate]);
-
-  return <p>Загрузка авторизации Telegram...</p>;
-}
+import React from 'react';
+import MainPage from './MainPage';
 
 export default function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<MainPage />} />
-        <Route path="/tg-callback" element={<TelegramCallback />} />
-      </Routes>
-    </Router>
-  );
+  return <MainPage />;
 }
