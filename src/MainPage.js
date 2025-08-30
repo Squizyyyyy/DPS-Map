@@ -278,49 +278,79 @@ export default function MainPage() {
 	}
   }, [isAuthorized]);
 
-  if (!isAuthorized) {
-    return (
+if (!isAuthorized) {
+  return (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(160deg, #0a1f33, #04213f)",
+        color: "#fff",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        padding: 16,
+      }}
+    >
       <div
         style={{
-          height: "100vh",
-          backgroundColor: tabColors.background,
-          color: tabColors.text,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 16,
+          width: "100%",
+          maxWidth: 360,
+          backgroundColor: "rgba(255, 255, 255, 0.05)",
+          borderRadius: 20,
+          padding: "40px 24px",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
           textAlign: "center",
+          backdropFilter: "blur(10px)", // красивый iOS-блюр
         }}
       >
-        <h2>Авторизация</h2>
-        <p>Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.</p>
-        {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
+        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: "#fff" }}>Добро пожаловать</h1>
+        <p style={{ marginTop: 12, fontSize: 16, color: "#ddd" }}>
+          Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
+        </p>
+
+        {error && (
+          <p style={{ color: "#ff6b6b", marginTop: 12, fontSize: 14 }}>
+            {error}
+          </p>
+        )}
+
+        {/* VK ID */}
         <button
           onClick={handleLogin}
           disabled={!sdkReady || loadingLogin}
           style={{
-            marginTop: 16,
-            padding: "12px 24px",
+            marginTop: 24,
+            width: "100%",
+            padding: "14px 0",
             background: sdkReady
-              ? `linear-gradient(90deg, #2787f5, #0a90ff)`
+              ? "linear-gradient(90deg, #2787f5, #0a90ff)"
               : "#6c757d",
-            color: "#fff",
             border: "none",
-            borderRadius: 8,
-            cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+            borderRadius: 14,
+            color: "#fff",
+            fontSize: 16,
             fontWeight: 600,
-            transition: "all 0.2s",
+            cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+            transition: "all 0.2s ease",
+            boxShadow: sdkReady ? "0 6px 12px rgba(39, 135, 245, 0.6)" : "none",
+          }}
+          onMouseEnter={(e) => {
+            if (sdkReady && !loadingLogin) e.currentTarget.style.transform = "scale(1.03)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
           }}
         >
           {loadingLogin ? "Входим..." : "Войти через VK ID"}
         </button>
-		
-		{/* Telegram */}
-		<div id="telegram-button-container" style={{ marginTop: 16 }} />
+
+        {/* Telegram */}
+        <div id="telegram-button-container" style={{ marginTop: 16 }} />
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div
