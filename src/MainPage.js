@@ -358,7 +358,7 @@ export default function MainPage() {
               padding: "14px 0",
               background:
                 activeTab === tab
-                  ? `linear-gradient(135deg, #2787f5, #0a90ff)`
+                  ? `linear-gradient(135deg, #2787f5, #1449a3)`
                   : tabColors.inactive,
               color: tabColors.text,
               cursor: "pointer",
