@@ -283,103 +283,87 @@ if (!isAuthorized) {
     <div
       style={{
         height: "100vh",
+        backgroundColor: tabColors.background,
+        color: tabColors.text,
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(160deg, #0a1f33, #04213f)",
-        color: "#fff",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         padding: 16,
+        textAlign: "center",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif", // 🔥 IOS-шрифт
       }}
     >
-      <div
+      <h2 style={{ fontWeight: 700, fontSize: 24 }}>Авторизация</h2>
+      <p style={{ color: "#aaa", maxWidth: 400 }}>
+        Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
+      </p>
+      {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
+
+      {/* 🔥 VK ID */}
+      <button
+        onClick={handleLogin}
+        disabled={!sdkReady || loadingLogin}
         style={{
-          width: "100%",
-          maxWidth: 360,
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
-          borderRadius: 20,
-          padding: "40px 24px",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
-          textAlign: "center",
-          backdropFilter: "blur(10px)",
+          marginTop: 16,
+          padding: "12px 24px",
+          background: sdkReady
+            ? `linear-gradient(90deg, #2787f5, #0a90ff)`
+            : "#6c757d",
+          color: "#fff",
+          border: "none",
+          borderRadius: 12,
+          cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+          fontWeight: 600,
+          transition: "all 0.2s",
+          fontSize: 16,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
         }}
       >
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: "#fff" }}>Добро пожаловать</h1>
-        <p style={{ marginTop: 12, fontSize: 16, color: "#ddd" }}>
-          Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
-        </p>
+        {loadingLogin ? "Входим..." : "Войти через VK ID"}
+      </button>
 
-        {error && (
-          <p style={{ color: "#ff6b6b", marginTop: 12, fontSize: 14 }}>
-            {error}
-          </p>
-        )}
+      {/* 🔥 Telegram */}
+      <div
+        id="telegram-login-button"
+        style={{ marginTop: 16 }}
+      ></div>
 
-        {/* VK ID */}
-        <button
-          onClick={handleLogin}
-          disabled={!sdkReady || loadingLogin}
-          style={{
-            marginTop: 24,
-            width: "100%",
-            padding: "14px 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            background: sdkReady
-              ? "linear-gradient(90deg, #2787f5, #0a90ff)"
-              : "#6c757d",
-            border: "none",
-            borderRadius: 14,
-            color: "#fff",
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: sdkReady && !loadingLogin ? "pointer" : "default",
-            transition: "all 0.2s ease",
-            boxShadow: sdkReady ? "0 6px 12px rgba(39, 135, 245, 0.6)" : "none",
-          }}
-          onMouseEnter={(e) => {
-            if (sdkReady && !loadingLogin) e.currentTarget.style.transform = "scale(1.03)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-          }}
-        >
-          {/* Иконка VK */}
-          <img src="/icons/vk.svg" alt="VK" style={{ width: 20, height: 20 }} />
-          {loadingLogin ? "Входим..." : "Войти через VK ID"}
-        </button>
+      <script
+        async
+        src="https://telegram.org/js/telegram-widget.js?15"
+        data-telegram-login="YOUR_BOT_USERNAME" // 🔥 замените на имя вашего бота
+        data-size="large"
+        data-userpic="false"
+        data-request-access="write"
+        data-callback="handleTelegramCallback"
+      ></script>
 
-        {/* Telegram */}
-        <button
-          onClick={handleTelegramLogin}
-          style={{
-            marginTop: 16,
-            width: "100%",
-            padding: "14px 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            background: "linear-gradient(90deg, #0088cc, #00aaff)",
-            border: "none",
-            borderRadius: 14,
-            color: "#fff",
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            boxShadow: "0 6px 12px rgba(0, 170, 255, 0.5)",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-        >
-          {/* Иконка Telegram */}
-          <img src="/icons/telegram.svg" alt="Telegram" style={{ width: 20, height: 20 }} />
-          Войти через Telegram
-        </button>
-      </div>
+      {/* 🔥 Обработчик колбека */}
+      <script>
+        {`
+          window.handleTelegramCallback = function(user) {
+            fetch('/auth/telegram-login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(user)
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                window.location.reload(); // обновляем страницу
+              } else {
+                alert(data.error || 'Ошибка авторизации через Telegram');
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              alert('Ошибка авторизации через Telegram');
+            });
+          }
+        `}
+      </script>
     </div>
   );
 }
