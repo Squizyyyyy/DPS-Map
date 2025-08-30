@@ -338,56 +338,41 @@ export default function MainPage() {
           display: "flex",
           justifyContent: "center",
           backgroundColor: tabColors.active,
-          padding: "12px 0",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
           width: "100%",
-          borderBottomLeftRadius: "16px", // 🔥 оставляем только нижние углы
+          borderBottomLeftRadius: "16px", // 🔥 только нижние углы
           borderBottomRightRadius: "16px",
+          overflow: "hidden", // чтобы скругление работало
         }}
       >
-        {/* 🔥 новый код: панель делится на 3 зоны-кнопки */}
-        <div
-          style={{
-            display: "flex",
-            maxWidth: 600,
-            width: "100%",
-            margin: "0 auto",
-            borderRadius: "12px",
-            overflow: "hidden", // 🔥 чтобы скругление работало
-          }}
-        >
-          {["account", "subscription", "map"].map((tab) => (
-            <div
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                flex: 1, // 🔥 каждая зона = 1/3 панели
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "14px 0",
-                background:
-                  activeTab === tab
-                    ? `linear-gradient(135deg, #2787f5, #0a90ff)`
-                    : tabColors.inactive,
-                color: tabColors.text,
-                cursor: "pointer",
-                fontWeight: activeTab === tab ? "700" : "500",
-                fontSize: activeTab === tab ? "16px" : "15px",
-                transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
-                transition: "all 0.25s ease",
-                boxShadow:
-                  activeTab === tab
-                    ? "0 0 12px rgba(0, 200, 255, 0.8), 0 0 20px rgba(0, 200, 255, 0.5)" // 🔥 мягкий неон
-                    : "inset 0 -1px 3px rgba(0,0,0,0.2)",
-              }}
-            >
-              {tab === "account" && "Профиль"}
-              {tab === "subscription" && "Подписка"}
-              {tab === "map" && "Карта"}
-            </div>
-          ))}
-        </div>
+        {/* 🔥 панель поделена на 3 равные зоны */}
+        {["account", "subscription", "map"].map((tab) => (
+          <div
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              flex: 1, // равная ширина
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "14px 0",
+              background:
+                activeTab === tab
+                  ? `linear-gradient(135deg, #2787f5, #0a90ff)`
+                  : tabColors.inactive,
+              color: tabColors.text,
+              cursor: "pointer",
+              fontWeight: activeTab === tab ? "700" : "500",
+              fontSize: activeTab === tab ? "16px" : "15px",
+              transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
+              transition: "all 0.25s ease",
+            }}
+          >
+            {tab === "account" && "Профиль"}
+            {tab === "subscription" && "Подписка"}
+            {tab === "map" && "Карта"}
+          </div>
+        ))}
       </nav>
 
       {isMapActive ? (
