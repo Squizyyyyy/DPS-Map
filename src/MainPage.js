@@ -278,49 +278,79 @@ export default function MainPage() {
 	}
   }, [isAuthorized]);
 
-  if (!isAuthorized) {
-    return (
-      <div
+if (!isAuthorized) {
+  return (
+    <div
+      style={{
+        height: "100vh",
+        backgroundColor: tabColors.background,
+        color: tabColors.text,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 16,
+        textAlign: "center",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif", // 🔥 стиль iOS
+      }}
+    >
+      {/* Заголовок */}
+      <h2 style={{ 
+        fontSize: 28, 
+        fontWeight: 700, 
+        marginBottom: 8, 
+        color: "#fff" // 🔥 чистый белый текст
+      }}>
+        Авторизация
+      </h2>
+
+      {/* Подзаголовок */}
+      <p style={{ 
+        fontSize: 16, 
+        color: "#ccc", 
+        marginBottom: 24, 
+        maxWidth: 320 
+      }}>
+        Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
+      </p>
+
+      {/* Ошибка */}
+      {error && (
+        <p style={{ 
+          color: "#ff3b30", 
+          maxWidth: 320, 
+          marginBottom: 16 
+        }}>
+          {error}
+        </p>
+      )}
+
+      {/* VK кнопка — оставляем как есть */}
+      <button
+        onClick={handleLogin}
+        disabled={!sdkReady || loadingLogin}
         style={{
-          height: "100vh",
-          backgroundColor: tabColors.background,
-          color: tabColors.text,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 16,
-          textAlign: "center",
+          marginTop: 16,
+          padding: "12px 32px",
+          background: sdkReady
+            ? `linear-gradient(90deg, #2787f5, #0a90ff)`
+            : "#6c757d",
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+          fontWeight: 600,
+          transition: "all 0.2s",
         }}
       >
-        <h2>Авторизация</h2>
-        <p>Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.</p>
-        {error && <p style={{ color: "red", maxWidth: 520 }}>{error}</p>}
-        <button
-          onClick={handleLogin}
-          disabled={!sdkReady || loadingLogin}
-          style={{
-            marginTop: 16,
-            padding: "12px 32px",
-            background: sdkReady
-              ? `linear-gradient(90deg, #2787f5, #0a90ff)`
-              : "#6c757d",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            cursor: sdkReady && !loadingLogin ? "pointer" : "default",
-            fontWeight: 600,
-            transition: "all 0.2s",
-          }}
-        >
-          {loadingLogin ? "Входим..." : "Войти через VK ID"}
-        </button>
-		
-		{/* Telegram */}
-		<div id="telegram-button-container" style={{ marginTop: 16 }} />
-      </div>
-    );
-  }
+        {loadingLogin ? "Входим..." : "Войти через VK ID"}
+      </button>
+
+      {/* Telegram */}
+      <div id="telegram-button-container" style={{ marginTop: 16 }} />
+    </div>
+  );
+}
 
   return (
     <div
