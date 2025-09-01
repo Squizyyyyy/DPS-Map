@@ -339,10 +339,10 @@ if (!isAuthorized) {
         {/* 🔥 Блок кнопок */}
         <div
           style={{
-            width: 280,
+            width: 250,
             background: "#0a1f33",
             borderRadius: 16,
-            padding: 16,
+            padding: "16px 32px",
             display: "flex",
             flexDirection: "column",
             gap: 12,
