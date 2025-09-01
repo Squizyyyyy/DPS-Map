@@ -248,30 +248,40 @@ export default function MainPage() {
     }
   };
 
-  useEffect(() => {
-    if (!isAuthorized) return;
-    const interval = setInterval(refreshTokenIfNeeded, 60000);
-    return () => clearInterval(interval);
-  }, [isAuthorized, user]);
-  
-  // ---- Подключение Telegram JS-виджета ----
-  useEffect(() => {
-	window.handleTelegramAuth = (user) => handleTelegramLogin(user);
-	
-	const container = document.getElementById("telegram-button-container");
-	if (!container) return;
-	
-	container.innerHTML = "";
-	
-  // 🔥 Хак: ждём пока iframe появится и растягиваем его
+useEffect(() => {
+  const container = document.getElementById("telegram-button-container");
+  if (!container || isAuthorized) return;
+
+  // Чистим контейнер на всякий случай
+  container.innerHTML = "";
+
+  // Подключаем скрипт Telegram виджета
+  const script = document.createElement("script");
+  script.src = "https://telegram.org/js/telegram-widget.js?15";
+  script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
+  script.setAttribute("data-size", "large");
+  script.setAttribute("data-userpic", "false");
+  script.setAttribute("data-radius", "8");
+  script.setAttribute("data-request-access", "write");
+  script.setAttribute("data-onauth", "window.handleTelegramAuth(user)");
+  script.async = true;
+  container.appendChild(script);
+
+  // Функция, вызываемая при авторизации
+  window.handleTelegramAuth = (user) => handleTelegramLogin(user);
+
+  // 🔥 Хак: ждём появления iframe и растягиваем его
   const interval = setInterval(() => {
     const iframe = container.querySelector("iframe");
     if (iframe) {
       iframe.style.width = "100%";
-      iframe.style.height = "48px"; // подгони под высоту VK кнопки
+      iframe.style.height = "48px"; // под высоту VK кнопки
       clearInterval(interval);
     }
   }, 100);
+
+  // Очистка при размонтировании
+  return () => clearInterval(interval);
 }, [isAuthorized]);
 
 if (!isAuthorized) {
