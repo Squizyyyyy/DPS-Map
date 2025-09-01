@@ -289,7 +289,7 @@ if (!isAuthorized) {
     <div
       style={{
         height: "100vh",
-        backgroundColor: "#0a1f33", // 🔥 темный фон страницы
+        backgroundColor: "#0a1f33",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -368,8 +368,8 @@ if (!isAuthorized) {
             onClick={handleLogin}
             disabled={!sdkReady || loadingLogin}
             style={{
-			  width: "100%",
-              padding: "12px 32px", // 🔥 одинаково
+              width: "100%",
+              padding: "12px 32px",
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
                 : "#6c757d",
@@ -384,16 +384,26 @@ if (!isAuthorized) {
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
 
-          {/* Telegram кнопка */}
-          <div
+          {/* Telegram кастомная кнопка */}
+          <button
+            onClick={() => {
+              const tgUrl = `https://oauth.telegram.org/auth?bot_id=${process.env.REACT_APP_TELEGRAM_BOT_ID}&origin=${encodeURIComponent(window.location.origin)}&embed=0&request_access=write`;
+              window.open(tgUrl, "_blank", "width=600,height=600");
+            }}
             style={{
-              width: "100%", // 🔥 теперь тянется по ширине блока
-              display: "flex",
-              justifyContent: "center",
+              width: "100%", // 🔥 тянется по ширине блока
+              padding: "12px 32px",
+              background: "#00a2ff",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              cursor: "pointer",
+              fontWeight: 600,
+              transition: "all 0.2s",
             }}
           >
-            <div id="telegram-button-container" style={{ width: "100%" }} />
-          </div>
+            Войти через Telegram
+          </button>
         </div>
       </div>
     </div>
