@@ -272,6 +272,7 @@ export default function MainPage() {
       script.setAttribute("data-radius", "8");
       script.setAttribute("data-request-access", "write");
       script.setAttribute("data-onauth", "handleTelegramAuth(user)");
+	  script.setAttribute("data-width", "100%");
 	  script.async = true;
 	  
 	  container.appendChild(script);
@@ -296,7 +297,7 @@ if (!isAuthorized) {
       <div
         style={{
           width: "100%",
-          maxWidth: 320, // 🔥 сделал чуть меньше
+          maxWidth: 320,
           background: "#0c274f",
           borderRadius: 24,
           padding: 24,
@@ -362,6 +363,7 @@ if (!isAuthorized) {
             onClick={handleLogin}
             disabled={!sdkReady || loadingLogin}
             style={{
+			  width: "100%",
               padding: "12px 32px", // 🔥 одинаково
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
@@ -380,14 +382,12 @@ if (!isAuthorized) {
           {/* Telegram кнопка */}
           <div
             style={{
-              padding: "12px 32px", // 🔥 то же самое, что и у VK
-              background: "transparent",
-              borderRadius: 12,
+              width: "100%", // 🔥 теперь тянется по ширине блока
               display: "flex",
               justifyContent: "center",
             }}
           >
-            <div id="telegram-button-container" />
+            <div id="telegram-button-container" style={{ width: "100%" }} />
           </div>
         </div>
       </div>
