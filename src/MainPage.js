@@ -336,19 +336,17 @@ if (!isAuthorized) {
           </p>
         )}
 
-        {/* 🔥 Блок кнопок горизонтально (ИЗМЕНЕНО) */}
+        {/* 🔥 Блок кнопок */}
         <div
           style={{
             width: "100%",
             background: "#0a1f33",
             borderRadius: 16,
             padding: 16,
-            display: "flex", // 🔥 ИЗМЕНЕНО: flexDirection column → row
-            flexDirection: "row", // 🔥 ИЗМЕНЕНО
-            gap: 12, // 🔥 отступ между кнопками
-            border: "1px solid rgba(255,255,255,0.1)",
-            alignItems: "center",
-            justifyContent: "center", // 🔥 чтобы кнопки были выровнены по центру
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            border: "1px solid rgba(255,255,255,0.1)", // лёгкая граница для разделения
           }}
         >
           {/* VK кнопка */}
@@ -356,8 +354,8 @@ if (!isAuthorized) {
             onClick={handleLogin}
             disabled={!sdkReady || loadingLogin}
             style={{
-			  flex: 1,
-              padding: "12px 32px",
+              width: "100%",
+			  height: "32px",
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
                 : "#6c757d",
@@ -373,15 +371,7 @@ if (!isAuthorized) {
           </button>
 
           {/* Telegram кнопка */}
-          <div
-            style={{
-              flex: 1, // 🔥 ИЗМЕНЕНО: растягиваем по ширине, чтобы совпадала с VK
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <div id="telegram-button-container" style={{ width: "100%" }} /> {/* 🔥 ИЗМЕНЕНО */}
-          </div>
+          <div id="telegram-button-container" style={{ marginTop: 0 }} />
         </div>
       </div>
     </div>
