@@ -310,7 +310,7 @@ if (!isAuthorized) {
         <h2 style={{
           fontSize: 28,
           fontWeight: 700,
-          marginBottom: 50,
+          marginBottom: 30,
           color: "#fff"
         }}>
           Авторизация
