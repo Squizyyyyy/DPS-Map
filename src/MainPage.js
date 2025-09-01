@@ -287,7 +287,8 @@ if (!isAuthorized) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         padding: 16,
       }}
     >
@@ -295,8 +296,8 @@ if (!isAuthorized) {
       <div
         style={{
           width: "100%",
-          maxWidth: 360,
-          background: "#0c274f", // 🔥 мягкий градиент или сплошной
+          maxWidth: 320, // 🔥 сделал чуть меньше
+          background: "#0c274f",
           borderRadius: 24,
           padding: 24,
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
@@ -306,32 +307,38 @@ if (!isAuthorized) {
         }}
       >
         {/* Заголовок */}
-        <h2 style={{ 
-          fontSize: 28, 
-          fontWeight: 700, 
-          marginBottom: 8, 
-          color: "#fff" 
-        }}>
+        <h2
+          style={{
+            fontSize: 26,
+            fontWeight: 700,
+            marginBottom: 8,
+            color: "#fff",
+          }}
+        >
           Авторизация
         </h2>
 
         {/* Подзаголовок */}
-        <p style={{ 
-          fontSize: 16, 
-          color: "#ccc", 
-          marginBottom: 24, 
-          textAlign: "center" 
-        }}>
+        <p
+          style={{
+            fontSize: 15,
+            color: "#ccc",
+            marginBottom: 24,
+            textAlign: "center",
+          }}
+        >
           Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
         </p>
 
         {/* Ошибка */}
         {error && (
-          <p style={{ 
-            color: "#ff3b30", 
-            marginBottom: 16, 
-            textAlign: "center" 
-          }}>
+          <p
+            style={{
+              color: "#ff3b30",
+              marginBottom: 16,
+              textAlign: "center",
+            }}
+          >
             {error}
           </p>
         )}
@@ -346,7 +353,8 @@ if (!isAuthorized) {
             display: "flex",
             flexDirection: "column",
             gap: 12,
-            border: "1px solid rgba(255,255,255,0.1)", // лёгкая граница для разделения
+            border: "1px solid rgba(255,255,255,0.1)",
+            alignItems: "center",
           }}
         >
           {/* VK кнопка */}
@@ -354,7 +362,7 @@ if (!isAuthorized) {
             onClick={handleLogin}
             disabled={!sdkReady || loadingLogin}
             style={{
-              padding: "12px 32px",
+              padding: "12px 32px", // 🔥 одинаково
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
                 : "#6c757d",
@@ -370,7 +378,17 @@ if (!isAuthorized) {
           </button>
 
           {/* Telegram кнопка */}
-          <div id="telegram-button-container" style={{ marginTop: 0 }} />
+          <div
+            style={{
+              padding: "12px 32px", // 🔥 то же самое, что и у VK
+              background: "transparent",
+              borderRadius: 12,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <div id="telegram-button-container" />
+          </div>
         </div>
       </div>
     </div>
