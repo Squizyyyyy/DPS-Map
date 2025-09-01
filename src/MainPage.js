@@ -366,7 +366,7 @@ if (!isAuthorized) {
                 : "#6c757d",
               color: "#fff",
               border: "none",
-              borderRadius: 10,
+              borderRadius: 8,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
               fontWeight: 600,
               transition: "all 0.2s",
