@@ -339,18 +339,19 @@ if (!isAuthorized) {
 
         {/* 🔹 Блок кнопок - адаптивный относительно главного блока */}
         <div
+          id="auth-buttons-wrapper" // 🔥 добавил id для управления стилем
           style={{
-            width: "80%", // 🔹 теперь ширина зависит от главного блока (подстраивается)
-            maxWidth: 280, // 🔹 ограничение максимальной ширины
-            background: "#0a1f33",
-            borderRadius: 16,
-            padding: "16px",
             display: "flex",
             flexDirection: "column",
             gap: 12,
-            border: "1px solid rgba(255,255,255,0.1)",
             alignItems: "center",
-            boxSizing: "border-box", // 🔹 предотвращаем выход кнопок за блок
+            background: "#0a1f33",
+            borderRadius: 16,
+            padding: "16px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxSizing: "border-box",
+            minWidth: 180,  // 🔥 ограничили минимальную ширину
+            maxWidth: "100%", // 🔥 не вылазит за главный блок
           }}
         >
           {/* VK кнопка */}
@@ -365,7 +366,7 @@ if (!isAuthorized) {
                 : "#6c757d",
               color: "#fff",
               border: "none",
-              borderRadius: 12,
+              borderRadius: 10,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
               fontWeight: 600,
               transition: "all 0.2s",
@@ -378,9 +379,9 @@ if (!isAuthorized) {
           <div
             id="telegram-button-container"
             style={{
-              width: "100%", // 🔹 контейнер под кнопкой тг растягиваем под контейнер
               display: "flex",
               justifyContent: "center",
+              width: "100%", // 🔥 кнопка тг управляет шириной контейнера
             }}
           />
         </div>
