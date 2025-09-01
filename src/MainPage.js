@@ -369,6 +369,7 @@ if (!isAuthorized) {
               borderRadius: 6,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
               fontWeight: 600,
+			  fontSize: "16px",
               transition: "all 0.2s",
             }}
           >
