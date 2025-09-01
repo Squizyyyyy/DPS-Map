@@ -310,7 +310,7 @@ if (!isAuthorized) {
         <h2 style={{
           fontSize: 28,
           fontWeight: 700,
-          marginBottom: 8,
+          marginBottom: 10,
           color: "#fff"
         }}>
           Авторизация
@@ -399,7 +399,7 @@ if (!isAuthorized) {
             fontSize: 14,
           }}
         >
-          <span>По вопросам:</span>
+          <span>Есть вопрос?</span>
           <a
             href="https://t.me/dps_map_support"
             target="_blank"
