@@ -263,16 +263,15 @@ export default function MainPage() {
 	
 	container.innerHTML = "";
 	
-	// 🔥 Хак: ждём пока iframe появится и растягиваем его
-    const interval = setInterval(() => {
-      const iframe = container.querySelector("iframe");
-      if (iframe) {
-        iframe.style.width = "100%";
-        iframe.style.height = "48px"; // подгони под высоту VK кнопки
-        clearInterval(interval);
-      }
-    }, 100);
-  }
+  // 🔥 Хак: ждём пока iframe появится и растягиваем его
+  const interval = setInterval(() => {
+    const iframe = container.querySelector("iframe");
+    if (iframe) {
+      iframe.style.width = "100%";
+      iframe.style.height = "48px"; // подгони под высоту VK кнопки
+      clearInterval(interval);
+    }
+  }, 100);
 }, [isAuthorized]);
 
 if (!isAuthorized) {
