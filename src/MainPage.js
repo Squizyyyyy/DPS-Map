@@ -263,21 +263,17 @@ export default function MainPage() {
 	
 	container.innerHTML = "";
 	
-	if (!isAuthorized) {
-	  const script = document.createElement("script");
-	  script.src = "https://telegram.org/js/telegram-widget.js?15";
-      script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
-      script.setAttribute("data-size", "large");
-      script.setAttribute("data-userpic", "false");
-      script.setAttribute("data-radius", "8");
-      script.setAttribute("data-request-access", "write");
-      script.setAttribute("data-onauth", "handleTelegramAuth(user)");
-	  script.setAttribute("data-width", "100%");
-	  script.async = true;
-	  
-	  container.appendChild(script);
-	}
-  }, [isAuthorized]);
+	// 🔥 Хак: ждём пока iframe появится и растягиваем его
+    const interval = setInterval(() => {
+      const iframe = container.querySelector("iframe");
+      if (iframe) {
+        iframe.style.width = "100%";
+        iframe.style.height = "48px"; // подгони под высоту VK кнопки
+        clearInterval(interval);
+      }
+    }, 100);
+  }
+}, [isAuthorized]);
 
 if (!isAuthorized) {
   return (
