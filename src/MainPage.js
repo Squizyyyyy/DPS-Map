@@ -339,15 +339,14 @@ if (!isAuthorized) {
         {/* 🔥 Блок кнопок */}
         <div
           style={{
-            width: "100%",
-            maxWidth: 1000,           // 🔥 уменьшил контейнер, чтобы кнопки были меньше
-            height: "200px",          // 🔥 задаём фиксированную высоту для кнопок
+            width: 280,
             background: "#0a1f33",
             borderRadius: 16,
-            padding: 0,              // 🔥 убираем padding, чтобы кнопки занимали всю высоту
+            padding: 16,
             display: "flex",
-            gap: 12,                 // 🔥 расстояние между кнопками
-            border: "1px solid rgba(255,255,255,0.1)",
+            flexDirection: "column",
+            gap: 12,
+            border: "1px solid rgba(255,255,255,0.1)", // лёгкая граница для разделения
           }}
         >
           {/* VK кнопка */}
@@ -355,8 +354,7 @@ if (!isAuthorized) {
             onClick={handleLogin}
             disabled={!sdkReady || loadingLogin}
             style={{
-              flex: 1,
-			  height: "100%",
+              padding: "12px 32px",
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
                 : "#6c757d",
@@ -372,13 +370,7 @@ if (!isAuthorized) {
           </button>
 
           {/* Telegram кнопка */}
-          <div
-            id="telegram-button-container"
-            style={{
-              flex: 1,               // 🔥 растягиваем на всю ширину контейнера
-              height: "100%",        // 🔥 растягиваем по высоте контейнера
-            }}
-          />
+          <div id="telegram-button-container" style={{ marginTop: 0 }} />
         </div>
       </div>
     </div>
