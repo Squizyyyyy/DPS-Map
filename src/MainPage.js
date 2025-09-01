@@ -299,6 +299,7 @@ if (!isAuthorized) {
         alignItems: "center",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         padding: 16,
+		boxSizing: "border-box",
       }}
     >
       {/* Центральный блок */}
