@@ -248,53 +248,46 @@ export default function MainPage() {
     }
   };
 
-useEffect(() => {
-  const container = document.getElementById("telegram-button-container");
-  if (!container || isAuthorized) return;
-
-  container.innerHTML = "";
-
-  // Создаём скрипт виджета
-  const script = document.createElement("script");
-  script.src = "https://telegram.org/js/telegram-widget.js?15";
-  script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
-  script.setAttribute("data-size", "large");
-  script.setAttribute("data-userpic", "false");
-  script.setAttribute("data-radius", "8");
-  script.setAttribute("data-request-access", "write");
-  script.setAttribute("data-onauth", "window.handleTelegramAuth(user)");
-  script.async = true;
-  container.appendChild(script);
-
-  // Авторизация
-  window.handleTelegramAuth = (user) => handleTelegramLogin(user);
-
-  // 🔥 Наблюдатель за появлением iframe
-  const observer = new MutationObserver(() => {
-    const iframe = container.querySelector("iframe");
-    if (iframe) {
-      iframe.style.width = "100%";
-      iframe.style.height = "48px"; // под высоту VK кнопки
-      observer.disconnect();
-    }
-  });
-
-  observer.observe(container, { childList: true, subtree: true });
-
-  return () => observer.disconnect();
-}, [isAuthorized]);
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const interval = setInterval(refreshTokenIfNeeded, 60000);
+    return () => clearInterval(interval);
+  }, [isAuthorized, user]);
+  
+  // ---- Подключение Telegram JS-виджета ----
+  useEffect(() => {
+	window.handleTelegramAuth = (user) => handleTelegramLogin(user);
+	
+	const container = document.getElementById("telegram-button-container");
+	if (!container) return;
+	
+	container.innerHTML = "";
+	
+	if (!isAuthorized) {
+	  const script = document.createElement("script");
+	  script.src = "https://telegram.org/js/telegram-widget.js?15";
+      script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
+      script.setAttribute("data-size", "large");
+      script.setAttribute("data-userpic", "false");
+      script.setAttribute("data-radius", "8");
+      script.setAttribute("data-request-access", "write");
+      script.setAttribute("data-onauth", "handleTelegramAuth(user)");
+	  script.async = true;
+	  
+	  container.appendChild(script);
+	}
+  }, [isAuthorized]);
 
 if (!isAuthorized) {
   return (
     <div
       style={{
         height: "100vh",
-        backgroundColor: "#0a1f33",
+        backgroundColor: "#0a1f33", // 🔥 темный фон страницы
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         padding: 16,
       }}
     >
@@ -302,8 +295,8 @@ if (!isAuthorized) {
       <div
         style={{
           width: "100%",
-          maxWidth: 320,
-          background: "#0c274f",
+          maxWidth: 360,
+          background: "#0c274f", // 🔥 мягкий градиент или сплошной
           borderRadius: 24,
           padding: 24,
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
@@ -313,54 +306,49 @@ if (!isAuthorized) {
         }}
       >
         {/* Заголовок */}
-        <h2
-          style={{
-            fontSize: 26,
-            fontWeight: 700,
-            marginBottom: 8,
-            color: "#fff",
-          }}
-        >
+        <h2 style={{ 
+          fontSize: 28, 
+          fontWeight: 700, 
+          marginBottom: 8, 
+          color: "#fff" 
+        }}>
           Авторизация
         </h2>
 
         {/* Подзаголовок */}
-        <p
-          style={{
-            fontSize: 15,
-            color: "#ccc",
-            marginBottom: 24,
-            textAlign: "center",
-          }}
-        >
+        <p style={{ 
+          fontSize: 16, 
+          color: "#ccc", 
+          marginBottom: 24, 
+          textAlign: "center" 
+        }}>
           Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
         </p>
 
         {/* Ошибка */}
         {error && (
-          <p
-            style={{
-              color: "#ff3b30",
-              marginBottom: 16,
-              textAlign: "center",
-            }}
-          >
+          <p style={{ 
+            color: "#ff3b30", 
+            marginBottom: 16, 
+            textAlign: "center" 
+          }}>
             {error}
           </p>
         )}
 
-        {/* 🔥 Блок кнопок */}
+        {/* 🔥 Блок кнопок горизонтально (ИЗМЕНЕНО) */}
         <div
           style={{
             width: "100%",
             background: "#0a1f33",
             borderRadius: 16,
             padding: 16,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
+            display: "flex", // 🔥 ИЗМЕНЕНО: flexDirection column → row
+            flexDirection: "row", // 🔥 ИЗМЕНЕНО
+            gap: 12, // 🔥 отступ между кнопками
             border: "1px solid rgba(255,255,255,0.1)",
             alignItems: "center",
+            justifyContent: "center", // 🔥 чтобы кнопки были выровнены по центру
           }}
         >
           {/* VK кнопка */}
@@ -368,7 +356,7 @@ if (!isAuthorized) {
             onClick={handleLogin}
             disabled={!sdkReady || loadingLogin}
             style={{
-              width: "100%",
+			  flex: 1,
               padding: "12px 32px",
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
@@ -384,26 +372,16 @@ if (!isAuthorized) {
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
 
-          {/* Telegram кастомная кнопка */}
-          <button
-            onClick={() => {
-              const tgUrl = `https://oauth.telegram.org/auth?bot_id=${process.env.REACT_APP_TELEGRAM_BOT_ID}&origin=${encodeURIComponent(window.location.origin)}&embed=0&request_access=write`;
-              window.open(tgUrl, "_blank", "width=600,height=600");
-            }}
+          {/* Telegram кнопка */}
+          <div
             style={{
-              width: "100%", // 🔥 тянется по ширине блока
-              padding: "12px 32px",
-              background: "#00a2ff",
-              color: "#fff",
-              border: "none",
-              borderRadius: 12,
-              cursor: "pointer",
-              fontWeight: 600,
-              transition: "all 0.2s",
+              flex: 1, // 🔥 ИЗМЕНЕНО: растягиваем по ширине, чтобы совпадала с VK
+              display: "flex",
+              justifyContent: "center",
             }}
           >
-            Войти через Telegram
-          </button>
+            <div id="telegram-button-container" style={{ width: "100%" }} /> {/* 🔥 ИЗМЕНЕНО */}
+          </div>
         </div>
       </div>
     </div>
