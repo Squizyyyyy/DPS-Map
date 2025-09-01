@@ -296,9 +296,10 @@ if (!isAuthorized) {
         style={{
           width: "100%",
           maxWidth: 360,
-          background: "#0c274f", // 🔥 мягкий градиент или сплошной
+          background: "#0c274f",
           borderRadius: 24,
           padding: 24,
+		  boxSizing: "border-box", // изменил
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
           display: "flex",
           flexDirection: "column",
@@ -336,10 +337,12 @@ if (!isAuthorized) {
           </p>
         )}
 
-        {/* 🔥 Блок кнопок */}
+        {/* Блок кнопок */}
         <div
           style={{
-            width: 250,
+            width: "80%",
+			maxWidth: 250,
+			minWidth: 200,
             background: "#0a1f33",
             borderRadius: 16,
             padding: "16px 32px",
