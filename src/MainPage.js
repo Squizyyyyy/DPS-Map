@@ -252,10 +252,9 @@ useEffect(() => {
   const container = document.getElementById("telegram-button-container");
   if (!container || isAuthorized) return;
 
-  // Чистим контейнер на всякий случай
   container.innerHTML = "";
 
-  // Подключаем скрипт Telegram виджета
+  // Создаём скрипт виджета
   const script = document.createElement("script");
   script.src = "https://telegram.org/js/telegram-widget.js?15";
   script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
@@ -267,21 +266,22 @@ useEffect(() => {
   script.async = true;
   container.appendChild(script);
 
-  // Функция, вызываемая при авторизации
+  // Авторизация
   window.handleTelegramAuth = (user) => handleTelegramLogin(user);
 
-  // 🔥 Хак: ждём появления iframe и растягиваем его
-  const interval = setInterval(() => {
+  // 🔥 Наблюдатель за появлением iframe
+  const observer = new MutationObserver(() => {
     const iframe = container.querySelector("iframe");
     if (iframe) {
       iframe.style.width = "100%";
       iframe.style.height = "48px"; // под высоту VK кнопки
-      clearInterval(interval);
+      observer.disconnect();
     }
-  }, 100);
+  });
 
-  // Очистка при размонтировании
-  return () => clearInterval(interval);
+  observer.observe(container, { childList: true, subtree: true });
+
+  return () => observer.disconnect();
 }, [isAuthorized]);
 
 if (!isAuthorized) {
