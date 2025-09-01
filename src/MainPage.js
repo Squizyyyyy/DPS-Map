@@ -347,7 +347,7 @@ if (!isAuthorized) {
             alignItems: "center",
             background: "#0a1f33",
             borderRadius: 16,
-            padding: "20px 24px",
+            padding: "21px 26px",
             border: "1px solid rgba(255,255,255,0.1)",
             boxSizing: "border-box",
             minWidth: 180,  //  ограничили минимальную ширину
@@ -360,13 +360,13 @@ if (!isAuthorized) {
             disabled={!sdkReady || loadingLogin}
             style={{
               width: "100%", //  растягиваем под ширину контейнера
-              padding: "12px 0", //  подогнали внутренние отступы
+              padding: "10px 0", //  подогнали внутренние отступы
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
                 : "#6c757d",
               color: "#fff",
               border: "none",
-              borderRadius: 6,
+              borderRadius: 7,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
               fontWeight: 600,
 			  fontSize: "16px",
