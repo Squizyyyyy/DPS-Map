@@ -399,7 +399,18 @@ if (!isAuthorized) {
             fontSize: 14,
           }}
         >
-          <span>По вопросам:</span>
+		  {/* 🔹 декоративная полоска */}
+          <div
+            style={{
+              width: 40,             // длина полоски
+              height: 2,             // толщина
+              backgroundColor: "#2787f5", // цвет полоски
+              borderRadius: 1,       // скругление краёв
+              marginBottom: 8,
+            }}
+          />
+		  
+          <span>Есть вопрос?</span>
           <a
             href="https://t.me/dps_map_support"
             target="_blank"
