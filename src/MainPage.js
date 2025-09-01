@@ -298,12 +298,12 @@ if (!isAuthorized) {
           maxWidth: 360,
           background: "#0c274f",
           borderRadius: 24,
-          padding: "24px 16px", // 🔹 сделали адаптивные горизонтальные отступы
+          padding: "24px 16px", // сделали адаптивные горизонтальные отступы
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          boxSizing: "border-box", // 🔹 предотвращаем выход за границы
+          boxSizing: "border-box", // предотвращаем выход за границы
         }}
       >
         {/* Заголовок */}
@@ -323,7 +323,7 @@ if (!isAuthorized) {
           marginBottom: 24,
           textAlign: "center"
         }}>
-          Чтобы воспользоваться DPS Map, войдите через VK ID или Telegram.
+          Чтобы продолжить, войдите через VK ID или Telegram
         </p>
 
         {/* Ошибка */}
@@ -382,10 +382,47 @@ if (!isAuthorized) {
             style={{
               display: "flex",
               justifyContent: "center",
-              width: "100%", // 🔥 кнопка тг управляет шириной контейнера
+              width: "100%", // кнопка тг управляет шириной контейнера
             }}
           />
         </div>
+		
+		{/* Блок контактов поддержки */}
+        <div
+          style={{
+            marginTop: 24,           // расстояние от блока кнопок
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,                  // расстояние между текстом и иконкой
+            color: "#ccc",
+            fontSize: 14,
+          }}
+        >
+          <span>По вопросам:</span>
+          <a
+            href="https://t.me/dps_map_support"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              textDecoration: "none",
+              color: "#00aaff",
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 240 240"
+              width="20"
+              height="20"
+              fill="currentColor"
+            >
+              <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
+            </svg>
+          </a>
+        </div>
+		
       </div>
     </div>
   );
@@ -434,7 +471,7 @@ if (!isAuthorized) {
               fontWeight: activeTab === tab ? "700" : "500",
               fontSize: activeTab === tab ? "16px" : "15px",
               transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
-              transition: "all 0.10s ease",
+              transition: "all 0.08s ease",
 			  fontFamily:
 			    "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
             }}
