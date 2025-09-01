@@ -393,24 +393,13 @@ if (!isAuthorized) {
             marginTop: 24,           // расстояние от блока кнопок
             display: "flex",
             alignItems: "center",
-            gap: 12,                 // расстояние между линиями и текстом
+            justifyContent: "center",
+            gap: 8,                  // расстояние между текстом и иконкой
             color: "#ccc",
             fontSize: 14,
-			width: "100%",
-			justifyContent: "center",
           }}
         >
-		  {/* левая декоративная линия */}
-          <div
-            style={{
-              flex: 1,
-              height: 1,
-              backgroundColor: "#2787f5",
-              opacity: 0.6,
-            }}
-          />
-		  
-          <span>Есть вопрос?</span>
+          <span>По вопросам:</span>
           <a
             href="https://t.me/dps_map_support"
             target="_blank"
@@ -434,15 +423,6 @@ if (!isAuthorized) {
           </a>
         </div>
 		
-		{/* правая декоративная линия 🔹 */}
-          <div
-            style={{
-              flex: 1,
-              height: 1,
-              backgroundColor: "#2787f5",
-              opacity: 0.6,
-            }}
-          />
       </div>
     </div>
   );
