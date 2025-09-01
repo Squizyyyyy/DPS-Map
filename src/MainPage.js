@@ -30,6 +30,16 @@ export default function MainPage() {
   const [selectedCity, setSelectedCity] = useState(cities[0]);
 
   const isMapActive = activeTab === "map";
+  
+  // 🔹 Убираем стандартные отступы body/html
+  useEffect(() => {
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+    document.documentElement.style.margin = "0";
+    document.documentElement.style.padding = "0";
+    document.body.style.height = "100%";
+    document.documentElement.style.height = "100%";
+  }, []);
 
   // Проверка сессии при загрузке
   useEffect(() => {
