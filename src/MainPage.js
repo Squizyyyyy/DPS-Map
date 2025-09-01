@@ -393,20 +393,20 @@ if (!isAuthorized) {
             marginTop: 24,           // расстояние от блока кнопок
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            gap: 8,                  // расстояние между текстом и иконкой
+            gap: 12,                 // расстояние между линиями и текстом
             color: "#ccc",
             fontSize: 14,
+			width: "100%",
+			justifyContent: "center",
           }}
         >
-		  {/* 🔹 декоративная полоска */}
+		  {/* левая декоративная линия */}
           <div
             style={{
-              width: 40,             // длина полоски
-              height: 2,             // толщина
-              backgroundColor: "#2787f5", // цвет полоски
-              borderRadius: 1,       // скругление краёв
-              marginBottom: 8,
+              flex: 1,
+              height: 1,
+              backgroundColor: "#2787f5",
+              opacity: 0.6,
             }}
           />
 		  
@@ -434,6 +434,15 @@ if (!isAuthorized) {
           </a>
         </div>
 		
+		{/* правая декоративная линия 🔹 */}
+          <div
+            style={{
+              flex: 1,
+              height: 1,
+              backgroundColor: "#2787f5",
+              opacity: 0.6,
+            }}
+          />
       </div>
     </div>
   );
