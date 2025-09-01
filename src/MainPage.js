@@ -347,7 +347,7 @@ if (!isAuthorized) {
             alignItems: "center",
             background: "#0a1f33",
             borderRadius: 16,
-            padding: "18px 22px",
+            padding: "20px 24px",
             border: "1px solid rgba(255,255,255,0.1)",
             boxSizing: "border-box",
             minWidth: 180,  //  ограничили минимальную ширину
@@ -366,7 +366,7 @@ if (!isAuthorized) {
                 : "#6c757d",
               color: "#fff",
               border: "none",
-              borderRadius: 8,
+              borderRadius: 6,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
               fontWeight: 600,
               transition: "all 0.2s",
