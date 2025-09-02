@@ -12,6 +12,7 @@ const tabColors = {
 };
 
 const cities = [
+  { name: "Не выбран", coords: null },
   { name: "Рязань", coords: [54.6296, 39.7412] },
   { name: "Тула", coords: [54.1920, 37.6156] },
   { name: "Липецк", coords: [52.6106, 39.5946] },
@@ -27,7 +28,7 @@ export default function MainPage() {
   const [sdkReady, setSdkReady] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
-  const [selectedCity, setSelectedCity] = useState({ name: "Не выбран" });
+  const [selectedCity, setSelectedCity] = useState(cities[0]);
 
   const isMapActive = activeTab === "map";
   
@@ -207,13 +208,18 @@ export default function MainPage() {
   };
 
   const handleBuySubscription = async () => {
+	if (selectedCity.name === "Не выбран") {
+      toast.error("Сначала выберите город");
+      return;
+    }
+
     setLoadingSubscription(true);
     try {
       const res = await fetch("/subscription/buy", { method: "POST", credentials: "include" });
       const data = await res.json();
       if (data.success) {
         setHasSubscription(true);
-        setActiveTab("map");
+        toast.success("Подписка оформлена!");
       } else {
         setError(data.error || "Не удалось оформить подписку");
       }
