@@ -508,8 +508,7 @@ if (!isAuthorized) {
       </nav>
 
       {isMapActive && (
-	   <>
-        {hasSubscription ? (
+        hasSubscription ? (
 		  selectedCity.name !== "Не выбран" ? (
           <div
             style={{
