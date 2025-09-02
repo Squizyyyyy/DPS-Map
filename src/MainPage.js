@@ -451,6 +451,7 @@ return (
   >
     <ToastContainer position="bottom-right" autoClose={3000} />
 
+    {/* Навигация */}
     <nav
       style={{
         display: "flex",
@@ -494,6 +495,7 @@ return (
       ))}
     </nav>
 
+    {/* Основной контент */}
     <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
       {activeTab === "account" && (
         <div
@@ -510,7 +512,7 @@ return (
               "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         >
-          {/* Профиль */}
+          {/* ---- Профиль ---- */}
           <div
             style={{
               backgroundColor: "#0a1f33",
@@ -522,7 +524,14 @@ return (
               boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
             }}
           >
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: 20,
+                fontWeight: 700,
+                color: "#fff",
+              }}
+            >
               Профиль
             </h2>
             <p style={{ color: "#aaa", fontSize: 16, marginTop: 8 }}>
@@ -530,7 +539,7 @@ return (
             </p>
           </div>
 
-          {/* Выбор города */}
+          {/* ---- Выбор города ---- */}
           <div
             style={{
               backgroundColor: "#0a1f33",
@@ -552,7 +561,9 @@ return (
               value={selectedCity?.name || "Не выбран"}
               onChange={(e) => {
                 const city =
-                  cities.find((c) => c.name === e.target.value) || { name: "Не выбран" };
+                  cities.find((c) => c.name === e.target.value) || {
+                    name: "Не выбран",
+                  };
                 setSelectedCity(city);
               }}
               style={{
@@ -620,7 +631,7 @@ return (
             </button>
           </div>
 
-          {/* Выйти */}
+          {/* ---- Выйти ---- */}
           <button
             onClick={handleLogout}
             style={{
@@ -681,7 +692,67 @@ return (
 
       {activeTab === "map" && (
         <>
-          {!hasSubscription ? (
+          {hasSubscription ? (
+            selectedCity?.name === "Не выбран" ? (
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  color: "#fff",
+                  padding: 16,
+                  textAlign: "center",
+                }}
+              >
+                <h2>Выберите город, чтобы открыть карту</h2>
+              </div>
+            ) : (
+              <div
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  zIndex: 9999,
+                }}
+              >
+                <MapView city={selectedCity} />
+                <button
+                  onClick={() => setActiveTab("account")}
+                  style={{
+                    position: "absolute",
+                    top: 9,
+                    right: 10,
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    border: "none",
+                    backgroundColor: "#fff",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    transition: "background-color 0.2s",
+                    zIndex: 10000,
+                    color: "black",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f4f4f4")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#fff")
+                  }
+                >
+                  ←
+                </button>
+              </div>
+            )
+          ) : (
             <div
               style={{
                 flex: 1,
@@ -712,64 +783,6 @@ return (
                 }}
               >
                 {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-              </button>
-            </div>
-          ) : selectedCity?.name === "Не выбран" ? (
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                color: "#fff",
-                padding: 16,
-                textAlign: "center",
-              }}
-            >
-              <h2>Выберите город, чтобы открыть карту</h2>
-            </div>
-          ) : (
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                zIndex: 9999,
-              }}
-            >
-              <MapView city={selectedCity} />
-              <button
-                onClick={() => setActiveTab("account")}
-                style={{
-                  position: "absolute",
-                  top: 9,
-                  right: 10,
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  border: "none",
-                  backgroundColor: "#fff",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  fontSize: 20,
-                  fontWeight: "bold",
-                  transition: "background-color 0.2s",
-                  zIndex: 10000,
-                  color: "black",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#f4f4f4")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#fff")
-                }
-              >
-                ←
               </button>
             </div>
           )}
