@@ -502,8 +502,7 @@ if (!isAuthorized) {
       </nav>
 
       {isMapActive ? (
-        selectedCity.name !== "Не выбран" && hasSubscription ? (
-        hasSubscription ? (
+        hasSubscription && selectedCity.name !== "Не выбран" ? (
           <div
             style={{
               position: "fixed",
