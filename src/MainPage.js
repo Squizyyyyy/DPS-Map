@@ -27,7 +27,7 @@ export default function MainPage() {
   const [sdkReady, setSdkReady] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(cities[0]);
+  const [selectedCity, setSelectedCity] = useState({ name: "Не выбран" });
 
   const isMapActive = activeTab === "map";
   
@@ -58,7 +58,9 @@ export default function MainPage() {
 
           if (data.user.city) {
             const city = cities.find((c) => c.name === data.user.city);
-            if (city) setSelectedCity(city);
+            setSelectedCity(city || { name: data.user.city });
+          } else {
+            setSelectedCity({ name: "Не выбран" });
           }
         }
       } catch (e) {
@@ -144,7 +146,9 @@ export default function MainPage() {
 
         if (result.user.city) {
           const city = cities.find((c) => c.name === result.user.city);
-          if (city) setSelectedCity(city);
+          setSelectedCity(city || { name: result.user.city });
+        } else {
+          setSelectedCity({ name: "Не выбран" });
         }
       } else {
         setError(result.error || "Не удалось авторизоваться через VK (сервер)");
@@ -165,6 +169,7 @@ export default function MainPage() {
     setUser(null);
     setActiveTab("account");
     setHasSubscription(false);
+	setSelectedCity({ name: "Не выбран" });
   };
   
   // ---- Telegram JS-виджет ----
@@ -186,7 +191,9 @@ export default function MainPage() {
 		setError(null);
 		if (data.user.city) {
 		  const city = cities.find((c) => c.name === data.user.city);
-		  if (city) setSelectedCity(city);
+		  setSelectedCity(city || { name: data.user.city });
+        } else {
+          setSelectedCity({ name: "Не выбран" });
 		}
 	  } else {
 		setError(data.error || "Не удалось авторизоваться через Telegram");
@@ -495,6 +502,7 @@ if (!isAuthorized) {
       </nav>
 
       {isMapActive ? (
+        selectedCity.name !== "Не выбран" && hasSubscription ? (
         hasSubscription ? (
           <div
             style={{
