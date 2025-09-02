@@ -58,17 +58,17 @@ export default function MainPage() {
           setError(null);
 
           if (data.user.city) {
-            const city = cities.find((c) => c.name === data.user.city);
-            setSelectedCity(city || { name: data.user.city });
-          } else {
-            setSelectedCity({ name: "Не выбран" });
-          }
+          const city = cities.find((c) => c.name === data.user.city);
+          setSelectedCity(city || cities[0]); // если город не найден, ставим "Не выбран"
+        } else {
+          setSelectedCity(cities[0]); // если город вообще не указан
         }
-      } catch (e) {
-        console.error("Auth status error:", e);
       }
-    })();
-  }, []);
+    } catch (e) {
+      console.error("Auth status error:", e);
+    }
+  })();
+}, []);
 
   // Загрузка SDK VK ID
   useEffect(() => {
@@ -147,9 +147,7 @@ export default function MainPage() {
 
         if (result.user.city) {
           const city = cities.find((c) => c.name === result.user.city);
-          setSelectedCity(city || { name: result.user.city });
-        } else {
-          setSelectedCity({ name: "Не выбран" });
+          if (city) setSelectedCity(city);
         }
       } else {
         setError(result.error || "Не удалось авторизоваться через VK (сервер)");
@@ -170,7 +168,6 @@ export default function MainPage() {
     setUser(null);
     setActiveTab("account");
     setHasSubscription(false);
-	setSelectedCity({ name: "Не выбран" });
   };
   
   // ---- Telegram JS-виджет ----
@@ -192,9 +189,7 @@ export default function MainPage() {
 		setError(null);
 		if (data.user.city) {
 		  const city = cities.find((c) => c.name === data.user.city);
-		  setSelectedCity(city || { name: data.user.city });
-        } else {
-          setSelectedCity({ name: "Не выбран" });
+		  if (city) setSelectedCity(city);
 		}
 	  } else {
 		setError(data.error || "Не удалось авторизоваться через Telegram");
@@ -208,18 +203,13 @@ export default function MainPage() {
   };
 
   const handleBuySubscription = async () => {
-	if (selectedCity.name === "Не выбран") {
-      toast.error("Сначала выберите город");
-      return;
-    }
-
     setLoadingSubscription(true);
     try {
       const res = await fetch("/subscription/buy", { method: "POST", credentials: "include" });
       const data = await res.json();
       if (data.success) {
         setHasSubscription(true);
-        toast.success("Подписка оформлена!");
+        setActiveTab("map");
       } else {
         setError(data.error || "Не удалось оформить подписку");
       }
@@ -452,66 +442,103 @@ if (!isAuthorized) {
   );
 }
 
-return (
-  <div
-    style={{
-      height: "100vh",
-      backgroundColor: tabColors.background,
-      color: tabColors.text,
-      display: "flex",
-      flexDirection: "column",
-    }}
-  >
-    <ToastContainer position="bottom-right" autoClose={3000} />
-
-    {/* Навигация */}
-    <nav
+  return (
+    <div
       style={{
+        height: "100vh",
+        backgroundColor: tabColors.background,
+        color: tabColors.text,
         display: "flex",
-        justifyContent: "center",
-        backgroundColor: tabColors.active,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-        width: "100%",
-        borderBottomLeftRadius: "16px",
-        borderBottomRightRadius: "16px",
-        overflow: "hidden",
+        flexDirection: "column",
       }}
     >
-      {["account", "subscription", "map"].map((tab) => (
-        <div
-          key={tab}
-          onClick={() => setActiveTab(tab)}
-          style={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "14px 0",
-            background:
-              activeTab === tab
-                ? `linear-gradient(135deg, #2787f5, #1449a3)`
-                : tabColors.inactive,
-            color: tabColors.text,
-            cursor: "pointer",
-            fontWeight: activeTab === tab ? "700" : "500",
-            fontSize: activeTab === tab ? "16px" : "15px",
-            transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
-            transition: "all 0.08s ease",
-            fontFamily:
-              "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-          }}
-        >
-          {tab === "account" && "Профиль"}
-          {tab === "subscription" && "Подписка"}
-          {tab === "map" && "Карта"}
-        </div>
-      ))}
-    </nav>
+      <ToastContainer position="bottom-right" autoClose={3000} />
+      <nav
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          backgroundColor: tabColors.active,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          width: "100%",
+          borderBottomLeftRadius: "16px",
+          borderBottomRightRadius: "16px",
+          overflow: "hidden", // чтобы скругление работало
+        }}
+      >
+        {/* панель поделена на 3 равные зоны */}
+        {["account", "subscription", "map"].map((tab) => (
+          <div
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              flex: 1, // равная ширина
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "14px 0",
+              background:
+                activeTab === tab
+                  ? `linear-gradient(135deg, #2787f5, #1449a3)`
+                  : tabColors.inactive,
+              color: tabColors.text,
+              cursor: "pointer",
+              fontWeight: activeTab === tab ? "700" : "500",
+              fontSize: activeTab === tab ? "16px" : "15px",
+              transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
+              transition: "all 0.08s ease",
+			  fontFamily:
+			    "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            }}
+          >
+            {tab === "account" && "Профиль"}
+            {tab === "subscription" && "Подписка"}
+            {tab === "map" && "Карта"}
+          </div>
+        ))}
+      </nav>
 
-    {/* Контент карты */}
-    {isMapActive && (
-      <div style={{ flex: 1 }}>
-        {!hasSubscription ? (
+      {isMapActive ? (
+        selectedCity.name !== "Не выбран" ? (
+          hasSubscription ? (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 9999,
+            }}
+          >
+            <MapView city={selectedCity} />
+            <button
+              onClick={() => setActiveTab("account")}
+              style={{
+                position: "absolute",
+                top: 9,
+                right: 10,
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: "none",
+                backgroundColor: "#fff",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                fontSize: 20,
+                fontWeight: "bold",
+                transition: "background-color 0.2s",
+                zIndex: 10000,
+                color: "black",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f4f4")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
+            >
+              ←
+            </button>
+          </div>
+        ) : (
           <div
             style={{
               flex: 1,
@@ -544,230 +571,164 @@ return (
               {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
             </button>
           </div>
-        ) : selectedCity.name === "Не выбран" ? (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#fff",
-              padding: 16,
-              textAlign: "center",
-            }}
-          >
-            <h2>Выберите город</h2>
-            <p>Чтобы использовать карту, сначала выберите город.</p>
-          </div>
-        ) : (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              zIndex: 9999,
-            }}
-          >
-            <MapView city={selectedCity} />
-            <button
-              onClick={() => setActiveTab("account")}
-              style={{
-                position: "absolute",
-                top: 9,
-                right: 10,
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                border: "none",
-                backgroundColor: "#fff",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                cursor: "pointer",
-                fontSize: 20,
-                fontWeight: "bold",
-                color: "black",
-                zIndex: 10000,
-              }}
-            >
-              ←
-            </button>
-          </div>
-        )}
-      </div>
-    )}
+        )
+      ) : (
+        <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
+          {activeTab === "account" && (
+  <div style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+	gap: 16,
+    padding: "0 30px",
+	maxWidth: 500,
+	margin: "0 auto",
+	marginTop: "30px",
+	fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+  }}>
 
-    {/* Остальной контент */}
-    {!isMapActive && (
-      <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
-        {/* Профиль */}
-        {activeTab === "account" && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 16,
-              padding: "0 30px",
-              maxWidth: 500,
-              margin: "0 auto",
-              marginTop: "30px",
-              fontFamily:
-                "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            }}
-          >
-            {/* ---- Профиль ---- */}
-            <div
-              style={{
-                backgroundColor: "#0a1f33",
-                borderRadius: 16,
-                padding: 16,
-                width: "100%",
-                maxWidth: 300,
-                textAlign: "center",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-              }}
-            >
-              <h2
-                style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}
-              >
-                Профиль
-              </h2>
-              <p style={{ color: "#aaa", fontSize: 16, marginTop: 8 }}>
-                <b>ID пользователя:</b> {user?.id || "—"}
-              </p>
-            </div>
+    {/* ---- Профиль ---- */}
+    <div style={{
+      backgroundColor: "#0a1f33",
+	  borderRadius: 16,
+      padding: 16,
+      width: "100%",
+	  maxWidth: 300,
+	  textAlign: "center",
+	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
+    }}>
+	  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>Профиль</h2>
+      <p style={{ color: "#aaa", fontSize: 16, marginTop: 8 }}>
+        <b>ID пользователя:</b> {user?.id || "—"}
+      </p>
+    </div>
 
-            {/* ---- Выбор города ---- */}
-            <div
-              style={{
-                backgroundColor: "#0a1f33",
-                borderRadius: 16,
-                padding: 16,
-                width: "100%",
-                maxWidth: 300,
-                textAlign: "center",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-              }}
-            >
-              <label style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>
-                Ваш город
-              </label>
-              <select
-                value={selectedCity.name}
-                onChange={(e) => {
-                  const city = cities.find((c) => c.name === e.target.value);
-                  if (city) setSelectedCity(city);
-                }}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid #1f3a5f",
-                  backgroundColor: "#063353",
-                  color: "#fff",
-                  fontSize: 14,
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  width: "100%",
-                  appearance: "none",
-                }}
-              >
-                {cities.map((city) => (
-                  <option key={city.name} value={city.name}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-              <p style={{ color: "#aaa", fontSize: 14, margin: 0 }}>
-                Выбран город: <b>{selectedCity.name}</b>
-              </p>
+    {/* ---- Выбор города ---- */}
+    <div style={{
+      backgroundColor: "#0a1f33",
+	  borderRadius: 16,
+      padding: 16,
+      width: "100%",
+	  maxWidth: 300,
+	  textAlign: "center",
+	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      display: "flex",
+      flexDirection: "column",
+	  gap: 12
+    }}>
+	  <label style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>Ваш город</label>
+      <select
+        value={selectedCity.name}
+        onChange={(e) => {
+          const city = cities.find((c) => c.name === e.target.value);
+          if (city) setSelectedCity(city);
+        }}
+        style={{
+		  padding: "10px 12px",
+          borderRadius: 10,
+          border: "1px solid #1f3a5f",
+          backgroundColor: "#063353",
+          color: "#fff",
+		  fontSize: 14,
+          fontWeight: 500,
+          cursor: "pointer",
+          width: "100%",
+          appearance: "none",
+		}}
+      >
+        {cities.map((city) => (
+          <option key={city.name} value={city.name}>{city.name}</option>
+        ))}
+      </select>
+	  <p style={{ color: "#aaa", fontSize: 14, margin: 0 }}>
+        Выбран город: <b>{selectedCity.name}</b>
+      </p>
+      <button
+        onClick={async () => {
+          try {
+            const res = await fetch("/auth/set-city", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ city: selectedCity.name }),
+            });
+            const data = await res.json();
+            if (data.success) toast.success("Город сохранён");
+            else toast.error(data.error || "Не удалось сохранить город");
+          } catch (e) {
+            console.error("Ошибка при сохранении города:", e);
+            toast.error("Ошибка сети при сохранении города");
+          }
+        }}
+        style={{
+		  padding: "10px 0",
+          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          color: "#fff",
+          border: "none",
+		  borderRadius: 10,
+          cursor: "pointer",
+          fontWeight: 600,
+		  fontSize: 14,
+          width: "100%",
+		  transition: "all 0.2s"
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")}
+		onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #0a90ff)")}
+      >
+        Сохранить
+      </button>
+    </div>
+
+    {/* ---- Выйти ---- */}
+    <button
+      onClick={handleLogout}
+      style={{
+		padding: "12px 0",
+        background: "#d9534f",
+        border: "none",
+		borderRadius: 10,
+        color: "#fff",
+        cursor: "pointer",
+        fontWeight: 700,
+		fontSize: 14,
+        width: "100%",
+		maxWidth: 300,
+        transition: "all 0.2s",
+		marginTop: 90,
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
+    >
+      Выйти из профиля
+    </button>
+
+  </div>
+)}
+
+          {activeTab === "subscription" && (
+            <div>
+              <h2>Подписка</h2>
               <button
-                onClick={async () => {
-                  try {
-                    const res = await fetch("/auth/set-city", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      credentials: "include",
-                      body: JSON.stringify({ city: selectedCity.name }),
-                    });
-                    const data = await res.json();
-                    if (data.success) toast.success("Город сохранён");
-                    else toast.error(data.error || "Не удалось сохранить город");
-                  } catch (e) {
-                    console.error("Ошибка при сохранении города:", e);
-                    toast.error("Ошибка сети при сохранении города");
-                  }
-                }}
+                onClick={handleBuySubscription}
+                disabled={loadingSubscription}
                 style={{
-                  padding: "10px 0",
-                  background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+                  padding: "12px 24px",
+                  marginTop: "16px",
+                  background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
                   color: "#fff",
                   border: "none",
-                  borderRadius: 10,
+                  borderRadius: "8px",
                   cursor: "pointer",
                   fontWeight: 600,
-                  fontSize: 14,
-                  width: "100%",
                   transition: "all 0.2s",
                 }}
               >
-                Сохранить
+                {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
               </button>
             </div>
-
-            {/* ---- Выйти ---- */}
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: "12px 0",
-                background: "#d9534f",
-                border: "none",
-                borderRadius: 10,
-                color: "#fff",
-                cursor: "pointer",
-                fontWeight: 700,
-                fontSize: 14,
-                width: "100%",
-                maxWidth: 300,
-                transition: "all 0.2s",
-                marginTop: 90,
-              }}
-            >
-              Выйти из профиля
-            </button>
-          </div>
-        )}
-
-        {/* Подписка */}
-        {activeTab === "subscription" && (
-          <div>
-            <h2>Подписка</h2>
-            <button
-              onClick={handleBuySubscription}
-              disabled={loadingSubscription}
-              style={{
-                padding: "12px 24px",
-                marginTop: "16px",
-                background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-                transition: "all 0.2s",
-              }}
-            >
-              {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-            </button>
-          </div>
-        )}
-      </main>
-    )}
-  </div>
-);
+          )}
+        </main>
+      )}
+    </div>
+   );
+}
