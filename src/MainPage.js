@@ -597,7 +597,7 @@ if (!isAuthorized) {
 	maxWidth: 500,
 	margin: "0 auto",
 	marginTop: "30px",
-	fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+	fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
   }}>
 
     {/* ---- Профиль ---- */}
