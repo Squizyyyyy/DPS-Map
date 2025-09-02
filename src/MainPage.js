@@ -495,7 +495,6 @@ return (
 
     {isMapActive ? (
       hasSubscription ? (
-        // 🔹 добавлено условие: если город "Не выбран", показываем текст вместо карты
         selectedCity?.name === "Не выбран" ? (
           <div
             style={{
@@ -654,12 +653,12 @@ return (
                 Ваш город
               </label>
               <select
-                value={selectedCity?.name || "Не выбран"} // 🔹 изменено
+                value={selectedCity?.name || "Не выбран"}
                 onChange={(e) => {
                   const city =
                     cities.find((c) => c.name === e.target.value) || {
                       name: "Не выбран",
-                    }; // 🔹 изменено
+                    };
                   setSelectedCity(city);
                 }}
                 style={{
@@ -675,7 +674,6 @@ return (
                   appearance: "none",
                 }}
               >
-                {/* 🔹 добавлено пункт "Не выбран" */}
                 <option value="Не выбран">Не выбран</option>
                 {cities.map((city) => (
                   <option key={city.name} value={city.name}>
@@ -697,10 +695,7 @@ return (
                     });
                     const data = await res.json();
                     if (data.success) toast.success("Город сохранён");
-                    else
-                      toast.error(
-                        data.error || "Не удалось сохранить город"
-                      );
+                    else toast.error(data.error || "Не удалось сохранить город");
                   } catch (e) {
                     console.error("Ошибка при сохранении города:", e);
                     toast.error("Ошибка сети при сохранении города");
@@ -708,8 +703,7 @@ return (
                 }}
                 style={{
                   padding: "10px 0",
-                  background:
-                    "linear-gradient(90deg, #2787f5, #0a90ff)",
+                  background: "linear-gradient(90deg, #2787f5, #0a90ff)",
                   color: "#fff",
                   border: "none",
                   borderRadius: 10,
@@ -749,14 +743,44 @@ return (
                 transition: "all 0.2s",
                 marginTop: 90,
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#c9302c")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "#d9534f")
-              }
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
             >
               Выйти из профиля
+            </button>
+          </div>
+        )}
+
+        {activeTab === "subscription" && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 16,
+              padding: "0 30px",
+              maxWidth: 500,
+              margin: "0 auto",
+              marginTop: "30px",
+            }}
+          >
+            <h2>Подписка</h2>
+            <button
+              onClick={handleBuySubscription}
+              disabled={loadingSubscription}
+              style={{
+                padding: "12px 24px",
+                marginTop: "16px",
+                background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                transition: "all 0.2s",
+              }}
+            >
+              {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
             </button>
           </div>
         )}
@@ -764,31 +788,3 @@ return (
     )}
   </div>
 );
-
-          {activeTab === "subscription" && (
-            <div>
-              <h2>Подписка</h2>
-              <button
-                onClick={handleBuySubscription}
-                disabled={loadingSubscription}
-                style={{
-                  padding: "12px 24px",
-                  marginTop: "16px",
-                  background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  transition: "all 0.2s",
-                }}
-              >
-                {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-              </button>
-            </div>
-          )}
-        </main>
-      )}
-    </div>
-   );
-}
