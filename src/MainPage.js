@@ -496,6 +496,23 @@ if (!isAuthorized) {
 
       {isMapActive ? (
         hasSubscription ? (
+		// условие: если город "Не выбран", показываем текст вместо карты
+        selectedCity?.name === "Не выбран" ? (
+		  <div
+            style={{
+			  flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#fff",
+              padding: 16,
+              textAlign: "center",
+            }}
+          >
+		    <h2>Чтобы продолжить, выберите город во вкладке - Профиль -</h2>
+          </div>
+        ) : (
           <div
             style={{
               position: "fixed",
@@ -614,10 +631,10 @@ if (!isAuthorized) {
     }}>
 	  <label style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>Ваш город</label>
       <select
-        value={selectedCity.name}
+        value={selectedCity?.name || "Не выбран"}
         onChange={(e) => {
-          const city = cities.find((c) => c.name === e.target.value);
-          if (city) setSelectedCity(city);
+          const city = cities.find((c) => c.name === e.target.value) || {name: "Не выбран",};
+          setSelectedCity(city);
         }}
         style={{
 		  padding: "10px 12px",
@@ -632,13 +649,17 @@ if (!isAuthorized) {
           appearance: "none",
 		}}
       >
-        {cities.map((city) => (
-          <option key={city.name} value={city.name}>{city.name}</option>
-        ))}
-      </select>
-	  <p style={{ color: "#aaa", fontSize: 14, margin: 0 }}>
-        Выбран город: <b>{selectedCity.name}</b>
-      </p>
+        {/* 🔹 добавил пункт "Не выбран" */}
+                <option value="Не выбран">Не выбран</option>
+                {cities.map((city) => (
+                  <option key={city.name} value={city.name}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+              <p style={{ color: "#aaa", fontSize: 14, margin: 0 }}>
+                Выбран город: <b>{selectedCity?.name || "Не выбран"}</b>
+              </p>
       <button
         onClick={async () => {
           try {
