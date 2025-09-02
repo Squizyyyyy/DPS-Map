@@ -495,81 +495,103 @@ if (!isAuthorized) {
         ))}
       </nav>
 
-      {isMapActive ? (
-        hasSubscription ? (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              zIndex: 9999,
-            }}
-          >
-            <MapView city={selectedCity} />
-            <button
-              onClick={() => setActiveTab("account")}
-              style={{
-                position: "absolute",
-                top: 9,
-                right: 10,
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                border: "none",
-                backgroundColor: "#fff",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                cursor: "pointer",
-                fontSize: 20,
-                fontWeight: "bold",
-                transition: "background-color 0.2s",
-                zIndex: 10000,
-                color: "black",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f4f4")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
-            >
-              ←
-            </button>
-          </div>
-        ) : (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#fff",
-              padding: 16,
-              textAlign: "center",
-            }}
-          >
-            <h2>Доступ к карте ограничен</h2>
-            <p>Оформите подписку, чтобы использовать карту.</p>
-            <button
-              onClick={handleBuySubscription}
-              disabled={loadingSubscription}
-              style={{
-                padding: "12px 24px",
-                marginTop: "16px",
-                background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-                transition: "all 0.2s",
-              }}
-            >
-              {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-            </button>
-          </div>
-        )
-      ) : (
+{isMapActive ? (
+  hasSubscription ? (
+    selectedCity.name === "Не выбран" ? (
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#fff",
+          padding: 16,
+          textAlign: "center",
+        }}
+      >
+        <h2>Выберите город</h2>
+        <p>Карта будет доступна после выбора города.</p>
+      </div>
+    ) : (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 9999,
+        }}
+      >
+        <MapView city={selectedCity} />
+        <button
+          onClick={() => setActiveTab("account")}
+          style={{
+            position: "absolute",
+            top: 9,
+            right: 10,
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            border: "none",
+            backgroundColor: "#fff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer",
+            fontSize: 20,
+            fontWeight: "bold",
+            transition: "background-color 0.2s",
+            zIndex: 10000,
+            color: "black",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#f4f4f4")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "#fff")
+          }
+        >
+          ←
+        </button>
+      </div>
+    )
+  ) : (
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        color: "#fff",
+        padding: 16,
+        textAlign: "center",
+      }}
+    >
+      <h2>Доступ к карте ограничен</h2>
+      <p>Оформите подписку, чтобы использовать карту.</p>
+      <button
+        onClick={handleBuySubscription}
+        disabled={loadingSubscription}
+        style={{
+          padding: "12px 24px",
+          marginTop: "16px",
+          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          fontWeight: 600,
+          transition: "all 0.2s",
+        }}
+      >
+        {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
+      </button>
+    </div>
+  )
+) : (
         <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
           {activeTab === "account" && (
   <div style={{
