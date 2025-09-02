@@ -714,7 +714,7 @@ if (!isAuthorized) {
               <h2>Подписка</h2>
               <button
                 onClick={handleBuySubscription}
-                disabled={loadingSubscription}
+                disabled={loadingSubscription || selectedCity.name === "Не выбран"}
                 style={{
                   padding: "12px 24px",
                   marginTop: "16px",
