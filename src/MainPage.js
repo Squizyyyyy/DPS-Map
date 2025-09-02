@@ -28,11 +28,12 @@ export default function MainPage() {
   const [sdkReady, setSdkReady] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
+
+  // 🔹 selectedCity по умолчанию "Не выбран"
   const [selectedCity, setSelectedCity] = useState(cities[0]);
 
   const isMapActive = activeTab === "map";
-  
-  // 🔹 Убираем стандартные отступы body/html
+
   useEffect(() => {
     document.body.style.margin = "0";
     document.body.style.padding = "0";
@@ -42,7 +43,6 @@ export default function MainPage() {
     document.documentElement.style.height = "100%";
   }, []);
 
-  // Проверка сессии при загрузке
   useEffect(() => {
     (async () => {
       try {
@@ -57,20 +57,21 @@ export default function MainPage() {
           );
           setError(null);
 
+          // 🔹 Проверяем город после подписки
           if (data.user.city) {
-          const city = cities.find((c) => c.name === data.user.city);
-          setSelectedCity(city || cities[0]); // если город не найден, ставим "Не выбран"
-        } else {
-          setSelectedCity(cities[0]); // если город вообще не указан
+            const city = cities.find((c) => c.name === data.user.city);
+            setSelectedCity(city || cities[0]);
+          } else {
+            setSelectedCity(cities[0]);
+          }
         }
+      } catch (e) {
+        console.error("Auth status error:", e);
       }
-    } catch (e) {
-      console.error("Auth status error:", e);
-    }
-  })();
-}, []);
+    })();
+  }, []);
 
-  // Загрузка SDK VK ID
+  // VKID SDK
   useEffect(() => {
     function init() {
       try {
@@ -147,7 +148,9 @@ export default function MainPage() {
 
         if (result.user.city) {
           const city = cities.find((c) => c.name === result.user.city);
-          if (city) setSelectedCity(city);
+          setSelectedCity(city || cities[0]);
+        } else {
+          setSelectedCity(cities[0]);
         }
       } else {
         setError(result.error || "Не удалось авторизоваться через VK (сервер)");
@@ -168,38 +171,7 @@ export default function MainPage() {
     setUser(null);
     setActiveTab("account");
     setHasSubscription(false);
-  };
-  
-  // ---- Telegram JS-виджет ----
-  const handleTelegramLogin = async (telegramData) => {
-	setLoadingLogin(true);
-	setError(null);
-	try {
-	  const res = await fetch("/auth/telegram", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(telegramData),
-	  });
-	  const data = await res.json();
-	  if (data.success) {
-	    setUser(data.user);
-		setIsAuthorized(true);
-		setActiveTab("account");
-		setError(null);
-		if (data.user.city) {
-		  const city = cities.find((c) => c.name === data.user.city);
-		  if (city) setSelectedCity(city);
-		}
-	  } else {
-		setError(data.error || "Не удалось авторизоваться через Telegram");
-	  }
-	} catch (e) {
-	  console.error("Telegram login error:", e);
-	  setError("Ошибка авторизации через Telegram");
-	} finally {
-	  setLoadingLogin(false);
-	}
+    setSelectedCity(cities[0]); // 🔹 сброс города при логауте
   };
 
   const handleBuySubscription = async () => {
@@ -221,237 +193,83 @@ export default function MainPage() {
     }
   };
 
-  const refreshTokenIfNeeded = async () => {
-    if (!user || !user.refresh_token) return;
-
-    try {
-      const VKID = window.VKIDSDK;
-      const now = Math.floor(Date.now() / 1000);
-      const payload = user.id_token
-        ? JSON.parse(atob(user.id_token.split(".")[1]))
-        : null;
-
-      if (!payload || payload.exp - now > 300) return;
-
-      const newTokens = await VKID.Auth.refreshToken(user.refresh_token);
-
-      if (newTokens?.access_token) {
-        const updatedUser = {
-          ...user,
-          access_token: newTokens.access_token,
-          refresh_token: newTokens.refresh_token || user.refresh_token,
-          id_token: newTokens.id_token || user.id_token,
-        };
-        setUser(updatedUser);
-
-        await fetch("/auth/vkid", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            access_token: updatedUser.access_token,
-            refresh_token: updatedUser.refresh_token,
-            id_token: updatedUser.id_token,
-          }),
-        });
-      }
-    } catch (e) {
-      console.error("Ошибка обновления токена:", e);
-      setError("Не удалось обновить токен VK ID");
-    }
-  };
-
-  useEffect(() => {
-    if (!isAuthorized) return;
-    const interval = setInterval(refreshTokenIfNeeded, 60000);
-    return () => clearInterval(interval);
-  }, [isAuthorized, user]);
-  
-  // ---- Подключение Telegram JS-виджета ----
-  useEffect(() => {
-	window.handleTelegramAuth = (user) => handleTelegramLogin(user);
-	
-	const container = document.getElementById("telegram-button-container");
-	if (!container) return;
-	
-	container.innerHTML = "";
-	
-	if (!isAuthorized) {
-	  const script = document.createElement("script");
-	  script.src = "https://telegram.org/js/telegram-widget.js?15";
-      script.setAttribute("data-telegram-login", process.env.REACT_APP_TELEGRAM_BOT_USERNAME);
-      script.setAttribute("data-size", "large");
-      script.setAttribute("data-userpic", "false");
-      script.setAttribute("data-radius", "8");
-      script.setAttribute("data-request-access", "write");
-      script.setAttribute("data-onauth", "handleTelegramAuth(user)");
-	  script.async = true;
-	  
-	  container.appendChild(script);
-	}
-  }, [isAuthorized]);
-
-if (!isAuthorized) {
-  return (
-    <div
-      style={{
-        height: "100vh",
-        backgroundColor: "#0a1f33",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-        padding: 16,
-		boxSizing: "border-box",
-      }}
-    >
-      {/* Центральный блок */}
+  // 🔹 Render
+  if (!isAuthorized) {
+    return (
       <div
         style={{
-          width: "100%",
-          maxWidth: 360,
-          background: "#0c274f",
-          borderRadius: 24,
-          padding: "24px 16px", // сделали адаптивные горизонтальные отступы
-          boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+          height: "100vh",
+          backgroundColor: "#0a1f33",
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
-          boxSizing: "border-box", // предотвращаем выход за границы
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+          padding: 16,
+          boxSizing: "border-box",
         }}
       >
-        {/* Заголовок */}
-        <h2 style={{
-          fontSize: 28,
-          fontWeight: 700,
-          marginBottom: 30,
-          color: "#fff"
-        }}>
-          Авторизация
-        </h2>
-
-        {/* Подзаголовок */}
-        <p style={{
-          fontSize: 16,
-          color: "#ccc",
-          marginBottom: 24,
-          textAlign: "center"
-        }}>
-          Чтобы продолжить, войдите через VK ID или Telegram
-        </p>
-
-        {/* Ошибка */}
-        {error && (
-          <p style={{
-            color: "#ff3b30",
-            marginBottom: 16,
-            textAlign: "center"
-          }}>
-            {error}
-          </p>
-        )}
-
-        {/* Блок кнопок */}
         <div
-          id="auth-buttons-wrapper" //  добавил id для управления стилем
           style={{
+            width: "100%",
+            maxWidth: 360,
+            background: "#0c274f",
+            borderRadius: 24,
+            padding: "24px 16px",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
             display: "flex",
             flexDirection: "column",
-            gap: 12,
             alignItems: "center",
-            background: "#0a1f33",
-            borderRadius: 16,
-            padding: "21px 26px",
-            border: "1px solid rgba(255,255,255,0.1)",
             boxSizing: "border-box",
-            minWidth: 180,  //  ограничили минимальную ширину
-            maxWidth: "100%", //  не вылазит за главный блок
           }}
         >
-          {/* VK кнопка */}
-          <button
-            onClick={handleLogin}
-            disabled={!sdkReady || loadingLogin}
-            style={{
-              width: "100%", //  растягиваем под ширину контейнера
-              padding: "10px 0", //  подогнали внутренние отступы
-              background: sdkReady
-                ? `linear-gradient(90deg, #2787f5, #0a90ff)`
-                : "#6c757d",
-              color: "#fff",
-              border: "none",
-              borderRadius: 7,
-              cursor: sdkReady && !loadingLogin ? "pointer" : "default",
-              fontWeight: 600,
-			  fontSize: "16px",
-              transition: "all 0.2s",
-            }}
-          >
-            {loadingLogin ? "Входим..." : "Войти через VK ID"}
-          </button>
-
-          {/* Telegram кнопка */}
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 30, color: "#fff" }}>Авторизация</h2>
+          <p style={{ fontSize: 16, color: "#ccc", marginBottom: 24, textAlign: "center" }}>
+            Чтобы продолжить, войдите через VK ID или Telegram
+          </p>
+          {error && <p style={{ color: "#ff3b30", marginBottom: 16, textAlign: "center" }}>{error}</p>}
           <div
-            id="telegram-button-container"
+            id="auth-buttons-wrapper"
             style={{
               display: "flex",
-              justifyContent: "center",
-              width: "100%", // кнопка тг управляет шириной контейнера
-            }}
-          />
-        </div>
-		
-		{/* Блок контактов поддержки */}
-        <div
-          style={{
-            marginTop: 24,           // расстояние от блока кнопок
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,                  // расстояние между текстом и иконкой
-            color: "#ccc",
-            fontSize: 14,
-          }}
-        >
-          <span>Есть вопрос?</span>
-          <a
-            href="https://t.me/dps_map_support"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "flex",
+              flexDirection: "column",
+              gap: 12,
               alignItems: "center",
-              textDecoration: "none",
-              color: "#00aaff",
+              background: "#0a1f33",
+              borderRadius: 16,
+              padding: "21px 26px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              boxSizing: "border-box",
+              minWidth: 180,
+              maxWidth: "100%",
             }}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 240 240"
-              width="20"
-              height="20"
-              fill="currentColor"
+            <button
+              onClick={handleLogin}
+              disabled={!sdkReady || loadingLogin}
+              style={{
+                width: "100%",
+                padding: "10px 0",
+                background: sdkReady ? `linear-gradient(90deg, #2787f5, #0a90ff)` : "#6c757d",
+                color: "#fff",
+                border: "none",
+                borderRadius: 7,
+                cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+                fontWeight: 600,
+                fontSize: "16px",
+                transition: "all 0.2s",
+              }}
             >
-              <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
-            </svg>
-          </a>
+              {loadingLogin ? "Входим..." : "Войти через VK ID"}
+            </button>
+            <div id="telegram-button-container" style={{ display: "flex", justifyContent: "center", width: "100%" }} />
+          </div>
         </div>
-		
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        backgroundColor: tabColors.background,
-        color: tabColors.text,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div style={{ height: "100vh", backgroundColor: tabColors.background, color: tabColors.text, display: "flex", flexDirection: "column" }}>
       <ToastContainer position="bottom-right" autoClose={3000} />
       <nav
         style={{
@@ -462,32 +280,26 @@ if (!isAuthorized) {
           width: "100%",
           borderBottomLeftRadius: "16px",
           borderBottomRightRadius: "16px",
-          overflow: "hidden", // чтобы скругление работало
+          overflow: "hidden",
         }}
       >
-        {/* панель поделена на 3 равные зоны */}
         {["account", "subscription", "map"].map((tab) => (
           <div
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{
-              flex: 1, // равная ширина
+              flex: 1,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               padding: "14px 0",
-              background:
-                activeTab === tab
-                  ? `linear-gradient(135deg, #2787f5, #1449a3)`
-                  : tabColors.inactive,
+              background: activeTab === tab ? `linear-gradient(135deg, #2787f5, #1449a3)` : tabColors.inactive,
               color: tabColors.text,
               cursor: "pointer",
               fontWeight: activeTab === tab ? "700" : "500",
               fontSize: activeTab === tab ? "16px" : "15px",
               transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
               transition: "all 0.08s ease",
-			  fontFamily:
-			    "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
             }}
           >
             {tab === "account" && "Профиль"}
@@ -498,18 +310,57 @@ if (!isAuthorized) {
       </nav>
 
       {isMapActive ? (
-        selectedCity.name !== "Не выбран" ? (
-          hasSubscription ? (
+        // 🔹 Новая логика: сначала проверка подписки, потом города
+        !hasSubscription ? (
           <div
             style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              zIndex: 9999,
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#fff",
+              padding: 16,
+              textAlign: "center",
             }}
           >
+            <h2>Доступ к карте ограничен</h2>
+            <p>Оформите подписку, чтобы использовать карту.</p>
+            <button
+              onClick={handleBuySubscription}
+              disabled={loadingSubscription}
+              style={{
+                padding: "12px 24px",
+                marginTop: "16px",
+                background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                transition: "all 0.2s",
+              }}
+            >
+              {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
+            </button>
+          </div>
+        ) : selectedCity.name === "Не выбран" ? (
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#fff",
+              padding: 16,
+              textAlign: "center",
+            }}
+          >
+            <h2>Чтобы открыть карту, выберите город в разделе "Профиль"</h2>
+          </div>
+        ) : (
+          <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 9999 }}>
             <MapView city={selectedCity} />
             <button
               onClick={() => setActiveTab("account")}
@@ -538,7 +389,8 @@ if (!isAuthorized) {
               ←
             </button>
           </div>
-        ) : (
+        )
+      ) : (
           <div
             style={{
               flex: 1,
