@@ -550,7 +550,6 @@ if (!isAuthorized) {
             >
               ←
             </button>
-          </div>
         ) : (
           <div
             style={{
