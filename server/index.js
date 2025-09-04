@@ -137,6 +137,11 @@ async function checkAuth(req, res, next) {
     return res.status(401).json({ error: "Пользователь не найден" });
   }
 
+  // --- Пересчитываем активность подписки по expiresAt ---
+  if (userInDb.subscription?.expiresAt) {
+    userInDb.subscription.active = Date.now() <= userInDb.subscription.expiresAt;
+  }
+
   req.session.user = userInDb;
   next();
 }
@@ -252,26 +257,15 @@ app.post("/auth/telegram", async (req, res) => {
 app.get("/auth/status", async (req, res) => {
   if (!req.session.user) return res.json({ authorized: false });
 
-  let userInDb = await usersCollection.findOne({ id: req.session.user.id });
+  const userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
     req.session.destroy(() => {});
     return res.json({ authorized: false });
   }
 
-  // --- Подтягиваем подписку ---
+  // --- Пересчитываем активность подписки ---
   if (userInDb.subscription?.expiresAt) {
     userInDb.subscription.active = Date.now() <= userInDb.subscription.expiresAt;
-    await usersCollection.updateOne({ id: userInDb.id }, { $set: { subscription: userInDb.subscription } });
-  }
-
-  // --- Подтягиваем город ---
-  if (userInDb.city) {
-    userInDb.city = userInDb.city;
-  }
-
-  // --- Обновляем VK токены ---
-  if (userInDb.refresh_token) {
-    userInDb.access_token = await refreshAccessToken(userInDb);
   }
 
   req.session.user = userInDb;
@@ -306,7 +300,7 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
   try {
     const user = req.session.user;
     const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-    user.subscription = { active: true, plan: "basic", expiresAt };
+    user.subscription = { plan: "basic", expiresAt, active: true };
     await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
     req.session.user = user;
     res.json({ success: true, subscription: user.subscription });
