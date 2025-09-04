@@ -36,7 +36,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
+      maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: "lax",
     },
@@ -57,7 +57,6 @@ async function startServer() {
 
     console.log("✅ Подключено к MongoDB");
 
-    // Запускаем проверку статусов меток каждые 5 минут
     setInterval(updateMarkersStatus, 5 * 60 * 1000);
 
     app.listen(PORT, () => {
@@ -118,25 +117,19 @@ function parseIdToken(idToken) {
 
 function mapClaimsToUser(claims) {
   const id = claims?.sub || claims?.uid || null;
-  const firstName = claims?.given_name || claims?.first_name || null;
-  const lastName = claims?.family_name || claims?.last_name || null;
-  const photo = claims?.picture || claims?.photo_100 || null;
+  const firstName = claims?.given_name || claims?.first_name || "";
+  const lastName = claims?.family_name || claims?.last_name || "";
+  const photo = claims?.picture || claims?.photo_100 || "";
   return {
     id,
-    info: {
-      first_name: firstName || "",
-      last_name: lastName || "",
-      photo_100: photo || "",
-    },
+    info: { first_name: firstName, last_name: lastName, photo_100: photo },
     email: claims?.email || null,
   };
 }
 
 // ---------------------- Auth Middleware ----------------------
 async function checkAuth(req, res, next) {
-  if (!req.session.user) {
-    return res.status(401).json({ error: "Не авторизован" });
-  }
+  if (!req.session.user) return res.status(401).json({ error: "Не авторизован" });
 
   const userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
@@ -144,10 +137,11 @@ async function checkAuth(req, res, next) {
     return res.status(401).json({ error: "Пользователь не найден" });
   }
 
+  req.session.user = userInDb;
   next();
 }
 
-// ---- Функция для автообновления access token ----
+// ---------------------- Refresh Token ----------------------
 async function refreshAccessToken(user) {
   if (!user?.refresh_token) return user.access_token;
 
@@ -173,7 +167,6 @@ async function refreshAccessToken(user) {
       );
       return user.access_token;
     }
-
     return user.access_token;
   } catch (e) {
     console.error("Ошибка обновления access token:", e);
@@ -191,30 +184,23 @@ app.post("/auth/vkid", async (req, res) => {
     let userObj = null;
     if (id_token) {
       const claims = parseIdToken(id_token);
-      if (claims) {
-        const mapped = mapClaimsToUser(claims);
-        if (mapped.id) {
-          userObj = {
-            ...mapped,
-            internalId: uuidv4(),
-            access_token,
-            refresh_token: refresh_token || null,
-            id_token,
-          };
-        }
-      }
+      if (claims) userObj = mapClaimsToUser(claims);
     }
 
-    if (!userObj) {
+    if (!userObj || !userObj.id) {
       userObj = {
         id: `vk_${Math.random().toString(36).slice(2)}`,
-        internalId: uuidv4(),
         info: { first_name: "", last_name: "", photo_100: "" },
         email: null,
-        access_token,
-        refresh_token: refresh_token || null,
-        id_token: id_token || null,
       };
+    }
+
+    const existingUser = await usersCollection.findOne({ id: userObj.id });
+    if (existingUser) {
+      userObj = { ...existingUser, access_token, refresh_token, id_token };
+    } else {
+      userObj = { ...userObj, internalId: uuidv4(), access_token, refresh_token, id_token };
+      await usersCollection.insertOne(userObj);
     }
 
     req.session.user = userObj;
@@ -231,34 +217,26 @@ app.post("/auth/vkid", async (req, res) => {
 app.post("/auth/telegram", async (req, res) => {
   try {
     const { id, first_name, last_name, username, photo_url, auth_date, hash } = req.body;
-
-    if (!id || !hash) {
-      return res.status(400).json({ success: false, error: "Недостаточно данных" });
-    }
+    if (!id || !hash) return res.status(400).json({ success: false, error: "Недостаточно данных" });
 
     const secret = crypto.createHash("sha256").update(process.env.TELEGRAM_BOT_TOKEN).digest();
-    const checkString = Object.keys(req.body)
-      .filter((key) => key !== "hash")
-      .sort()
-      .map((key) => `${key}=${req.body[key]}`)
-      .join("\n");
+    const checkString = Object.keys(req.body).filter(k => k !== "hash").sort().map(k => `${k}=${req.body[k]}`).join("\n");
     const hmac = crypto.createHmac("sha256", secret).update(checkString).digest("hex");
+    if (hmac !== hash) return res.status(403).json({ success: false, error: "Неверная подпись Telegram" });
 
-    if (hmac !== hash) {
-      return res.status(403).json({ success: false, error: "Неверная подпись Telegram" });
-    }
-
-    const userObj = {
+    let userObj = {
       id: `tg_${id}`,
-      internalId: uuidv4(),
-      info: {
-        first_name: first_name || "",
-        last_name: last_name || "",
-        username: username || "",
-        photo_100: photo_url || "",
-      },
+      info: { first_name: first_name || "", last_name: last_name || "", username: username || "", photo_100: photo_url || "" },
       telegram: { id, username, auth_date },
     };
+
+    const existingUser = await usersCollection.findOne({ id: userObj.id });
+    if (existingUser) {
+      userObj = { ...existingUser, telegram: userObj.telegram };
+    } else {
+      userObj.internalId = uuidv4();
+      await usersCollection.insertOne(userObj);
+    }
 
     req.session.user = userObj;
     await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
@@ -274,54 +252,33 @@ app.post("/auth/telegram", async (req, res) => {
 app.get("/auth/status", async (req, res) => {
   if (!req.session.user) return res.json({ authorized: false });
 
-  // Берём пользователя из БД (единый источник правды)
-  const userInDb = await usersCollection.findOne({ id: req.session.user.id });
+  let userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
     req.session.destroy(() => {});
     return res.json({ authorized: false });
   }
 
-  // Проверка срока подписки
+  // Проверка подписки
   if (userInDb.subscription?.expiresAt) {
-    if (Date.now() > userInDb.subscription.expiresAt) {
-      userInDb.subscription.active = false;
-      await usersCollection.updateOne(
-        { id: userInDb.id },
-        { $set: { subscription: userInDb.subscription } }
-      );
-    } else {
-      userInDb.subscription.active = true;
-    }
+    userInDb.subscription.active = Date.now() <= userInDb.subscription.expiresAt;
+    await usersCollection.updateOne({ id: userInDb.id }, { $set: { subscription: userInDb.subscription } });
   }
 
-  // Подтягиваем город из БД (если есть)
-  if (userInDb.city) {
-    userInDb.city = userInDb.city;
-  }
-
-  // Обновляем токены из БД, если есть
-  userInDb.access_token = userInDb.access_token || req.session.user.access_token || null;
-  userInDb.refresh_token = userInDb.refresh_token || req.session.user.refresh_token || null;
-  userInDb.id_token = userInDb.id_token || req.session.user.id_token || null;
-
+  // Обновляем токены
   if (userInDb.refresh_token) {
-    const newAccessToken = await refreshAccessToken(userInDb);
-    userInDb.access_token = newAccessToken || userInDb.access_token || null;
+    userInDb.access_token = await refreshAccessToken(userInDb);
   }
 
   req.session.user = userInDb;
-
-  return res.json({ authorized: true, user: req.session.user });
+  return res.json({ authorized: true, user: userInDb });
 });
 
 // ---- Logout ----
 app.post("/auth/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.json({ success: true });
-  });
+  req.session.destroy(() => res.json({ success: true }));
 });
 
-// ---- Сохранение выбранного города ----
+// ---- Сохранение города ----
 app.post("/auth/set-city", checkAuth, async (req, res) => {
   try {
     const { city } = req.body;
@@ -343,18 +300,10 @@ app.post("/auth/set-city", checkAuth, async (req, res) => {
 app.post("/subscription/buy", checkAuth, async (req, res) => {
   try {
     const user = req.session.user;
-    const now = Date.now();
-    const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
-
-    user.subscription = {
-      active: true,
-      plan: "basic",
-      expiresAt,
-    };
-
+    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    user.subscription = { active: true, plan: "basic", expiresAt };
     await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
     req.session.user = user;
-
     res.json({ success: true, subscription: user.subscription });
   } catch (e) {
     console.error("Ошибка при покупке подписки:", e);
@@ -379,16 +328,7 @@ app.post("/markers", checkAuth, async (req, res) => {
   const id = Date.now();
   const address = await getAddress(lat, lng);
 
-  const marker = {
-    id,
-    lat,
-    lng,
-    timestamp: Date.now(),
-    status: "active",
-    confirmations: 0,
-    address,
-    comment,
-  };
+  const marker = { id, lat, lng, timestamp: Date.now(), status: "active", confirmations: 0, address, comment };
   await markersCollection.insertOne(marker);
   res.json(marker);
 });
@@ -397,10 +337,7 @@ app.post("/markers/:id/confirm", checkAuth, async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
   if (!marker) return res.sendStatus(404);
-  await markersCollection.updateOne(
-    { id },
-    { $set: { status: "active", timestamp: Date.now() }, $inc: { confirmations: 1 } }
-  );
+  await markersCollection.updateOne({ id }, { $set: { status: "active", timestamp: Date.now() }, $inc: { confirmations: 1 } });
   res.sendStatus(200);
 });
 
@@ -419,16 +356,8 @@ app.post("/markers/:id/delete", checkAuth, async (req, res) => {
 async function updateMarkersStatus() {
   try {
     const now = Date.now();
-
-    await markersCollection.updateMany(
-      { status: "active", timestamp: { $lt: now - 60 * 60 * 1000 } },
-      { $set: { status: "unconfirmed" } }
-    );
-
-    await markersCollection.deleteMany({
-      timestamp: { $lt: now - 90 * 60 * 1000 },
-    });
-
+    await markersCollection.updateMany({ status: "active", timestamp: { $lt: now - 60 * 60 * 1000 } }, { $set: { status: "unconfirmed" } });
+    await markersCollection.deleteMany({ timestamp: { $lt: now - 90 * 60 * 1000 } });
     console.log("🔄 Проверка меток выполнена");
   } catch (err) {
     console.error("Ошибка обновления статусов меток:", err);
