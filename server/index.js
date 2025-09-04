@@ -138,7 +138,6 @@ async function checkAuth(req, res, next) {
     return res.status(401).json({ error: "Не авторизован" });
   }
 
-  // Проверяем, что пользователь из сессии существует в БД
   const userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
     req.session.destroy(() => {});
@@ -168,7 +167,10 @@ async function refreshAccessToken(user) {
     if (data.access_token) {
       user.access_token = data.access_token;
       if (data.refresh_token) user.refresh_token = data.refresh_token;
-      await usersCollection.updateOne({ id: user.id }, { $set: { access_token: user.access_token, refresh_token: user.refresh_token } });
+      await usersCollection.updateOne(
+        { id: user.id },
+        { $set: { access_token: user.access_token, refresh_token: user.refresh_token } }
+      );
       return user.access_token;
     }
 
@@ -234,7 +236,6 @@ app.post("/auth/telegram", async (req, res) => {
       return res.status(400).json({ success: false, error: "Недостаточно данных" });
     }
 
-    // Проверяем подпись
     const secret = crypto.createHash("sha256").update(process.env.TELEGRAM_BOT_TOKEN).digest();
     const checkString = Object.keys(req.body)
       .filter((key) => key !== "hash")
@@ -271,7 +272,6 @@ app.post("/auth/telegram", async (req, res) => {
 
 // ---- Проверка сессии ----
 app.get("/auth/status", async (req, res) => {
-  // Нет сессии — не авторизован
   if (!req.session.user) return res.json({ authorized: false });
 
   // Берём пользователя из БД (единый источник правды)
@@ -281,7 +281,7 @@ app.get("/auth/status", async (req, res) => {
     return res.json({ authorized: false });
   }
 
-  // Проверка срока подписки (и синхронизация с БД)
+  // Проверка срока подписки
   if (userInDb.subscription?.expiresAt) {
     if (Date.now() > userInDb.subscription.expiresAt) {
       userInDb.subscription.active = false;
@@ -290,12 +290,16 @@ app.get("/auth/status", async (req, res) => {
         { $set: { subscription: userInDb.subscription } }
       );
     } else {
-      userInDb.subscription.active = true; // на всякий случай держим консистентным
+      userInDb.subscription.active = true;
     }
   }
 
-  // Синхронизация и обновление токенов (если они есть)
-  // Берём refresh/access токены из БД, если там хранятся; если нет — из сессии
+  // Подтягиваем город из БД (если есть)
+  if (userInDb.city) {
+    userInDb.city = userInDb.city;
+  }
+
+  // Обновляем токены из БД, если есть
   userInDb.access_token = userInDb.access_token || req.session.user.access_token || null;
   userInDb.refresh_token = userInDb.refresh_token || req.session.user.refresh_token || null;
   userInDb.id_token = userInDb.id_token || req.session.user.id_token || null;
@@ -305,7 +309,6 @@ app.get("/auth/status", async (req, res) => {
     userInDb.access_token = newAccessToken || userInDb.access_token || null;
   }
 
-  // Обновляем сессию актуальными данными из БД
   req.session.user = userInDb;
 
   return res.json({ authorized: true, user: req.session.user });
