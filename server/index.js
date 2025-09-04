@@ -258,13 +258,18 @@ app.get("/auth/status", async (req, res) => {
     return res.json({ authorized: false });
   }
 
-  // Проверка подписки
+  // --- Подтягиваем подписку ---
   if (userInDb.subscription?.expiresAt) {
     userInDb.subscription.active = Date.now() <= userInDb.subscription.expiresAt;
     await usersCollection.updateOne({ id: userInDb.id }, { $set: { subscription: userInDb.subscription } });
   }
 
-  // Обновляем токены
+  // --- Подтягиваем город ---
+  if (userInDb.city) {
+    userInDb.city = userInDb.city;
+  }
+
+  // --- Обновляем VK токены ---
   if (userInDb.refresh_token) {
     userInDb.access_token = await refreshAccessToken(userInDb);
   }
