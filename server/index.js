@@ -132,13 +132,22 @@ function mapClaimsToUser(claims) {
   };
 }
 
-// ---------------------- VKID Authentication ----------------------
-function checkAuth(req, res, next) {
-  if (req.session.user) return next();
-  res.status(401).json({ error: "Не авторизован" });
+// ---------------------- Auth Middleware ----------------------
+async function checkAuth(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Не авторизован" });
+  }
+
+  const userInDb = await usersCollection.findOne({ id: req.session.user.id });
+  if (!userInDb) {
+    req.session.destroy(() => {});
+    return res.status(401).json({ error: "Пользователь не найден" });
+  }
+
+  next();
 }
 
-// ---- Функция для автообновления access token через refresh token ----
+// ---- Функция для автообновления access token ----
 async function refreshAccessToken(user) {
   if (!user?.refresh_token) return user.access_token;
 
@@ -169,7 +178,8 @@ async function refreshAccessToken(user) {
   }
 }
 
-// ---- Авторизация через VKID ----
+// ---------------------- Auth Routes ----------------------
+// ---- VKID ----
 app.post("/auth/vkid", async (req, res) => {
   try {
     const { access_token, refresh_token, id_token } = req.body || {};
@@ -214,7 +224,7 @@ app.post("/auth/vkid", async (req, res) => {
   }
 });
 
-// ---- Авторизация через Telegram ----
+// ---- Telegram ----
 app.post("/auth/telegram", async (req, res) => {
   try {
     const { id, first_name, last_name, username, photo_url, auth_date, hash } = req.body;
@@ -236,7 +246,6 @@ app.post("/auth/telegram", async (req, res) => {
       return res.status(403).json({ success: false, error: "Неверная подпись Telegram" });
     }
 
-    // Создаём объект пользователя
     const userObj = {
       id: `tg_${id}`,
       internalId: uuidv4(),
@@ -249,7 +258,6 @@ app.post("/auth/telegram", async (req, res) => {
       telegram: { id, username, auth_date },
     };
 
-    // Сохраняем в БД и сессию
     req.session.user = userObj;
     await usersCollection.updateOne({ id: userObj.id }, { $set: userObj }, { upsert: true });
 
@@ -263,6 +271,12 @@ app.post("/auth/telegram", async (req, res) => {
 // ---- Проверка сессии ----
 app.get("/auth/status", async (req, res) => {
   if (!req.session.user) return res.json({ authorized: false });
+
+  const userInDb = await usersCollection.findOne({ id: req.session.user.id });
+  if (!userInDb) {
+    req.session.destroy(() => {});
+    return res.json({ authorized: false });
+  }
 
   const newAccessToken = await refreshAccessToken(req.session.user);
   req.session.user.access_token = newAccessToken;
