@@ -138,6 +138,7 @@ async function checkAuth(req, res, next) {
     return res.status(401).json({ error: "Не авторизован" });
   }
 
+  // Проверяем, что пользователь из сессии существует в БД
   const userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
     req.session.destroy(() => {});
@@ -167,7 +168,7 @@ async function refreshAccessToken(user) {
     if (data.access_token) {
       user.access_token = data.access_token;
       if (data.refresh_token) user.refresh_token = data.refresh_token;
-      await usersCollection.updateOne({ id: user.id }, { $set: user });
+      await usersCollection.updateOne({ id: user.id }, { $set: { access_token: user.access_token, refresh_token: user.refresh_token } });
       return user.access_token;
     }
 
@@ -270,26 +271,44 @@ app.post("/auth/telegram", async (req, res) => {
 
 // ---- Проверка сессии ----
 app.get("/auth/status", async (req, res) => {
+  // Нет сессии — не авторизован
   if (!req.session.user) return res.json({ authorized: false });
 
+  // Берём пользователя из БД (единый источник правды)
   const userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
     req.session.destroy(() => {});
     return res.json({ authorized: false });
   }
 
-  const newAccessToken = await refreshAccessToken(req.session.user);
-  req.session.user.access_token = newAccessToken;
-
-  const user = req.session.user;
-  if (user.subscription && user.subscription.expiresAt) {
-    if (Date.now() > user.subscription.expiresAt) {
-      user.subscription.active = false;
-      await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+  // Проверка срока подписки (и синхронизация с БД)
+  if (userInDb.subscription?.expiresAt) {
+    if (Date.now() > userInDb.subscription.expiresAt) {
+      userInDb.subscription.active = false;
+      await usersCollection.updateOne(
+        { id: userInDb.id },
+        { $set: { subscription: userInDb.subscription } }
+      );
+    } else {
+      userInDb.subscription.active = true; // на всякий случай держим консистентным
     }
   }
 
-  res.json({ authorized: true, user });
+  // Синхронизация и обновление токенов (если они есть)
+  // Берём refresh/access токены из БД, если там хранятся; если нет — из сессии
+  userInDb.access_token = userInDb.access_token || req.session.user.access_token || null;
+  userInDb.refresh_token = userInDb.refresh_token || req.session.user.refresh_token || null;
+  userInDb.id_token = userInDb.id_token || req.session.user.id_token || null;
+
+  if (userInDb.refresh_token) {
+    const newAccessToken = await refreshAccessToken(userInDb);
+    userInDb.access_token = newAccessToken || userInDb.access_token || null;
+  }
+
+  // Обновляем сессию актуальными данными из БД
+  req.session.user = userInDb;
+
+  return res.json({ authorized: true, user: req.session.user });
 });
 
 // ---- Logout ----
