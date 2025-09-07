@@ -841,6 +841,10 @@ if (!isAuthorized) {
           Ваша подписка активна до:{" "}
           <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
         </p>
+      )}
+    </div>
+  </div>
+)}
             </div>
           )}
         </main>
