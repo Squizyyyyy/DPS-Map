@@ -759,26 +759,88 @@ if (!isAuthorized) {
   </div>
 )}
 
-          {activeTab === "subscription" && (
-            <div>
-              <h2>Подписка</h2>
-              <button
-                onClick={handleBuySubscription}
-                disabled={loadingSubscription}
-                style={{
-                  padding: "12px 24px",
-                  marginTop: "16px",
-                  background: `linear-gradient(90deg, #2787f5, #0a90ff)`,
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  transition: "all 0.2s",
-                }}
-              >
-                {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-              </button>
+{activeTab === "subscription" && (
+  <div
+    style={{
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16,
+      backgroundColor: "#0a1f33",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+    }}
+  >
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 360,
+        background: "#0c274f",
+        borderRadius: 24,
+        padding: "24px 20px",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 20,
+      }}
+    >
+      <h2
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#fff",
+          margin: 0,
+          textAlign: "center",
+        }}
+      >
+        Подписка
+      </h2>
+
+      <p
+        style={{
+          fontSize: 16,
+          color: "#ccc",
+          textAlign: "center",
+          margin: 0,
+        }}
+      >
+        Получите доступ ко всем функциям карты, включая добавление и подтверждение меток.
+      </p>
+
+      {/* Кнопка подписки */}
+      <button
+        onClick={handleBuySubscription}
+        disabled={loadingSubscription}
+        style={{
+          width: "100%",
+          padding: "14px 0",
+          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 16,
+          fontWeight: 600,
+          fontSize: 16,
+          cursor: "pointer",
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #0a90ff)")
+        }
+      >
+        {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
+      </button>
+
+      {/* Информация о текущей подписке */}
+      {hasSubscription && user?.subscription?.expiresAt && (
+        <p style={{ color: "#0af", fontSize: 14, marginTop: 10, textAlign: "center" }}>
+          Ваша подписка активна до:{" "}
+          <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
+        </p>
             </div>
           )}
         </main>
