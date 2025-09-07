@@ -762,7 +762,7 @@ if (!isAuthorized) {
 
 {/* --------- Вкладка Подписка --------- */}
       {activeTab === "subscription" && (
-        <div
+        <div>
           style={{
             flex: 1,
             display: "flex",
@@ -774,7 +774,7 @@ if (!isAuthorized) {
             fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
           }}
         >
-          <div
+          <div>
             style={{
               width: "100%",
               maxWidth: 360,
@@ -826,8 +826,8 @@ if (!isAuthorized) {
                 Ваша подписка активна до: <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
               </p>
             </div>
+          </div>
           )}
-		  </>
         </main>
       )}
     </div>
