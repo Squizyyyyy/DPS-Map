@@ -189,23 +189,37 @@ app.post("/auth/vkid", async (req, res) => {
     let userObj = null;
     if (id_token) {
       const claims = parseIdToken(id_token);
-      if (claims) userObj = mapClaimsToUser(claims);
+      if (claims) {
+        const mapped = mapClaimsToUser(claims);
+        if (mapped.id) {
+          userObj = {
+            ...mapped,
+            internalId: uuidv4(),
+            access_token,
+            refresh_token: refresh_token || null,
+            id_token,
+          };
+        }
+      }
     }
 
-    if (!userObj || !userObj.id) {
+    if (!userObj) {
       userObj = {
         id: `vk_${Math.random().toString(36).slice(2)}`,
+        internalId: uuidv4(),
         info: { first_name: "", last_name: "", photo_100: "" },
         email: null,
+        access_token,
+        refresh_token: refresh_token || null,
+        id_token: id_token || null,
       };
     }
 
+    // 🔹 Сохраняем старые данные (город, подписка), если пользователь уже есть
     const existingUser = await usersCollection.findOne({ id: userObj.id });
     if (existingUser) {
-      userObj = { ...existingUser, access_token, refresh_token, id_token };
-    } else {
-      userObj = { ...userObj, internalId: uuidv4(), access_token, refresh_token, id_token };
-      await usersCollection.insertOne(userObj);
+      userObj.city = existingUser.city || userObj.city;
+      userObj.subscription = existingUser.subscription || userObj.subscription;
     }
 
     req.session.user = userObj;
@@ -222,25 +236,41 @@ app.post("/auth/vkid", async (req, res) => {
 app.post("/auth/telegram", async (req, res) => {
   try {
     const { id, first_name, last_name, username, photo_url, auth_date, hash } = req.body;
-    if (!id || !hash) return res.status(400).json({ success: false, error: "Недостаточно данных" });
 
+    if (!id || !hash) {
+      return res.status(400).json({ success: false, error: "Недостаточно данных" });
+    }
+
+    // Проверяем подпись
     const secret = crypto.createHash("sha256").update(process.env.TELEGRAM_BOT_TOKEN).digest();
-    const checkString = Object.keys(req.body).filter(k => k !== "hash").sort().map(k => `${k}=${req.body[k]}`).join("\n");
+    const checkString = Object.keys(req.body)
+      .filter((key) => key !== "hash")
+      .sort()
+      .map((key) => `${key}=${req.body[key]}`)
+      .join("\n");
     const hmac = crypto.createHmac("sha256", secret).update(checkString).digest("hex");
-    if (hmac !== hash) return res.status(403).json({ success: false, error: "Неверная подпись Telegram" });
+
+    if (hmac !== hash) {
+      return res.status(403).json({ success: false, error: "Неверная подпись Telegram" });
+    }
 
     let userObj = {
       id: `tg_${id}`,
-      info: { first_name: first_name || "", last_name: last_name || "", username: username || "", photo_100: photo_url || "" },
+      internalId: uuidv4(),
+      info: {
+        first_name: first_name || "",
+        last_name: last_name || "",
+        username: username || "",
+        photo_100: photo_url || "",
+      },
       telegram: { id, username, auth_date },
     };
 
+    // 🔹 Сохраняем старые данные (город, подписка), если пользователь уже есть
     const existingUser = await usersCollection.findOne({ id: userObj.id });
     if (existingUser) {
-      userObj = { ...existingUser, telegram: userObj.telegram };
-    } else {
-      userObj.internalId = uuidv4();
-      await usersCollection.insertOne(userObj);
+      userObj.city = existingUser.city || userObj.city;
+      userObj.subscription = existingUser.subscription || userObj.subscription;
     }
 
     req.session.user = userObj;

@@ -282,7 +282,7 @@ export default function MainPage() {
       script.setAttribute("data-userpic", "false");
       script.setAttribute("data-radius", "8");
       script.setAttribute("data-request-access", "write");
-      script.setAttribute("data-onauth", "handleTelegramAuth");
+      script.setAttribute("data-onauth", "handleTelegramAuth(user)");
 	  script.async = true;
 	  
 	  container.appendChild(script);
