@@ -628,7 +628,6 @@ if (!isAuthorized) {
   )
 ) : (
         <main style={{ flex: 1, padding: "16px", overflow: "auto" }}>
-		<>
           {activeTab === "account" && (
   <div style={{
     display: "flex",
