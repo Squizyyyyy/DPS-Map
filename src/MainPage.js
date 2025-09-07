@@ -824,10 +824,9 @@ if (!isAuthorized) {
               <p style={{ color: "#0af", fontSize: 14, marginTop: 10, textAlign: "center" }}>
                 Ваша подписка активна до: <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
               </p>
-            )}
-          </div>
-        </div>
-	   </main>
+            </div>
+          )}
+        </main>
       )}
     </div>
   );
