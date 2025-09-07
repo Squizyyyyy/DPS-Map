@@ -36,7 +36,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
       httpOnly: true,
       sameSite: "lax",
     },
@@ -57,6 +57,7 @@ async function startServer() {
 
     console.log("✅ Подключено к MongoDB");
 
+    // Запускаем проверку статусов меток каждые 5 минут
     setInterval(updateMarkersStatus, 5 * 60 * 1000);
 
     app.listen(PORT, () => {
@@ -117,19 +118,25 @@ function parseIdToken(idToken) {
 
 function mapClaimsToUser(claims) {
   const id = claims?.sub || claims?.uid || null;
-  const firstName = claims?.given_name || claims?.first_name || "";
-  const lastName = claims?.family_name || claims?.last_name || "";
-  const photo = claims?.picture || claims?.photo_100 || "";
+  const firstName = claims?.given_name || claims?.first_name || null;
+  const lastName = claims?.family_name || claims?.last_name || null;
+  const photo = claims?.picture || claims?.photo_100 || null;
   return {
     id,
-    info: { first_name: firstName, last_name: lastName, photo_100: photo },
+    info: {
+      first_name: firstName || "",
+      last_name: lastName || "",
+      photo_100: photo || "",
+    },
     email: claims?.email || null,
   };
 }
 
 // ---------------------- Auth Middleware ----------------------
 async function checkAuth(req, res, next) {
-  if (!req.session.user) return res.status(401).json({ error: "Не авторизован" });
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Не авторизован" });
+  }
 
   const userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
@@ -137,16 +144,10 @@ async function checkAuth(req, res, next) {
     return res.status(401).json({ error: "Пользователь не найден" });
   }
 
-  // --- Пересчитываем активность подписки по expiresAt ---
-  if (userInDb.subscription?.expiresAt) {
-    userInDb.subscription.active = Date.now() <= userInDb.subscription.expiresAt;
-  }
-
-  req.session.user = userInDb;
   next();
 }
 
-// ---------------------- Refresh Token ----------------------
+// ---- Функция для автообновления access token ----
 async function refreshAccessToken(user) {
   if (!user?.refresh_token) return user.access_token;
 
@@ -166,12 +167,10 @@ async function refreshAccessToken(user) {
     if (data.access_token) {
       user.access_token = data.access_token;
       if (data.refresh_token) user.refresh_token = data.refresh_token;
-      await usersCollection.updateOne(
-        { id: user.id },
-        { $set: { access_token: user.access_token, refresh_token: user.refresh_token } }
-      );
+      await usersCollection.updateOne({ id: user.id }, { $set: user });
       return user.access_token;
     }
+
     return user.access_token;
   } catch (e) {
     console.error("Ошибка обновления access token:", e);
@@ -293,21 +292,28 @@ app.get("/auth/status", async (req, res) => {
     return res.json({ authorized: false });
   }
 
-  // --- Пересчитываем активность подписки ---
-  if (userInDb.subscription?.expiresAt) {
-    userInDb.subscription.active = Date.now() <= userInDb.subscription.expiresAt;
+  const newAccessToken = await refreshAccessToken(req.session.user);
+  req.session.user.access_token = newAccessToken;
+
+  const user = req.session.user;
+  if (user.subscription && user.subscription.expiresAt) {
+    if (Date.now() > user.subscription.expiresAt) {
+      user.subscription.active = false;
+      await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+    }
   }
 
-  req.session.user = userInDb;
-  return res.json({ authorized: true, user: userInDb });
+  res.json({ authorized: true, user });
 });
 
 // ---- Logout ----
 app.post("/auth/logout", (req, res) => {
-  req.session.destroy(() => res.json({ success: true }));
+  req.session.destroy(() => {
+    res.json({ success: true });
+  });
 });
 
-// ---- Сохранение города ----
+// ---- Сохранение выбранного города ----
 app.post("/auth/set-city", checkAuth, async (req, res) => {
   try {
     const { city } = req.body;
@@ -329,10 +335,18 @@ app.post("/auth/set-city", checkAuth, async (req, res) => {
 app.post("/subscription/buy", checkAuth, async (req, res) => {
   try {
     const user = req.session.user;
-    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-    user.subscription = { plan: "basic", expiresAt, active: true };
+    const now = Date.now();
+    const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
+
+    user.subscription = {
+      active: true,
+      plan: "basic",
+      expiresAt,
+    };
+
     await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
     req.session.user = user;
+
     res.json({ success: true, subscription: user.subscription });
   } catch (e) {
     console.error("Ошибка при покупке подписки:", e);
@@ -357,7 +371,16 @@ app.post("/markers", checkAuth, async (req, res) => {
   const id = Date.now();
   const address = await getAddress(lat, lng);
 
-  const marker = { id, lat, lng, timestamp: Date.now(), status: "active", confirmations: 0, address, comment };
+  const marker = {
+    id,
+    lat,
+    lng,
+    timestamp: Date.now(),
+    status: "active",
+    confirmations: 0,
+    address,
+    comment,
+  };
   await markersCollection.insertOne(marker);
   res.json(marker);
 });
@@ -366,7 +389,10 @@ app.post("/markers/:id/confirm", checkAuth, async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
   if (!marker) return res.sendStatus(404);
-  await markersCollection.updateOne({ id }, { $set: { status: "active", timestamp: Date.now() }, $inc: { confirmations: 1 } });
+  await markersCollection.updateOne(
+    { id },
+    { $set: { status: "active", timestamp: Date.now() }, $inc: { confirmations: 1 } }
+  );
   res.sendStatus(200);
 });
 
@@ -385,8 +411,16 @@ app.post("/markers/:id/delete", checkAuth, async (req, res) => {
 async function updateMarkersStatus() {
   try {
     const now = Date.now();
-    await markersCollection.updateMany({ status: "active", timestamp: { $lt: now - 60 * 60 * 1000 } }, { $set: { status: "unconfirmed" } });
-    await markersCollection.deleteMany({ timestamp: { $lt: now - 90 * 60 * 1000 } });
+
+    await markersCollection.updateMany(
+      { status: "active", timestamp: { $lt: now - 60 * 60 * 1000 } },
+      { $set: { status: "unconfirmed" } }
+    );
+
+    await markersCollection.deleteMany({
+      timestamp: { $lt: now - 90 * 60 * 1000 },
+    });
+
     console.log("🔄 Проверка меток выполнена");
   } catch (err) {
     console.error("Ошибка обновления статусов меток:", err);

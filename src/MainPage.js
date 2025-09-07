@@ -43,30 +43,38 @@ export default function MainPage() {
   }, []);
 
   // Проверка сессии при загрузке
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/auth/status", { credentials: "include" });
-        const data = await res.json();
-        if (data.authorized) {
-          setUser(data.user);
-          setIsAuthorized(true);
-          setHasSubscription(
-            !!data.user.subscription?.expiresAt &&
-              data.user.subscription.expiresAt > Date.now()
-          );
-          setError(null);
+useEffect(() => {
+  (async () => {
+    try {
+      const res = await fetch("/auth/status", { credentials: "include" });
+      const data = await res.json();
 
-          if (data.user.city) {
-            const city = cities.find((c) => c.name === data.user.city);
-            if (city) setSelectedCity(city);
-          }
+      if (data.authorized) {
+        const userData = data.user;
+
+        setUser(userData);
+        setIsAuthorized(true);
+
+        // Подтягиваем подписку
+        setHasSubscription(
+          userData.subscription?.expiresAt
+            ? userData.subscription.expiresAt > Date.now()
+            : false
+        );
+
+        // Подтягиваем город
+        if (userData.city) {
+          const city = cities.find((c) => c.name === userData.city);
+          if (city) setSelectedCity(city);
         }
-      } catch (e) {
-        console.error("Auth status error:", e);
+
+        setError(null);
       }
-    })();
-  }, []);
+    } catch (e) {
+      console.error("Auth status error:", e);
+    }
+  })();
+}, []);
 
   // Загрузка SDK VK ID
   useEffect(() => {
@@ -100,63 +108,76 @@ export default function MainPage() {
     document.body.appendChild(script);
   }, []);
 
-  const handleLogin = async () => {
-    if (!window.VKIDSDK) {
-      setError("SDK VKID не загружен");
+const handleLogin = async () => {
+  if (!window.VKIDSDK) {
+    setError("SDK VKID не загружен");
+    return;
+  }
+
+  setLoadingLogin(true);
+  setError(null);
+
+  try {
+    const VKID = window.VKIDSDK;
+    const { code, state, device_id } = await VKID.Auth.login();
+
+    if (!code || !device_id) {
+      setError("Не удалось получить код авторизации от VK");
+      setLoadingLogin(false);
       return;
     }
-    setLoadingLogin(true);
-    setError(null);
 
-    try {
-      const VKID = window.VKIDSDK;
-      const { code, state, device_id } = await VKID.Auth.login();
-
-      if (!code || !device_id) {
-        setError("Не удалось получить код авторизации от VK");
-        setLoadingLogin(false);
-        return;
-      }
-
-      const tokenData = await VKID.Auth.exchangeCode(code, device_id);
-      if (!tokenData || !tokenData.access_token) {
-        setError("Не удалось обменять код на токены");
-        setLoadingLogin(false);
-        return;
-      }
-
-      const response = await fetch("/auth/vkid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          access_token: tokenData.access_token || null,
-          refresh_token: tokenData.refresh_token || null,
-          id_token: tokenData.id_token || null,
-        }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setUser(result.user);
-        setIsAuthorized(true);
-        setActiveTab("account");
-        setError(null);
-
-        if (result.user.city) {
-          const city = cities.find((c) => c.name === result.user.city);
-          if (city) setSelectedCity(city);
-        }
-      } else {
-        setError(result.error || "Не удалось авторизоваться через VK (сервер)");
-      }
-    } catch (e) {
-      console.error("VKID login error:", e);
-      setError("Ошибка авторизации через VK");
-    } finally {
+    const tokenData = await VKID.Auth.exchangeCode(code, device_id);
+    if (!tokenData || !tokenData.access_token) {
+      setError("Не удалось обменять код на токены");
       setLoadingLogin(false);
+      return;
     }
-  };
+
+    const response = await fetch("/auth/vkid", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        access_token: tokenData.access_token || null,
+        refresh_token: tokenData.refresh_token || null,
+        id_token: tokenData.id_token || null,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const userData = result.user;
+
+      setUser(userData);
+      setIsAuthorized(true);
+
+      // Подтягиваем подписку
+      setHasSubscription(
+        userData.subscription?.expiresAt
+          ? userData.subscription.expiresAt > Date.now()
+          : false
+      );
+
+      // Подтягиваем город
+      if (userData.city) {
+        const city = cities.find((c) => c.name === userData.city);
+        if (city) setSelectedCity(city);
+      }
+
+      setActiveTab("account");
+      setError(null);
+    } else {
+      setError(result.error || "Не удалось авторизоваться через VK (сервер)");
+    }
+  } catch (e) {
+    console.error("VKID login error:", e);
+    setError("Ошибка авторизации через VK");
+  } finally {
+    setLoadingLogin(false);
+  }
+};
 
   const handleLogout = async () => {
     try {
@@ -169,36 +190,50 @@ export default function MainPage() {
   };
   
   // ---- Telegram JS-виджет ----
-  const handleTelegramLogin = async (telegramData) => {
-	setLoadingLogin(true);
-	setError(null);
-	try {
-	  const res = await fetch("/auth/telegram", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(telegramData),
-	  });
-	  const data = await res.json();
-	  if (data.success) {
-	    setUser(data.user);
-		setIsAuthorized(true);
-		setActiveTab("account");
-		setError(null);
-		if (data.user.city) {
-		  const city = cities.find((c) => c.name === data.user.city);
-		  if (city) setSelectedCity(city);
-		}
-	  } else {
-		setError(data.error || "Не удалось авторизоваться через Telegram");
-	  }
-	} catch (e) {
-	  console.error("Telegram login error:", e);
-	  setError("Ошибка авторизации через Telegram");
-	} finally {
-	  setLoadingLogin(false);
-	}
-  };
+const handleTelegramLogin = async (telegramData) => {
+  setLoadingLogin(true);
+  setError(null);
+
+  try {
+    const res = await fetch("/auth/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(telegramData),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const userData = data.user;
+
+      setUser(userData);
+      setIsAuthorized(true);
+
+      // Подтягиваем подписку
+      setHasSubscription(
+        userData.subscription?.expiresAt
+          ? userData.subscription.expiresAt > Date.now()
+          : false
+      );
+
+      // Подтягиваем город
+      if (userData.city) {
+        const city = cities.find((c) => c.name === userData.city);
+        if (city) setSelectedCity(city);
+      }
+
+      setActiveTab("account");
+      setError(null);
+    } else {
+      setError(data.error || "Не удалось авторизоваться через Telegram");
+    }
+  } catch (e) {
+    console.error("Telegram login error:", e);
+    setError("Ошибка авторизации через Telegram");
+  } finally {
+    setLoadingLogin(false);
+  }
+};
 
   const handleBuySubscription = async () => {
     setLoadingSubscription(true);
