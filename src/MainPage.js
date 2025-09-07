@@ -827,6 +827,7 @@ if (!isAuthorized) {
             )}
           </div>
         </div>
+	   </main>
       )}
     </div>
   );
