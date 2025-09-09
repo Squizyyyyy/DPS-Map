@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import accountIcon from "./assets/icons/account.png";
-import subscriptionIcon from "./assets/icons/subscription.png";
-import mapIcon from "./assets/icons/map.png";
+import accountIcon from "./assets/icons/account.svg";
+import subscriptionIcon from "./assets/icons/subscription.svg";
+import mapIcon from "./assets/icons/map.svg";
 
 const tabColors = {
   background: "#001c39",
@@ -490,6 +490,7 @@ if (!isAuthorized) {
     >
       <ToastContainer position="bottom-right" autoClose={3000} />
       {/* Нижняя панель вкладок */}
+{/* Нижняя панель вкладок */}
 <nav
   style={{
     position: "fixed",
@@ -507,10 +508,10 @@ if (!isAuthorized) {
   }}
 >
   {[
-    { key: "account", icon: accountIcon },
-    { key: "subscription", icon: subscriptionIcon },
-    { key: "map", icon: mapIcon },
-  ].map(({ key, icon }) => (
+    { key: "account", Icon: AccountIcon },
+    { key: "subscription", Icon: SubscriptionIcon },
+    { key: "map", Icon: MapIcon },
+  ].map(({ key, Icon }) => (
     <div
       key={key}
       onClick={() => setActiveTab(key)}
@@ -528,13 +529,12 @@ if (!isAuthorized) {
         transition: "all 0.15s ease",
       }}
     >
-      <img
-        src={icon}
-        alt={key}
+      <Icon
         style={{
-          width: activeTab === key ? 28 : 24, // чуть больше при активном
-          height: activeTab === key ? 28 : 24,
-          transition: "all 0.15s ease",
+          width: 28,
+          height: 28,
+          fill: activeTab === key ? "#fff" : "#aaa", // цвет иконки
+          transition: "fill 0.15s ease",
         }}
       />
     </div>
