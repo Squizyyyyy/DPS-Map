@@ -487,51 +487,60 @@ if (!isAuthorized) {
     >
       <ToastContainer position="bottom-right" autoClose={3000} />
       {/* Нижняя панель вкладок */}
-      <nav
+<nav
+  style={{
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    display: "flex",
+    justifyContent: "space-around",
+    backgroundColor: tabColors.active,
+    boxShadow: "0 -2px 8px rgba(0,0,0,0.3)",
+    borderTopLeftRadius: "16px",
+    borderTopRightRadius: "16px",
+    overflow: "hidden",
+    zIndex: 1000,
+    padding: "6px 0",
+  }}
+>
+  {[
+    { key: "account", icon: "/assets/icons/account.png" },
+    { key: "subscription", icon: "/assets/icons/subscription.png" },
+    { key: "map", icon: "/assets/icons/map.png" },
+  ].map(({ key, icon }) => (
+    <div
+      key={key}
+      onClick={() => setActiveTab(key)}
+      style={{
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        background:
+          activeTab === key
+            ? `linear-gradient(135deg, #2787f5, #1449a3)`
+            : tabColors.inactive,
+        transition: "all 0.2s ease",
+      }}
+    >
+      <img
+        src={icon}
+        alt={key}
         style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-around",
-          backgroundColor: tabColors.active,
-          boxShadow: "0 -2px 8px rgba(0,0,0,0.3)",
-          borderTopLeftRadius: "16px",
-          borderTopRightRadius: "16px",
-          overflow: "hidden",
-          zIndex: 1000,
+          width: activeTab === key ? 28 : 24, // активная иконка чуть больше
+          height: activeTab === key ? 28 : 24,
+          filter:
+            activeTab === key
+              ? "none"
+              : "grayscale(100%) opacity(0.7)", // неактивные серые
+          transition: "all 0.2s ease",
         }}
-      >
-        {[
-          { key: "account", icon: "👤" },
-          { key: "subscription", icon: "💳" },
-          { key: "map", icon: "🗺️" },
-        ].map(({ key, icon }) => (
-          <div
-            key={key}
-            onClick={() => setActiveTab(key)}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "14px 0",
-              background:
-                activeTab === key
-                  ? `linear-gradient(135deg, #2787f5, #1449a3)`
-                  : tabColors.inactive,
-              color: tabColors.text,
-              cursor: "pointer",
-              fontSize: activeTab === key ? "22px" : "20px", // увеличиваем активный символ
-              transform: activeTab === key ? "scale(1.2)" : "scale(1)",
-              transition: "all 0.15s ease",
-            }}
-          >
-            {icon}
-          </div>
-        ))}
-      </nav>
+      />
+    </div>
+  ))}
+</nav>
 
 {isMapActive ? (
   hasSubscription ? (
