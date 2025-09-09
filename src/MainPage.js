@@ -486,46 +486,49 @@ if (!isAuthorized) {
       }}
     >
       <ToastContainer position="bottom-right" autoClose={3000} />
+      {/* Нижняя панель вкладок */}
       <nav
         style={{
-          display: "flex",
-          justifyContent: "center",
-          backgroundColor: tabColors.active,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          position: "fixed",
+          bottom: 0,
+          left: 0,
           width: "100%",
-          borderBottomLeftRadius: "16px",
-          borderBottomRightRadius: "16px",
-          overflow: "hidden", // чтобы скругление работало
+          display: "flex",
+          justifyContent: "space-around",
+          backgroundColor: tabColors.active,
+          boxShadow: "0 -2px 8px rgba(0,0,0,0.3)",
+          borderTopLeftRadius: "16px",
+          borderTopRightRadius: "16px",
+          overflow: "hidden",
+          zIndex: 1000,
         }}
       >
-        {/* панель поделена на 3 равные зоны */}
-        {["account", "subscription", "map"].map((tab) => (
+        {[
+          { key: "account", icon: "👤" },
+          { key: "subscription", icon: "💳" },
+          { key: "map", icon: "🗺️" },
+        ].map(({ key, icon }) => (
           <div
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={key}
+            onClick={() => setActiveTab(key)}
             style={{
-              flex: 1, // равная ширина
+              flex: 1,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               padding: "14px 0",
               background:
-                activeTab === tab
+                activeTab === key
                   ? `linear-gradient(135deg, #2787f5, #1449a3)`
                   : tabColors.inactive,
               color: tabColors.text,
               cursor: "pointer",
-              fontWeight: activeTab === tab ? "700" : "500",
-              fontSize: activeTab === tab ? "16px" : "15px",
-              transform: activeTab === tab ? "scale(1.07)" : "scale(1)",
-              transition: "all 0.08s ease",
-			  fontFamily:
-			    "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+              fontSize: activeTab === key ? "22px" : "20px", // увеличиваем активный символ
+              transform: activeTab === key ? "scale(1.2)" : "scale(1)",
+              transition: "all 0.15s ease",
             }}
           >
-            {tab === "account" && "Профиль"}
-            {tab === "subscription" && "Подписка"}
-            {tab === "map" && "Карта"}
+            {icon}
           </div>
         ))}
       </nav>
