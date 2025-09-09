@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import accountIcon from "./assets/icons/account.png";
+import subscriptionIcon from "./assets/icons/subscription.png";
+import mapIcon from "./assets/icons/map.png";
 
 const tabColors = {
   background: "#001c39",
@@ -501,13 +504,12 @@ if (!isAuthorized) {
     borderTopRightRadius: "16px",
     overflow: "hidden",
     zIndex: 1000,
-    padding: "6px 0",
   }}
 >
   {[
-    { key: "account", icon: "/assets/icons/account.png" },
-    { key: "subscription", icon: "/assets/icons/subscription.png" },
-    { key: "map", icon: "/assets/icons/map.png" },
+    { key: "account", icon: accountIcon },
+    { key: "subscription", icon: subscriptionIcon },
+    { key: "map", icon: mapIcon },
   ].map(({ key, icon }) => (
     <div
       key={key}
@@ -518,24 +520,21 @@ if (!isAuthorized) {
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
+        padding: "6px 0",
         background:
           activeTab === key
             ? `linear-gradient(135deg, #2787f5, #1449a3)`
             : tabColors.inactive,
-        transition: "all 0.2s ease",
+        transition: "all 0.15s ease",
       }}
     >
       <img
         src={icon}
         alt={key}
         style={{
-          width: activeTab === key ? 28 : 24, // активная иконка чуть больше
+          width: activeTab === key ? 28 : 24, // чуть больше при активном
           height: activeTab === key ? 28 : 24,
-          filter:
-            activeTab === key
-              ? "none"
-              : "grayscale(100%) opacity(0.7)", // неактивные серые
-          transition: "all 0.2s ease",
+          transition: "all 0.15s ease",
         }}
       />
     </div>
