@@ -503,12 +503,14 @@ if (!isAuthorized) {
     borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
     boxShadow: "none", // убрали тень
     zIndex: 1000,
+	paddingTop: 16,   // увеличили высоту панели
+	paddingBottom: 16, // увеличили высоту панели
   }}
 >
   {[
-    { key: "account", Icon: AccountIcon },
-    { key: "subscription", Icon: SubscriptionIcon },
-    { key: "map", Icon: MapIcon },
+    { key: "account", Icon: AccountIcon, label: "Профиль" },
+    { key: "subscription", Icon: SubscriptionIcon, label: "Подписка" },
+    { key: "map", Icon: MapIcon, label: "Карта" },
   ].map(({ key, Icon }) => (
     <div
       key={key}
@@ -516,6 +518,7 @@ if (!isAuthorized) {
       style={{
         flex: 1,
         display: "flex",
+		flexDirection: "column", // иконка сверху, подпись снизу
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
@@ -531,6 +534,16 @@ if (!isAuthorized) {
           transition: "color 0.15s ease",
         }}
       />
+	  <span
+        style={{
+          fontSize: 10,
+          marginTop: 4,
+          color: activeTab === key ? "#2787f5" : "#fff",
+          transition: "color 0.15s ease",
+        }}
+      >
+        {label}
+      </span>
     </div>
   ))}
 </nav>
