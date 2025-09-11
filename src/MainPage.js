@@ -503,8 +503,8 @@ if (!isAuthorized) {
     borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
     boxShadow: "none", // убрали тень
     zIndex: 1000,
-	paddingTop: 16,   // увеличили высоту панели
-	paddingBottom: 16, // увеличили высоту панели
+	paddingTop: 14,   // увеличили высоту панели
+	paddingBottom: 14, // увеличили высоту панели
   }}
 >
   {[
@@ -539,7 +539,7 @@ if (!isAuthorized) {
           fontSize: 11,
           marginTop: 4,
           color: activeTab === key ? "#2787f5" : "#fff",
-		  fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif"
+		  fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
           transition: "color 0.15s ease",
         }}
       >
