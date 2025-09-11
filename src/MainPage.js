@@ -533,8 +533,8 @@ if (!isAuthorized) {
         style={{
           width: 28,
           height: 28,
-          fill: activeTab === key ? "#fff" : "#aaa", // цвет иконки
-          transition: "fill 0.15s ease",
+          color: activeTab === key ? "#fff" : "#aaa", // управляем stroke через color
+          transition: "color 0.15s ease",
         }}
       />
     </div>
