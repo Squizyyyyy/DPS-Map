@@ -503,7 +503,7 @@ if (!isAuthorized) {
     borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
     boxShadow: "none", // убрали тень
     zIndex: 1000,
-	paddingTop: 6,   // отступ иконок от верхней границы панели
+	paddingTop: 6.5,   // отступ иконок от верхней границы панели
 	paddingBottom: 35, // увеличили высоту панели
   }}
 >
@@ -774,68 +774,130 @@ if (!isAuthorized) {
     >
       Выйти из профиля
     </button>
+	
+	{/* ---- Связь с нами ---- */}
+    <div
+      style={{
+        marginTop: 24,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        color: "#aaa",
+        fontSize: 13,
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+      }}
+    >
+      <span>Связь с нами:</span>
+      <a
+        href="https://t.me/dps_map_support" // сюда вставишь свою ссылку
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: "flex", alignItems: "center", color: "#aaa" }}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 240 240"
+          width="20"
+          height="20"
+          fill="currentColor"
+        >
+          <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
+        </svg>
+      </a>
+    </div>
 
   </div>
 )}
 
 {/* ---- Подписка ---- */}
-<div
+{activeTab === "subscription" && (
+  <div
   style={{
-    backgroundColor: "#0a1f33",
-    borderRadius: 24,
-    padding: 16,
-    width: "100%",
-    maxWidth: 300,
-    textAlign: "center",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-    margin: "0 auto", // чтобы по центру на экране
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "calc(100vh - 80px)", // минус нижняя панель вкладок
+    padding: "0 16px",
   }}
 >
-  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>
-    Подписка
-  </h2>
-
-  {hasSubscription && user?.subscription?.expiresAt ? (
-    <p style={{ color: "#aaa", fontSize: 14, marginTop: 8 }}>
-      Ваша подписка активна до:{" "}
-      <b style={{ color: "#0af" }}>
-        {new Date(user.subscription.expiresAt).toLocaleDateString()}
-      </b>
-    </p>
-  ) : (
-    <p style={{ color: "#aaa", fontSize: 14, marginTop: 8 }}>
-      Ваша подписка <b style={{ color: "#d9534f" }}>неактивна</b>.  
-      Активируйте, чтобы воспользоваться всеми функциями карты.
-    </p>
-  )}
-
-  <button
-    onClick={handleBuySubscription}
-    disabled={loadingSubscription}
+  <div
     style={{
-      marginTop: 16,
-      padding: "12px 0",
-      background: "linear-gradient(90deg, #2787f5, #0a90ff)",
-      color: "#fff",
-      border: "none",
-      borderRadius: 20,
-      cursor: "pointer",
-      fontWeight: 600,
-      fontSize: 14,
+      backgroundColor: "#0a1f33",
+      borderRadius: 24,
+      padding: "32px 20px", // увеличили отступы
       width: "100%",
-      transition: "all 0.2s",
+      maxWidth: 320,
+      textAlign: "center",
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     }}
-    onMouseEnter={(e) =>
-      (e.currentTarget.style.background =
-        "linear-gradient(90deg, #1e6cd8, #0470ff)")
-    }
-    onMouseLeave={(e) =>
-      (e.currentTarget.style.background =
-        "linear-gradient(90deg, #2787f5, #0a90ff)")
-    }
   >
-    {loadingSubscription ? "Оформляем..." : "Активировать подписку"}
-  </button>
+    <h2
+      style={{
+        margin: 0,
+        fontSize: 20,
+        fontWeight: 700,
+        color: "#fff",
+      }}
+    >
+      Подписка
+    </h2>
+
+    {subscriptionActive ? (
+      <p
+        style={{
+          color: "#aaa",
+          fontSize: 14,
+          marginTop: 12,
+        }}
+      >
+        Подписка активна до:{" "}
+        <b style={{ color: "#fff" }}>{subscriptionDate}</b>
+      </p>
+    ) : (
+      <p
+        style={{
+          color: "#aaa",
+          fontSize: 14,
+          marginTop: 12,
+        }}
+      >
+        Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
+        Активируйте, чтобы воспользоваться всеми функциями карты.
+      </p>
+    )}
+
+    <button
+      style={{
+        marginTop: 24,
+        padding: "14px 0", // повыше кнопка
+        background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+        color: "#fff",
+        border: "none",
+        borderRadius: 20,
+        cursor: "pointer",
+        fontWeight: 600,
+        fontSize: 15,
+        width: "100%",
+        transition: "all 0.2s",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+      }}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.background =
+          "linear-gradient(90deg, #1e6cd8, #0470ff)")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.background =
+          "linear-gradient(90deg, #2787f5, #0a90ff)")
+      }
+    >
+      Активировать подписку
+    </button>
+  </div>
 </div>
         </main>
       )}
