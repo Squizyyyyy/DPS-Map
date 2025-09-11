@@ -814,7 +814,7 @@ if (!isAuthorized) {
     >
       <span>Связь с нами:</span>
 	  
-	  //--Telegram--//
+	  {/* Telegram */}
       <a
         href="https://t.me/dps_map_support"
         target="_blank"
@@ -832,7 +832,7 @@ if (!isAuthorized) {
         </svg>
 	  </a>
 		
-		//--VK--//
+		{/* VK */}
 		<a
           href="https://vk.com/stf2702"
           target="_blank"
