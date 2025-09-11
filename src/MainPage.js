@@ -503,8 +503,8 @@ if (!isAuthorized) {
     borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
     boxShadow: "none", // убрали тень
     zIndex: 1000,
-	paddingTop: 8,   // отступ иконок от верхней границы панели
-	paddingBottom: 30, // увеличили высоту панели
+	paddingTop: 6,   // отступ иконок от верхней границы панели
+	paddingBottom: 35, // увеличили высоту панели
   }}
 >
   {[
@@ -537,7 +537,7 @@ if (!isAuthorized) {
 	  <span
         style={{
           fontSize: 11,
-          marginTop: 3,
+          marginTop: 2,
           color: activeTab === key ? "#2787f5" : "#fff",
 		  fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
           transition: "color 0.15s ease",
@@ -698,7 +698,7 @@ if (!isAuthorized) {
         }}
         style={{
 		  padding: "10px 12px",
-          borderRadius: 20,
+          borderRadius: 16,
           border: "1px solid #1f3a5f",
           backgroundColor: "#063353",
           color: "#fff",
@@ -738,7 +738,7 @@ if (!isAuthorized) {
           background: "linear-gradient(90deg, #2787f5, #0a90ff)",
           color: "#fff",
           border: "none",
-		  borderRadius: 20,
+		  borderRadius: 16,
           cursor: "pointer",
           fontWeight: 600,
 		  fontSize: 14,
@@ -759,7 +759,7 @@ if (!isAuthorized) {
 		padding: "12px 0",
         background: "#d9534f",
         border: "none",
-		borderRadius: 20,
+		borderRadius: 16,
         color: "#fff",
         cursor: "pointer",
         fontWeight: 700,
@@ -778,75 +778,65 @@ if (!isAuthorized) {
   </div>
 )}
 
-{/* --------- Вкладка Подписка --------- */}
-{activeTab === "subscription" && (
-  <div
+{/* ---- Подписка ---- */}
+<div
+  style={{
+    backgroundColor: "#0a1f33",
+    borderRadius: 24,
+    padding: 16,
+    width: "100%",
+    maxWidth: 300,
+    textAlign: "center",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+    margin: "0 auto", // чтобы по центру на экране
+  }}
+>
+  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>
+    Подписка
+  </h2>
+
+  {hasSubscription && user?.subscription?.expiresAt ? (
+    <p style={{ color: "#aaa", fontSize: 14, marginTop: 8 }}>
+      Ваша подписка активна до:{" "}
+      <b style={{ color: "#0af" }}>
+        {new Date(user.subscription.expiresAt).toLocaleDateString()}
+      </b>
+    </p>
+  ) : (
+    <p style={{ color: "#aaa", fontSize: 14, marginTop: 8 }}>
+      Ваша подписка <b style={{ color: "#d9534f" }}>неактивна</b>.  
+      Активируйте, чтобы воспользоваться всеми функциями карты.
+    </p>
+  )}
+
+  <button
+    onClick={handleBuySubscription}
+    disabled={loadingSubscription}
     style={{
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 16,
-      backgroundColor: "#0a1f33",
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+      marginTop: 16,
+      padding: "12px 0",
+      background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+      color: "#fff",
+      border: "none",
+      borderRadius: 20,
+      cursor: "pointer",
+      fontWeight: 600,
+      fontSize: 14,
+      width: "100%",
+      transition: "all 0.2s",
     }}
+    onMouseEnter={(e) =>
+      (e.currentTarget.style.background =
+        "linear-gradient(90deg, #1e6cd8, #0470ff)")
+    }
+    onMouseLeave={(e) =>
+      (e.currentTarget.style.background =
+        "linear-gradient(90deg, #2787f5, #0a90ff)")
+    }
   >
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 360,
-        background: "#0c274f",
-        borderRadius: 24,
-        padding: "24px 20px",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 20,
-      }}
-    >
-      <h2 style={{ fontSize: 24, fontWeight: 700, color: "#fff", margin: 0, textAlign: "center" }}>
-        Подписка
-      </h2>
-
-      <p style={{ fontSize: 16, color: "#ccc", textAlign: "center", margin: 0 }}>
-        Получите доступ ко всем функциям карты, включая добавление и подтверждение меток.
-      </p>
-
-      <button
-        onClick={handleBuySubscription}
-        disabled={loadingSubscription}
-        style={{
-          width: "100%",
-          padding: "14px 0",
-          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 16,
-          fontWeight: 600,
-          fontSize: 16,
-          cursor: "pointer",
-          transition: "all 0.2s",
-        }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #0a90ff)")
-        }
-      >
-        {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-      </button>
-
-      {hasSubscription && user?.subscription?.expiresAt && (
-        <p style={{ color: "#0af", fontSize: 14, marginTop: 10, textAlign: "center" }}>
-          Ваша подписка активна до: <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
-        </p>
-      )}
-    </div>
-  </div>
-)}
+    {loadingSubscription ? "Оформляем..." : "Активировать подписку"}
+  </button>
+</div>
         </main>
       )}
     </div>
