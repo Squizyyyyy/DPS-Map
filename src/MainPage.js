@@ -520,9 +520,9 @@ if (!isAuthorized) {
         display: "flex",
 		flexDirection: "column", // иконка сверху, подпись снизу
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "flex-start",
         cursor: "pointer",
-        padding: "8px 0",
+        padding: "5px 0",
         transition: "all 0.15s ease",
       }}
     >
@@ -536,9 +536,10 @@ if (!isAuthorized) {
       />
 	  <span
         style={{
-          fontSize: 10,
+          fontSize: 11,
           marginTop: 4,
           color: activeTab === key ? "#2787f5" : "#fff",
+		  fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif"
           transition: "color 0.15s ease",
         }}
       >
