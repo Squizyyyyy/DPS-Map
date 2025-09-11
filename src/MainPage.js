@@ -461,7 +461,7 @@ if (!isAuthorized) {
               display: "flex",
               alignItems: "center",
               textDecoration: "none",
-              color: "#00aaff",
+              color: "#0088cc",
             }}
           >
             <svg
