@@ -814,90 +814,91 @@ if (!isAuthorized) {
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
   <div
-  style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "calc(100vh - 80px)", // минус нижняя панель вкладок
-    padding: "0 16px",
-  }}
->
-  <div
     style={{
-      backgroundColor: "#0a1f33",
-      borderRadius: 24,
-      padding: "32px 20px", // увеличили отступы
-      width: "100%",
-      maxWidth: 320,
-      textAlign: "center",
-      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-      fontFamily:
-        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "calc(100vh - 80px)", // минус нижняя панель вкладок
+      padding: "0 16px",
     }}
   >
-    <h2
+    <div
       style={{
-        margin: 0,
-        fontSize: 20,
-        fontWeight: 700,
-        color: "#fff",
-      }}
-    >
-      Подписка
-    </h2>
-
-    {subscriptionActive ? (
-      <p
-        style={{
-          color: "#aaa",
-          fontSize: 14,
-          marginTop: 12,
-        }}
-      >
-        Подписка активна до:{" "}
-        <b style={{ color: "#fff" }}>{subscriptionDate}</b>
-      </p>
-    ) : (
-      <p
-        style={{
-          color: "#aaa",
-          fontSize: 14,
-          marginTop: 12,
-        }}
-      >
-        Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
-        Активируйте, чтобы воспользоваться всеми функциями карты.
-      </p>
-    )}
-
-    <button
-      style={{
-        marginTop: 24,
-        padding: "14px 0", // повыше кнопка
-        background: "linear-gradient(90deg, #2787f5, #0a90ff)",
-        color: "#fff",
-        border: "none",
-        borderRadius: 20,
-        cursor: "pointer",
-        fontWeight: 600,
-        fontSize: 15,
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        padding: "32px 20px", // увеличили отступы
         width: "100%",
-        transition: "all 0.2s",
+        maxWidth: 320,
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
       }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.background =
-          "linear-gradient(90deg, #1e6cd8, #0470ff)")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.background =
-          "linear-gradient(90deg, #2787f5, #0a90ff)")
-      }
     >
-      Активировать подписку
-    </button>
-  )}
+      <h2
+        style={{
+          margin: 0,
+          fontSize: 20,
+          fontWeight: 700,
+          color: "#fff",
+        }}
+      >
+        Подписка
+      </h2>
+
+      {user?.subscription?.expiresAt ? (
+        <p
+          style={{
+            color: "#aaa",
+            fontSize: 14,
+            marginTop: 12,
+          }}
+        >
+          Подписка активна до:{" "}
+          <b style={{ color: "#fff" }}>
+            {new Date(user.subscription.expiresAt).toLocaleDateString()}
+          </b>
+        </p>
+      ) : (
+        <p
+          style={{
+            color: "#aaa",
+            fontSize: 14,
+            marginTop: 12,
+          }}
+        >
+          Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
+          Активируйте, чтобы воспользоваться всеми функциями карты.
+        </p>
+      )}
+
+      <button
+        style={{
+          marginTop: 24,
+          padding: "14px 0", // повыше кнопка
+          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 20,
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: 15,
+          width: "100%",
+          transition: "all 0.2s",
+          fontFamily:
+            "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #1e6cd8, #0470ff)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #2787f5, #0a90ff)")
+        }
+      >
+        Активировать подписку
+      </button>
     </div>
   </div>
 )}
