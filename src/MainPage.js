@@ -504,7 +504,7 @@ if (!isAuthorized) {
     boxShadow: "none", // убрали тень
     zIndex: 1000,
 	paddingTop: 8,   // отступ иконок от верхней границы панели
-	paddingBottom: 18, // увеличили высоту панели
+	paddingBottom: 30, // увеличили высоту панели
   }}
 >
   {[
@@ -698,7 +698,7 @@ if (!isAuthorized) {
         }}
         style={{
 		  padding: "10px 12px",
-          borderRadius: 10,
+          borderRadius: 20,
           border: "1px solid #1f3a5f",
           backgroundColor: "#063353",
           color: "#fff",
@@ -738,7 +738,7 @@ if (!isAuthorized) {
           background: "linear-gradient(90deg, #2787f5, #0a90ff)",
           color: "#fff",
           border: "none",
-		  borderRadius: 24,
+		  borderRadius: 20,
           cursor: "pointer",
           fontWeight: 600,
 		  fontSize: 14,
@@ -759,7 +759,7 @@ if (!isAuthorized) {
 		padding: "12px 0",
         background: "#d9534f",
         border: "none",
-		borderRadius: 24,
+		borderRadius: 20,
         color: "#fff",
         cursor: "pointer",
         fontWeight: 700,
