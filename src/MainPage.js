@@ -555,6 +555,7 @@ if (!isAuthorized) {
           color: activeTab === key ? "#2787f5" : "#fff", // активная → синяя, остальные белые
           transition: "color 0.15s ease",
         }}
+		strokeWidth={1.5}
       />
 	  <span
         style={{
