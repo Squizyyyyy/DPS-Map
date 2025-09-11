@@ -511,7 +511,7 @@ if (!isAuthorized) {
     { key: "account", Icon: AccountIcon, label: "Профиль" },
     { key: "subscription", Icon: SubscriptionIcon, label: "Подписка" },
     { key: "map", Icon: MapIcon, label: "Карта" },
-  ].map(({ key, Icon }) => (
+  ].map(({ key, Icon, label }) => (
     <div
       key={key}
       onClick={() => setActiveTab(key)}
