@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import accountIcon from "./assets/icons/account.svg";
-import subscriptionIcon from "./assets/icons/subscription.svg";
-import mapIcon from "./assets/icons/map.svg";
+import { ReactComponent as AccountIcon } from "./assets/icons/account.svg";
+import { ReactComponent as SubscriptionIcon } from "./assets/icons/sub.svg";
+import { ReactComponent as MapIcon } from "./assets/icons/map.svg";
 
 const tabColors = {
   background: "#001c39",
@@ -489,7 +489,7 @@ if (!isAuthorized) {
       }}
     >
       <ToastContainer position="bottom-right" autoClose={3000} />
-      {/* Нижняя панель вкладок */}
+
 {/* Нижняя панель вкладок */}
 <nav
   style={{
