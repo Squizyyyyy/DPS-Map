@@ -503,8 +503,8 @@ if (!isAuthorized) {
     borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
     boxShadow: "none", // убрали тень
     zIndex: 1000,
-	paddingTop: 8,   // увеличили высоту панели
-	paddingBottom: 15, // увеличили высоту панели
+	paddingTop: 8,   // отступ иконок от верхней границы панели
+	paddingBottom: 18, // увеличили высоту панели
   }}
 >
   {[
