@@ -663,7 +663,7 @@ if (!isAuthorized) {
     {/* ---- Профиль ---- */}
     <div style={{
       backgroundColor: "#0a1f33",
-	  borderRadius: 16,
+	  borderRadius: 24,
       padding: 16,
       width: "100%",
 	  maxWidth: 300,
@@ -679,7 +679,7 @@ if (!isAuthorized) {
     {/* ---- Выбор города ---- */}
     <div style={{
       backgroundColor: "#0a1f33",
-	  borderRadius: 16,
+	  borderRadius: 24,
       padding: 16,
       width: "100%",
 	  maxWidth: 300,
@@ -738,7 +738,7 @@ if (!isAuthorized) {
           background: "linear-gradient(90deg, #2787f5, #0a90ff)",
           color: "#fff",
           border: "none",
-		  borderRadius: 10,
+		  borderRadius: 24,
           cursor: "pointer",
           fontWeight: 600,
 		  fontSize: 14,
@@ -759,7 +759,7 @@ if (!isAuthorized) {
 		padding: "12px 0",
         background: "#d9534f",
         border: "none",
-		borderRadius: 10,
+		borderRadius: 24,
         color: "#fff",
         cursor: "pointer",
         fontWeight: 700,
