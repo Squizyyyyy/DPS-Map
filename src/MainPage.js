@@ -499,11 +499,9 @@ if (!isAuthorized) {
     width: "100%",
     display: "flex",
     justifyContent: "space-around",
-    backgroundColor: tabColors.active,
-    boxShadow: "0 -2px 8px rgba(0,0,0,0.3)",
-    borderTopLeftRadius: "16px",
-    borderTopRightRadius: "16px",
-    overflow: "hidden",
+    backgroundColor: tabColors.background, // фон как у страницы
+    borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
+    boxShadow: "none", // убрали тень
     zIndex: 1000,
   }}
 >
@@ -521,11 +519,7 @@ if (!isAuthorized) {
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
-        padding: "6px 0",
-        background:
-          activeTab === key
-            ? `linear-gradient(135deg, #2787f5, #1449a3)`
-            : tabColors.inactive,
+        padding: "8px 0",
         transition: "all 0.15s ease",
       }}
     >
@@ -533,7 +527,7 @@ if (!isAuthorized) {
         style={{
           width: 28,
           height: 28,
-          color: activeTab === key ? "#fff" : "#aaa", // управляем stroke через color
+          color: activeTab === key ? "#2787f5" : "#fff", // активная → синяя, остальные белые
           transition: "color 0.15s ease",
         }}
       />
