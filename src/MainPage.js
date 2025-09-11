@@ -522,14 +522,14 @@ if (!isAuthorized) {
         alignItems: "center",
         justifyContent: "flex-start",
         cursor: "pointer",
-        padding: "5px 0",
+        padding: "2px 0",
         transition: "all 0.15s ease",
       }}
     >
       <Icon
         style={{
-          width: 28,
-          height: 28,
+          width: 26,
+          height: 26,
           color: activeTab === key ? "#2787f5" : "#fff", // активная → синяя, остальные белые
           transition: "color 0.15s ease",
         }}
@@ -537,7 +537,7 @@ if (!isAuthorized) {
 	  <span
         style={{
           fontSize: 11,
-          marginTop: 4,
+          marginTop: 3,
           color: activeTab === key ? "#2787f5" : "#fff",
 		  fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
           transition: "color 0.15s ease",
