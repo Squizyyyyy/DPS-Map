@@ -503,8 +503,8 @@ if (!isAuthorized) {
     borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
     boxShadow: "none", // убрали тень
     zIndex: 1000,
-	paddingTop: 14,   // увеличили высоту панели
-	paddingBottom: 14, // увеличили высоту панели
+	paddingTop: 8,   // увеличили высоту панели
+	paddingBottom: 15, // увеличили высоту панели
   }}
 >
   {[
@@ -522,7 +522,7 @@ if (!isAuthorized) {
         alignItems: "center",
         justifyContent: "flex-start",
         cursor: "pointer",
-        padding: "2px 0",
+        padding: "0px 0",
         transition: "all 0.15s ease",
       }}
     >
