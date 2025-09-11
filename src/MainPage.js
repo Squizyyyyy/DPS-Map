@@ -897,8 +897,10 @@ if (!isAuthorized) {
     >
       Активировать подписку
     </button>
+  )}
+    </div>
   </div>
-</div>
+)}
         </main>
       )}
     </div>
