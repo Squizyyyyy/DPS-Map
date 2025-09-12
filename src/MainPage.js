@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ReactComponent as AccountIcon } from "./assets/icons/account.svg";
 import { ReactComponent as SubscriptionIcon } from "./assets/icons/sub.svg";
 import { ReactComponent as MapIcon } from "./assets/icons/map.svg";
+import { ReactComponent as WhatsAppIcon } from './assets/icons/whatsapp.svg';
 
 const tabColors = {
   background: "#001c39",
@@ -461,7 +462,7 @@ if (!isAuthorized) {
               display: "flex",
               alignItems: "center",
               textDecoration: "none",
-              color: "#0088cc",
+              color: "inherit",
             }}
           >
             <svg
@@ -476,22 +477,25 @@ if (!isAuthorized) {
 		  </a>
 			
 			{/* WhatsApp */}
-		    <a
+            <a
               href="https://wa.me/+79958962951"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: "flex", alignItems: "center" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "inherit",
+              }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 448 512"
-                width="20"
-                height="20"
-                fill="#25D366" // цвет WhatsApp
-                style={{ cursor: "pointer" }}
-              >
-                <path d="M380.9 97.1C339-7.2 242-28.7 166.2 36.5c-53.2 44.3-66.4 114.1-47.7 176.4L0 480l271.2-115c58.2 31.8 123.3 25.5 170.7-25.3 61-61.9 65.1-159.5 1-224.6zM228.3 337c-47.6 0-91.8-24.6-115.4-64.7-4-6.1-6.1-12.9-5.9-20 0-18.8 15.3-34.1 34.1-34.1h.2c9.3.2 18.2 3.8 25.5 10.3l24.3 20.4c6.6 5.5 16.3 4.9 22.2-1.5l20.5-21.5c4.7-4.9 11.8-6.5 18-4.1l37.2 11.8c6.8 2.2 11.4 8.4 11.9 15.5.7 9.5-2.1 19.2-8.2 26.6-8.6 11-22.5 28.5-40.2 46.2-17.3 17.3-34.9 29.1-46 38.3-8.1 6.5-16.2 9.7-24.5 9.7z"/>
-              </svg>
+              <WhatsAppIcon
+                width={20}
+                height={20}
+                style={{
+                cursor: "pointer",
+				fill: "currentColor",
+                }}
+              />
             </a>
           </div>
 		
@@ -820,36 +824,39 @@ if (!isAuthorized) {
         href="https://t.me/dps_map_support"
         target="_blank"
         rel="noopener noreferrer"
-        style={{ display: "flex", alignItems: "center", color: "#aaa" }}
+        style={{ display: "flex", alignItems: "center", color: "inherit" }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 240 240"
           width="20"
           height="20"
-          fill="#0088cc"
+          fill="currentColor"
         >
           <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
         </svg>
 	  </a>
 		
 		{/* WhatsApp */}
-		<a
+        <a
           href="https://wa.me/+79958962951"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ display: "flex", alignItems: "center" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+            color: "inherit",
+          }}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 448 512"
-            width="20"
-            height="20"
-            fill="#25D366" // цвет WhatsApp
-            style={{ cursor: "pointer" }}
-          >
-            <path d="M380.9 97.1C339-7.2 242-28.7 166.2 36.5c-53.2 44.3-66.4 114.1-47.7 176.4L0 480l271.2-115c58.2 31.8 123.3 25.5 170.7-25.3 61-61.9 65.1-159.5 1-224.6zM228.3 337c-47.6 0-91.8-24.6-115.4-64.7-4-6.1-6.1-12.9-5.9-20 0-18.8 15.3-34.1 34.1-34.1h.2c9.3.2 18.2 3.8 25.5 10.3l24.3 20.4c6.6 5.5 16.3 4.9 22.2-1.5l20.5-21.5c4.7-4.9 11.8-6.5 18-4.1l37.2 11.8c6.8 2.2 11.4 8.4 11.9 15.5.7 9.5-2.1 19.2-8.2 26.6-8.6 11-22.5 28.5-40.2 46.2-17.3 17.3-34.9 29.1-46 38.3-8.1 6.5-16.2 9.7-24.5 9.7z"/>
-          </svg>
+          <WhatsAppIcon
+            width={20}
+            height={20}
+            style={{
+            cursor: "pointer",
+			fill: "currentColor",
+            }}
+          />
         </a>
     </div>
 
@@ -871,7 +878,7 @@ if (!isAuthorized) {
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        padding: "32px 20px",
+        padding: "48px 20px",
         width: "100%",
         maxWidth: 320,
         textAlign: "center",
@@ -880,16 +887,6 @@ if (!isAuthorized) {
           "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
       }}
     >
-      <h2
-        style={{
-          margin: 0,
-          fontSize: 20,
-          fontWeight: 700,
-          color: "#fff",
-        }}
-      >
-        Подписка
-      </h2>
 
       {user?.subscription?.expiresAt ? (
         <p
@@ -944,6 +941,44 @@ if (!isAuthorized) {
       >
         Активировать подписку
       </button>
+	  
+	  {/* Иконки способов оплаты */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 20,
+        }}
+      >
+        <img
+          src="/icons/card.svg"
+          alt="Оплата картой"
+          style={{
+            width: 40,
+            height: 40,
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+          }}
+        />
+        <img
+          src="/icons/qr.svg"
+          alt="Оплата по QR"
+          style={{
+            width: 40,
+            height: 40,
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+          }}
+        />
+        <img
+          src="/icons/sbp.svg"
+          alt="Оплата через СБП"
+          style={{
+            width: 40,
+            height: 40,
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+		  }}
+        />
+      </div>
+
     </div>
   </div>
 )}
