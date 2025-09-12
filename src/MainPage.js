@@ -872,6 +872,7 @@ if (!isAuthorized) {
           alignItems: "center",
           minHeight: "calc(100vh - 80px)",
           padding: "0 16px",
+		  marginTop: -20,
         }}
       >
         <div
@@ -978,7 +979,7 @@ if (!isAuthorized) {
             color: "#aaa",
             fontSize: 16,
 			marginTop: 30,
-            marginBottom: 25,
+            marginBottom: 40,
           }}
         >
           Оплата удобным для Вас способом:
