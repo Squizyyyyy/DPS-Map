@@ -927,7 +927,7 @@ if (!isAuthorized) {
       </div>
 
       {/* Второй блок */}
-      <div>
+      <div style={{ marginTop: 20 }}>
         <button
 		 onClick={handleBuySubscription}
          disabled={loadingSubscription}
