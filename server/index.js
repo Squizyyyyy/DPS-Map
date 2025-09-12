@@ -337,6 +337,11 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
     const user = req.session.user;
     const now = Date.now();
     const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
+	
+	let newExpiresAt = now + thirtyDaysMs;
+    if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
+      newExpiresAt = user.subscription.expiresAt + thirtyDaysMs;
+    }
 
     user.subscription = {
       active: true,
@@ -344,12 +349,15 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
       expiresAt,
     };
 
-    await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+    await usersCollection.updateOne(
+	  { id: user.id }, 
+	  { $set: { subscription: user.subscription } }
+	);
     req.session.user = user;
 
     res.json({ success: true, subscription: user.subscription });
   } catch (e) {
-    console.error("Ошибка при покупке подписки:", e);
+    console.error("Ошибка при покупке подписки/продлении подписки:", e);
     res.status(500).json({ success: false, error: "Серверная ошибка при покупке подписки" });
   }
 });

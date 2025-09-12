@@ -929,6 +929,8 @@ if (!isAuthorized) {
       {/* Второй блок */}
       <div>
         <button
+		 onClick={handleBuySubscription}
+         disabled={loadingSubscription}
           style={{
             padding: "14px 0",
             background: "linear-gradient(90deg, #2787f5, #00ffff)",
@@ -951,7 +953,6 @@ if (!isAuthorized) {
             (e.currentTarget.style.background =
               "linear-gradient(90deg, #2787f5, #00ffff)")
           }
-          onClick={user?.subscription?.expiresAt ? prolongSubscription : activateSubscription}
         >
           {user?.subscription?.expiresAt ? "Продлить подписку" : "Активировать подписку"}
         </button>
