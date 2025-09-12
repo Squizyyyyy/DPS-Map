@@ -919,14 +919,14 @@ if (!isAuthorized) {
         </p>
       )}
 	  
-	  {/* Тонкая линия между текстом и кнопкой */}
+	  {/* Линия между текстом и кнопкой */}
       <hr
         style={{
           border: "none",
           height: 1,
           backgroundColor: "rgba(255,255,255,0.1)",
-          marginTop: 16,    // <-- расстояние от текста
-          marginBottom: 16, // <-- расстояние до кнопки
+          marginTop: 24,    // <-- расстояние от текста
+          marginBottom: 24, // <-- расстояние до кнопки
         }}
       />
 
@@ -957,42 +957,136 @@ if (!isAuthorized) {
         Активировать подписку
       </button>
 	  
-	  {/* Иконки способов оплаты */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 20,
-        }}
-      >
-        <img
-          src="/icons/card.svg"
-          alt="Оплата картой"
+	  {/* --- Точки-разделитель --- */}
+        <div
           style={{
-            width: 40,
-            height: 40,
-            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+            display: "flex",
+            justifyContent: "center",
+            gap: 8,
+            marginTop: 24,
+            marginBottom: 16,
           }}
-        />
-        <img
-          src="/icons/qr.svg"
-          alt="Оплата по QR"
+        >
+          <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
+        </div>
+		
+		{/* --- Заголовок над иконками --- */}
+        <p
           style={{
-            width: 40,
-            height: 40,
-            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+            color: "#aaa",
+            fontSize: 14,
+            marginBottom: 12,
           }}
-        />
-        <img
-          src="/icons/sbp.svg"
-          alt="Оплата через СБП"
+        >
+          Оплата удобным для Вас способом
+        </p>
+		
+		{/* Мини-блоки с иконками и текстом */}
+        <div
           style={{
-            width: 40,
-            height: 40,
-            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-		  }}
-        />
-      </div>
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+		  {/* --- Картой --- */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              backgroundColor: "#0a1f33",
+              padding: 12,
+              borderRadius: 16,
+              flex: 1,
+            }}
+          >
+            <img
+              src="/icons/card.svg"
+              alt="Картой онлайн"
+              style={{
+                width: 40,
+                height: 40,
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+              }}
+            />
+            <span
+              style={{
+                marginTop: 8,
+                color: "#aaa",
+                fontSize: 12,
+              }}
+            >
+              картой онлайн
+            </span>
+          </div>
+		  
+		  {/* --- QR --- */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              backgroundColor: "#0a1f33",
+              padding: 12,
+              borderRadius: 16,
+              flex: 1,
+            }}
+          >
+            <img
+              src="/icons/qr.svg"
+              alt="Оплата по QR"
+              style={{
+                width: 40,
+                height: 40,
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+              }}
+            />
+            <span
+              style={{
+                marginTop: 8,
+                color: "#aaa",
+                fontSize: 12,
+              }}
+            >
+              по QR-коду
+            </span>
+          </div>
+		  
+		  {/* --- СБП --- */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              backgroundColor: "#0a1f33",
+              padding: 12,
+              borderRadius: 16,
+              flex: 1,
+            }}
+          >
+            <img
+              src="/icons/sbp.svg"
+              alt="Оплата через СБП"
+              style={{
+                width: 40,
+                height: 40,
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+              }}
+            />
+            <span
+              style={{
+                marginTop: 8,
+                color: "#aaa",
+                fontSize: 12,
+              }}
+            >
+              через СБП
+            </span>
+          </div>
+		</div>
 
     </div>
   </div>
