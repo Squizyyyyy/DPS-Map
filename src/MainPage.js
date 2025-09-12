@@ -878,21 +878,28 @@ if (!isAuthorized) {
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        padding: "70px 20px",
+        padding: "70px 16px",
         width: "100%",
         maxWidth: 300,
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+		position: "relative",
+		minHeight: 300,
       }}
     >
+	  <div
+        style={{
+          marginTop: -40, // смещение содержимого блока вверх/вниз
+        }}
+      >
 
       {user?.subscription?.expiresAt ? (
         <p
           style={{
             color: "#aaa",
-            fontSize: 14,
+            fontSize: 16,
             marginTop: 12,
           }}
         >
@@ -905,7 +912,7 @@ if (!isAuthorized) {
         <p
           style={{
             color: "#aaa",
-            fontSize: 14,
+            fontSize: 16,
             marginTop: 12,
           }}
         >
@@ -913,6 +920,15 @@ if (!isAuthorized) {
           Активируйте, чтобы воспользоваться всеми функциями карты.
         </p>
       )}
+	  
+	  {/* Тонкая линия */}
+      <div
+        style={{
+          height: 1,
+          backgroundColor: "rgba(255,255,255,0.1)",
+          margin: "20px 0",
+        }}
+      ></div>
 
       <button
         style={{
