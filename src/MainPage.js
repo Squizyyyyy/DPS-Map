@@ -956,20 +956,16 @@ if (!isAuthorized) {
           {user?.subscription?.expiresAt ? "Продлить подписку" : "Активировать подписку"}
         </button>
 
-        {/* Точки-разделитель */}
-        <div
+        {/* Линия вместо точек */}
+        <hr
           style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 8,
+            border: "none",
+            height: 1,
+            backgroundColor: "rgba(255,255,255,0.1)",
             marginTop: 40,
             marginBottom: 12,
           }}
-        >
-          <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
-        </div>
+        />
 
         {/* Заголовок над иконками */}
         <p
