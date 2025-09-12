@@ -1096,5 +1096,3 @@ if (!isAuthorized) {
     </div>
   );
 }
-
-8:
