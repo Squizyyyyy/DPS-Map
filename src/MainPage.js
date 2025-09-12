@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ReactComponent as AccountIcon } from "./assets/icons/account.svg";
 import { ReactComponent as SubscriptionIcon } from "./assets/icons/sub.svg";
 import { ReactComponent as MapIcon } from "./assets/icons/map.svg";
-import { ReactComponent as WhatsAppIcon } from './assets/icons/whatsapp.svg';
+import { ReactComponent as WhatsAppIcon } from './assets/icons/wa.svg';
 
 const tabColors = {
   background: "#001c39",
