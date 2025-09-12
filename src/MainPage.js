@@ -1086,6 +1086,7 @@ if (!isAuthorized) {
             </span>
           </div>
 		</div>
+	  </div>
 
     </div>
   </div>
@@ -1095,3 +1096,5 @@ if (!isAuthorized) {
     </div>
   );
 }
+
+8:
