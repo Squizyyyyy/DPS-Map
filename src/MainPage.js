@@ -871,16 +871,16 @@ if (!isAuthorized) {
       justifyContent: "center",
       alignItems: "center",
       minHeight: "calc(100vh - 80px)",
-      padding: "0 16px",
+      padding: 16px,
     }}
   >
     <div
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        padding: "48px 20px",
+        padding: "70px 20px",
         width: "100%",
-        maxWidth: 320,
+        maxWidth: 300,
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         fontFamily:
