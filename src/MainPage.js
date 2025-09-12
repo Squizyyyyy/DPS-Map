@@ -925,8 +925,8 @@ if (!isAuthorized) {
           border: "none",
           height: 1,
           backgroundColor: "rgba(255,255,255,0.1)",
-          marginTop: 26,    // <-- расстояние от текста
-          marginBottom: 30, // <-- расстояние до кнопки
+          marginTop: 30,    // расстояние от текста
+          marginBottom: 40, // расстояние до кнопки
         }}
       />
 
@@ -963,8 +963,8 @@ if (!isAuthorized) {
             display: "flex",
             justifyContent: "center",
             gap: 8,
-            marginTop: 30,
-            marginBottom: 16,
+            marginTop: 40,
+            marginBottom: 12,
           }}
         >
           <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
@@ -976,9 +976,9 @@ if (!isAuthorized) {
         <p
           style={{
             color: "#aaa",
-            fontSize: 14,
+            fontSize: 16,
 			marginTop: 30,
-            marginBottom: 12,
+            marginBottom: 18,
           }}
         >
           Оплата удобным для Вас способом:
@@ -1021,7 +1021,7 @@ if (!isAuthorized) {
                 fontSize: 12,
               }}
             >
-              картой онлайн
+              Картой онлайн
             </span>
           </div>
 		  
@@ -1054,7 +1054,7 @@ if (!isAuthorized) {
                 fontSize: 12,
               }}
             >
-              по QR-коду
+              По QR-коду
             </span>
           </div>
 		  
@@ -1087,7 +1087,7 @@ if (!isAuthorized) {
                 fontSize: 12,
               }}
             >
-              через СБП
+              Через СБП
             </span>
           </div>
 		</div>
