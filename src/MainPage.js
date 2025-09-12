@@ -871,7 +871,7 @@ if (!isAuthorized) {
       justifyContent: "center",
       alignItems: "center",
       minHeight: "calc(100vh - 80px)",
-      padding: 16px,
+      padding: "0 16px",
     }}
   >
     <div
