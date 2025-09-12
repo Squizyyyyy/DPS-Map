@@ -878,7 +878,10 @@ if (!isAuthorized) {
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        padding: "70px 16px",
+        paddingTop: 40, // регулируем, на сколько вверх поднято содержимое
+		paddingBottom: 48, // чтобы кнопка и иконки не прилипали к низу
+		paddingLeft: 16,
+		paddingRight: 16,
         width: "100%",
         maxWidth: 300,
         textAlign: "center",
@@ -889,18 +892,13 @@ if (!isAuthorized) {
 		minHeight: 300,
       }}
     >
-	  <div
-        style={{
-          marginTop: -40, // смещение содержимого блока вверх/вниз
-        }}
-      >
 
       {user?.subscription?.expiresAt ? (
         <p
           style={{
             color: "#aaa",
             fontSize: 16,
-            marginTop: 12,
+            marginTop: 0,
           }}
         >
           Подписка активна до:{" "}
@@ -913,7 +911,7 @@ if (!isAuthorized) {
           style={{
             color: "#aaa",
             fontSize: 16,
-            marginTop: 12,
+            marginTop: 0,
           }}
         >
           Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
@@ -921,18 +919,19 @@ if (!isAuthorized) {
         </p>
       )}
 	  
-	  {/* Тонкая линия */}
-      <div
+	  {/* Тонкая линия между текстом и кнопкой */}
+      <hr
         style={{
+          border: "none",
           height: 1,
           backgroundColor: "rgba(255,255,255,0.1)",
-          margin: "20px 0",
+          marginTop: 16,    // <-- расстояние от текста
+          marginBottom: 16, // <-- расстояние до кнопки
         }}
-      ></div>
+      />
 
       <button
         style={{
-          marginTop: 24,
           padding: "14px 0",
           background: "linear-gradient(90deg, #2787f5, #0a90ff)",
           color: "#fff",
@@ -957,7 +956,6 @@ if (!isAuthorized) {
       >
         Активировать подписку
       </button>
-	  </div>
 	  
 	  {/* Иконки способов оплаты */}
       <div
