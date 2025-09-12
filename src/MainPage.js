@@ -863,61 +863,61 @@ if (!isAuthorized) {
   </div>
 )}
 
-{/* ---- Подписка ---- */}
-{activeTab === "subscription" && (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "calc(100vh - 80px)",
-      padding: "0 16px",
-    }}
-  >
-    <div
-      style={{
-        backgroundColor: "#0a1f33",
-        borderRadius: 24,
-        paddingTop: 40, // регулируем, на сколько вверх поднято содержимое
-		paddingBottom: 48, // чтобы кнопка и иконки не прилипали к низу
-		paddingLeft: 16,
-		paddingRight: 16,
-        width: "100%",
-        maxWidth: 300,
-        textAlign: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-		position: "relative",
-		minHeight: 300,
-      }}
-    >
+    {/* ---- Подписка ---- */}
+    {activeTab === "subscription" && (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "calc(100vh - 80px)",
+          padding: "0 16px",
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#0a1f33",
+            borderRadius: 24,
+            paddingTop: 40, // регулируем, на сколько вверх поднято содержимое
+		    paddingBottom: 48, // чтобы кнопка и иконки не прилипали к низу
+		    paddingLeft: 16,
+		    paddingRight: 16,
+            width: "100%",
+            maxWidth: 300,
+            textAlign: "center",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+            fontFamily:
+              "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+		    position: "relative",
+		    minHeight: 300,
+          }}
+        >
 
-      {user?.subscription?.expiresAt ? (
-        <p
-          style={{
-            color: "#aaa",
-            fontSize: 16,
-            marginTop: 0,
-          }}
-        >
-          Подписка активна до:{" "}
-          <b style={{ color: "#fff" }}>
-            {new Date(user.subscription.expiresAt).toLocaleDateString()}
-          </b>
-        </p>
-      ) : (
-        <p
-          style={{
-            color: "#aaa",
-            fontSize: 16,
-            marginTop: 0,
-          }}
-        >
-          Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
-          Активируйте, чтобы воспользоваться всеми функциями карты.
-        </p>
-      )}
+          {user?.subscription?.expiresAt ? (
+            <p
+              style={{
+                color: "#aaa",
+                fontSize: 16,
+                marginTop: 0,
+              }}
+            >
+              Подписка активна до:{" "}
+              <b style={{ color: "#fff" }}>
+                {new Date(user.subscription.expiresAt).toLocaleDateString()}
+              </b>
+            </p>
+          ) : (
+            <p
+              style={{
+                color: "#aaa",
+                fontSize: 16,
+                marginTop: 0,
+              }}
+            >
+              Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
+              Активируйте, чтобы воспользоваться всеми функциями карты.
+            </p>
+          )}
 	  
 	  {/* Линия между текстом и кнопкой */}
       <hr
@@ -925,8 +925,8 @@ if (!isAuthorized) {
           border: "none",
           height: 1,
           backgroundColor: "rgba(255,255,255,0.1)",
-          marginTop: 24,    // <-- расстояние от текста
-          marginBottom: 24, // <-- расстояние до кнопки
+          marginTop: 26,    // <-- расстояние от текста
+          marginBottom: 30, // <-- расстояние до кнопки
         }}
       />
 
@@ -963,7 +963,7 @@ if (!isAuthorized) {
             display: "flex",
             justifyContent: "center",
             gap: 8,
-            marginTop: 24,
+            marginTop: 30,
             marginBottom: 16,
           }}
         >
@@ -977,10 +977,11 @@ if (!isAuthorized) {
           style={{
             color: "#aaa",
             fontSize: 14,
+			marginTop: 30,
             marginBottom: 12,
           }}
         >
-          Оплата удобным для Вас способом
+          Оплата удобным для Вас способом:
         </p>
 		
 		{/* Мини-блоки с иконками и текстом */}
@@ -997,7 +998,7 @@ if (!isAuthorized) {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              backgroundColor: "#0a1f33",
+              backgroundColor: "rgba(255,255,255,0.05)",
               padding: 12,
               borderRadius: 16,
               flex: 1,
@@ -1009,6 +1010,7 @@ if (!isAuthorized) {
               style={{
                 width: 40,
                 height: 40,
+				objectFit: "contain",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
               }}
             />
@@ -1029,7 +1031,7 @@ if (!isAuthorized) {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              backgroundColor: "#0a1f33",
+              backgroundColor: "rgba(255,255,255,0.05)",
               padding: 12,
               borderRadius: 16,
               flex: 1,
@@ -1041,6 +1043,7 @@ if (!isAuthorized) {
               style={{
                 width: 40,
                 height: 40,
+				objectFit: "contain",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
               }}
             />
@@ -1061,7 +1064,7 @@ if (!isAuthorized) {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              backgroundColor: "#0a1f33",
+              backgroundColor: "rgba(255,255,255,0.05)",
               padding: 12,
               borderRadius: 16,
               flex: 1,
@@ -1073,6 +1076,7 @@ if (!isAuthorized) {
               style={{
                 width: 40,
                 height: 40,
+				objectFit: "contain",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
               }}
             />
