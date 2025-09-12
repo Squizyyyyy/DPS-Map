@@ -762,7 +762,7 @@ if (!isAuthorized) {
         }}
         style={{
 		  padding: "10px 0",
-          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          background: "linear-gradient(90deg, #2787f5, #00ffff)",
           color: "#fff",
           border: "none",
 		  borderRadius: 16,
@@ -773,7 +773,7 @@ if (!isAuthorized) {
 		  transition: "all 0.2s"
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")}
-		onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #0a90ff)")}
+		onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #00ffff)")}
       >
         Сохранить
       </button>
@@ -933,7 +933,7 @@ if (!isAuthorized) {
       <button
         style={{
           padding: "14px 0",
-          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          background: "linear-gradient(90deg, #2787f5, ##00ffff)",
           color: "#fff",
           border: "none",
           borderRadius: 20,
@@ -951,7 +951,7 @@ if (!isAuthorized) {
         }
         onMouseLeave={(e) =>
           (e.currentTarget.style.background =
-            "linear-gradient(90deg, #2787f5, #0a90ff)")
+            "linear-gradient(90deg, #2787f5, #00ffff)")
         }
       >
         Активировать подписку
@@ -978,7 +978,7 @@ if (!isAuthorized) {
             color: "#aaa",
             fontSize: 16,
 			marginTop: 30,
-            marginBottom: 18,
+            marginBottom: 21,
           }}
         >
           Оплата удобным для Вас способом:
