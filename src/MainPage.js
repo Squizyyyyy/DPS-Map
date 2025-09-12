@@ -863,102 +863,100 @@ if (!isAuthorized) {
   </div>
 )}
 
-    {/* ---- Подписка ---- */}
-    {activeTab === "subscription" && (
+{/* ---- Подписка ---- */}
+{activeTab === "subscription" && (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "calc(100vh - 80px)",
+      padding: "0 16px",
+      marginTop: -30,
+    }}
+  >
+    <div
+      style={{
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        paddingTop: 40, // регулируем, на сколько вверх поднято содержимое
+        paddingBottom: 34, // чтобы кнопка и иконки не прилипали к низу
+        paddingLeft: 16,
+        paddingRight: 16,
+        width: "100%",
+        maxWidth: 300,
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        position: "relative",
+        minHeight: 300,
+      }}
+    >
+      {/* Первый блок: только текст */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "calc(100vh - 80px)",
-          padding: "0 16px",
-		  marginTop: -30,
+          marginBottom: 20, // расстояние до второго блока
         }}
       >
-        <div
+        {user?.subscription?.expiresAt ? (
+          <p
+            style={{
+              color: "#aaa",
+              fontSize: 16,
+              marginTop: 0,
+            }}
+          >
+            Подписка активна до:{" "}
+            <b style={{ color: "#fff" }}>
+              {new Date(user.subscription.expiresAt).toLocaleDateString()}
+            </b>
+          </p>
+        ) : (
+          <p
+            style={{
+              color: "#aaa",
+              fontSize: 16,
+              marginTop: 0,
+            }}
+          >
+            Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
+            Активируйте, чтобы воспользоваться всеми функциями карты.
+          </p>
+        )}
+      </div>
+
+      {/* Второй блок */}
+      <div>
+        <button
           style={{
-            backgroundColor: "#0a1f33",
-            borderRadius: 24,
-            paddingTop: 40, // регулируем, на сколько вверх поднято содержимое
-		    paddingBottom: 35, // чтобы кнопка и иконки не прилипали к низу
-		    paddingLeft: 16,
-		    paddingRight: 16,
+            padding: "14px 0",
+            background: "linear-gradient(90deg, #2787f5, #00ffff)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 20,
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: 15,
             width: "100%",
-            maxWidth: 300,
-            textAlign: "center",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+            transition: "all 0.2s",
             fontFamily:
               "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-		    position: "relative",
-		    minHeight: 300,
           }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background =
+              "linear-gradient(90deg, #1e6cd8, #0470ff)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background =
+              "linear-gradient(90deg, #2787f5, #00ffff)")
+          }
+          onClick={user?.subscription?.expiresAt ? prolongSubscription : activateSubscription}
         >
+          {user?.subscription?.expiresAt ? "Продлить подписку" : "Активировать подписку"}
+        </button>
 
-          {user?.subscription?.expiresAt ? (
-            <p
-              style={{
-                color: "#aaa",
-                fontSize: 16,
-                marginTop: 0,
-              }}
-            >
-              Подписка активна до:{" "}
-              <b style={{ color: "#fff" }}>
-                {new Date(user.subscription.expiresAt).toLocaleDateString()}
-              </b>
-            </p>
-          ) : (
-            <p
-              style={{
-                color: "#aaa",
-                fontSize: 16,
-                marginTop: 0,
-              }}
-            >
-              Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
-              Активируйте, чтобы воспользоваться всеми функциями карты.
-            </p>
-          )}
-	  
-	  {/* Линия между текстом и кнопкой */}
-      <hr
-        style={{
-          border: "none",
-          height: 1,
-          backgroundColor: "rgba(255,255,255,0.1)",
-          marginTop: 30,    // расстояние от текста
-          marginBottom: 40, // расстояние до кнопки
-        }}
-      />
-
-      <button
-        style={{
-          padding: "14px 0",
-          background: "linear-gradient(90deg, #2787f5, #00ffff)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 20,
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: 15,
-          width: "100%",
-          transition: "all 0.2s",
-          fontFamily:
-            "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-        }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.background =
-            "linear-gradient(90deg, #1e6cd8, #0470ff)")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.background =
-            "linear-gradient(90deg, #2787f5, #00ffff)")
-        }
-      >
-        Активировать подписку
-      </button>
-	  
-	  {/* --- Точки-разделитель --- */}
+        {/* Точки-разделитель */}
         <div
           style={{
             display: "flex",
@@ -972,20 +970,20 @@ if (!isAuthorized) {
           <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
           <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#555" }}></div>
         </div>
-		
-		{/* --- Заголовок над иконками --- */}
+
+        {/* Заголовок над иконками */}
         <p
           style={{
             color: "#aaa",
             fontSize: 16,
-			marginTop: 30,
+            marginTop: 30,
             marginBottom: 30,
           }}
         >
           Оплата удобным для Вас способом:
         </p>
-		
-		{/* Мини-блоки с иконками и текстом */}
+
+        {/* Мини-блоки с иконками и текстом */}
         <div
           style={{
             display: "flex",
@@ -993,7 +991,7 @@ if (!isAuthorized) {
             gap: 12,
           }}
         >
-		  {/* --- Картой --- */}
+          {/* Картой */}
           <div
             style={{
               display: "flex",
@@ -1011,7 +1009,7 @@ if (!isAuthorized) {
               style={{
                 width: 40,
                 height: 40,
-				objectFit: "contain",
+                objectFit: "contain",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
               }}
             />
@@ -1025,8 +1023,8 @@ if (!isAuthorized) {
               Картой онлайн
             </span>
           </div>
-		  
-		  {/* --- QR --- */}
+
+          {/* QR */}
           <div
             style={{
               display: "flex",
@@ -1044,7 +1042,7 @@ if (!isAuthorized) {
               style={{
                 width: 40,
                 height: 40,
-				objectFit: "contain",
+                objectFit: "contain",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
               }}
             />
@@ -1058,8 +1056,8 @@ if (!isAuthorized) {
               По QR-коду
             </span>
           </div>
-		  
-		  {/* --- СБП --- */}
+
+          {/* СБП */}
           <div
             style={{
               display: "flex",
@@ -1077,7 +1075,7 @@ if (!isAuthorized) {
               style={{
                 width: 40,
                 height: 40,
-				objectFit: "contain",
+                objectFit: "contain",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
               }}
             />
