@@ -872,7 +872,7 @@ if (!isAuthorized) {
           alignItems: "center",
           minHeight: "calc(100vh - 80px)",
           padding: "0 16px",
-		  marginTop: -20,
+		  marginTop: -30,
         }}
       >
         <div
@@ -880,7 +880,7 @@ if (!isAuthorized) {
             backgroundColor: "#0a1f33",
             borderRadius: 24,
             paddingTop: 40, // регулируем, на сколько вверх поднято содержимое
-		    paddingBottom: 48, // чтобы кнопка и иконки не прилипали к низу
+		    paddingBottom: 35, // чтобы кнопка и иконки не прилипали к низу
 		    paddingLeft: 16,
 		    paddingRight: 16,
             width: "100%",
@@ -979,7 +979,7 @@ if (!isAuthorized) {
             color: "#aaa",
             fontSize: 16,
 			marginTop: 30,
-            marginBottom: 40,
+            marginBottom: 30,
           }}
         >
           Оплата удобным для Вас способом:
