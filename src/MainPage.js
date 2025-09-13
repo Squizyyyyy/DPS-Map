@@ -900,6 +900,7 @@ if (!isAuthorized) {
       gap: 24,
 	  fontFamily:
         "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+	  boxSizing: "border-box",
     }}
   >
     {/* Первый блок */}
@@ -913,6 +914,7 @@ if (!isAuthorized) {
 		margin: "0 auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+		boxSizing: "border-box",
       }}
     >
       {user?.subscription?.expiresAt ? (
@@ -935,7 +937,10 @@ if (!isAuthorized) {
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        padding: 16,
+        paddingTop: 30,
+        paddingBottom: 30,
+        paddingLeft: 16,
+        paddingRight: 16,
         width: "100%",
         maxWidth: 300,
 		margin: "0 auto",
@@ -945,6 +950,7 @@ if (!isAuthorized) {
         flexDirection: "column",
         alignItems: "stretch",
         gap: 16,
+		boxSizing: "border-box",
       }}
     >
       {/* Кнопка купить / продлить */}
