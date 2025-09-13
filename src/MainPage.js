@@ -956,7 +956,7 @@ if (!isAuthorized) {
         disabled={loadingSubscription}
         style={{
           padding: "14px 0",
-          background: "linear-gradient(90deg, #2787f5, #00ffff)",
+          background: "linear-gradient(90deg, #2787f5, #9f9cfa)",
           color: "#fff",
           border: "none",
           borderRadius: 20,
@@ -974,7 +974,7 @@ if (!isAuthorized) {
         }
         onMouseLeave={(e) =>
           (e.currentTarget.style.background =
-            "linear-gradient(90deg, #2787f5, #00ffff)")
+            "linear-gradient(90deg, #2787f5, #9f9cfa)")
         }
       >
         {user?.subscription?.expiresAt
