@@ -894,8 +894,6 @@ if (!isAuthorized) {
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      gap: 24,
-      minHeight: "calc(100vh - 80px)",
       padding: 16,
       fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
       boxSizing: "border-box",
