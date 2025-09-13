@@ -889,6 +889,7 @@ if (!isAuthorized) {
 
 {/* Подписка */}
 {activeTab === "subscription" && (
+ <>
   <div style={{
       backgroundColor: "#0a1f33",
 	  borderRadius: 24,
@@ -912,6 +913,7 @@ if (!isAuthorized) {
         </p>
       )}
     </div>
+  </>
         </main>
       )}
     </div>
