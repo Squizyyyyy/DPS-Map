@@ -891,13 +891,12 @@ if (!isAuthorized) {
           "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         display: "flex", 
         flexDirection: "column", 
-        alignItems: "center",
+        alignItems: "stretch",
       }}
     >
       {/* Первый блок: только текст */}
       <div
         style={{
-		  width: "100%",
           marginBottom: 30, // расстояние до второго блока
         }}
       >
@@ -934,7 +933,7 @@ if (!isAuthorized) {
 		  width: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          alignItems: "stretch",
         }}
       >
         <button
@@ -974,6 +973,7 @@ if (!isAuthorized) {
             backgroundColor: "rgba(255,255,255,0.1)",
             marginTop: 40,
             marginBottom: 12,
+			width: "100%",
           }}
         />
 
