@@ -889,18 +889,28 @@ if (!isAuthorized) {
 
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
-  <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif" }}>
+  <div
+    style={{
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "0 16px", // минимальные боковые отступы
+      boxSizing: "border-box",
+    }}
+  >
     {/* Первый блок */}
     <div
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
         padding: 16,
-		width: "calc(100% - 16px)",
+        width: "100%",
         maxWidth: 300,
-        margin: "12px auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        marginBottom: 12,
+        boxSizing: "border-box",
       }}
     >
       {user?.subscription?.expiresAt ? (
@@ -927,15 +937,16 @@ if (!isAuthorized) {
         paddingBottom: 30,
         paddingLeft: 16,
         paddingRight: 16,
-		width: "calc(100% - 16px)",
+        width: "100%",
         maxWidth: 300,
-        margin: "12px auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
         flexDirection: "column",
         alignItems: "stretch",
         gap: 16,
+        marginBottom: 12,
+        boxSizing: "border-box",
       }}
     >
       {/* Кнопка купить / продлить */}
