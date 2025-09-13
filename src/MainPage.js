@@ -873,230 +873,197 @@ if (!isAuthorized) {
       minHeight: "calc(100vh - 80px)",
       padding: "0 16px",
       marginTop: -30,
+      flexDirection: "column", // чтобы блоки шли друг под другом
+      gap: 24, // расстояние между блоками
     }}
   >
+    {/* Первый блок: только текст */}
     <div
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        paddingTop: 40, // регулируем, на сколько вверх поднято содержимое
-        paddingBottom: 34, // чтобы кнопка и иконки не прилипали к низу
+        padding: 24,
+        width: "100%",
+        maxWidth: 300,
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      }}
+    >
+      {user?.subscription?.expiresAt ? (
+        <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
+          Подписка активна до:{" "}
+          <b style={{ color: "#fff" }}>
+            {new Date(user.subscription.expiresAt).toLocaleDateString()}
+          </b>
+        </p>
+      ) : (
+        <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
+          Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
+          Активируйте, чтобы воспользоваться всеми функциями карты.
+        </p>
+      )}
+    </div>
+
+    {/* Второй блок: всё остальное */}
+    <div
+      style={{
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        paddingTop: 40,
+        paddingBottom: 34,
         paddingLeft: 16,
         paddingRight: 16,
         width: "100%",
         maxWidth: 300,
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-        display: "flex", 
-        flexDirection: "column", 
+        display: "flex",
+        flexDirection: "column",
         alignItems: "stretch",
+        gap: 16,
       }}
     >
-      {/* Первый блок: только текст */}
-      <div
+      {/* Кнопка купить / продлить */}
+      <button
+        onClick={handleBuySubscription}
+        disabled={loadingSubscription}
         style={{
-          marginBottom: 30, // расстояние до второго блока
+          padding: "14px 0",
+          background: "linear-gradient(90deg, #2787f5, #00ffff)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 20,
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: 15,
+          width: "100%",
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #1e6cd8, #0470ff)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #2787f5, #00ffff)")
+        }
+      >
+        {user?.subscription?.expiresAt
+          ? "Продлить подписку"
+          : "Активировать подписку"}
+      </button>
+
+      {/* Линия */}
+      <hr
+        style={{
+          border: "none",
+          height: 1,
+          backgroundColor: "rgba(255,255,255,0.1)",
+          width: "100%",
+        }}
+      />
+
+      {/* Заголовок */}
+      <p
+        style={{
+          color: "#aaa",
+          fontSize: 16,
+          marginTop: 0,
+          marginBottom: 16,
         }}
       >
-        {user?.subscription?.expiresAt ? (
-          <p
-            style={{
-              color: "#aaa",
-              fontSize: 16,
-              marginTop: 0,
-            }}
-          >
-            Подписка активна до:{" "}
-            <b style={{ color: "#fff" }}>
-              {new Date(user.subscription.expiresAt).toLocaleDateString()}
-            </b>
-          </p>
-        ) : (
-          <p
-            style={{
-              color: "#aaa",
-              fontSize: 16,
-              marginTop: 0,
-            }}
-          >
-            Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
-            Активируйте, чтобы воспользоваться всеми функциями карты.
-          </p>
-        )}
-      </div>
+        Оплата удобным для Вас способом:
+      </p>
 
-      {/* Второй блок */}
+      {/* Мини-блоки с иконками */}
       <div
         style={{
-		  width: "100%",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "stretch",
+          justifyContent: "space-between",
+          gap: 12,
         }}
       >
-        <button
-		 onClick={handleBuySubscription}
-         disabled={loadingSubscription}
-          style={{
-            padding: "14px 0",
-            background: "linear-gradient(90deg, #2787f5, #00ffff)",
-            color: "#fff",
-            border: "none",
-            borderRadius: 20,
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: 15,
-            width: "100%",
-            transition: "all 0.2s",
-            fontFamily:
-              "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background =
-              "linear-gradient(90deg, #1e6cd8, #0470ff)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background =
-              "linear-gradient(90deg, #2787f5, #00ffff)")
-          }
-        >
-          {user?.subscription?.expiresAt ? "Продлить подписку" : "Активировать подписку"}
-        </button>
-
-        {/* Линия вместо точек */}
-        <hr
-          style={{
-            border: "none",
-            height: 1,
-            backgroundColor: "rgba(255,255,255,0.1)",
-            marginTop: 40,
-            marginBottom: 12,
-			width: "100%",
-          }}
-        />
-
-        {/* Заголовок над иконками */}
-        <p
-          style={{
-            color: "#aaa",
-            fontSize: 16,
-            marginTop: 30,
-            marginBottom: 30,
-          }}
-        >
-          Оплата удобным для Вас способом:
-        </p>
-
-        {/* Мини-блоки с иконками и текстом */}
+        {/* Картой */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            gap: 12,
+            flexDirection: "column",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.05)",
+            padding: 12,
+            borderRadius: 16,
+            flex: 1,
           }}
         >
-          {/* Картой */}
-          <div
+          <img
+            src="/icons/card.svg"
+            alt="Картой онлайн"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              backgroundColor: "rgba(255,255,255,0.05)",
-              padding: 12,
-              borderRadius: 16,
-              flex: 1,
+              width: 40,
+              height: 40,
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
             }}
-          >
-            <img
-              src="/icons/card.svg"
-              alt="Картой онлайн"
-              style={{
-                width: 40,
-                height: 40,
-                objectFit: "contain",
-                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-              }}
-            />
-            <span
-              style={{
-                marginTop: 8,
-                color: "#aaa",
-                fontSize: 12,
-              }}
-            >
-              Картой онлайн
-            </span>
-          </div>
+          />
+          <span style={{ marginTop: 8, color: "#aaa", fontSize: 12 }}>
+            Картой онлайн
+          </span>
+        </div>
 
-          {/* QR */}
-          <div
+        {/* QR */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.05)",
+            padding: 12,
+            borderRadius: 16,
+            flex: 1,
+          }}
+        >
+          <img
+            src="/icons/qr.svg"
+            alt="Оплата по QR"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              backgroundColor: "rgba(255,255,255,0.05)",
-              padding: 12,
-              borderRadius: 16,
-              flex: 1,
+              width: 40,
+              height: 40,
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
             }}
-          >
-            <img
-              src="/icons/qr.svg"
-              alt="Оплата по QR"
-              style={{
-                width: 40,
-                height: 40,
-                objectFit: "contain",
-                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-              }}
-            />
-            <span
-              style={{
-                marginTop: 8,
-                color: "#aaa",
-                fontSize: 12,
-              }}
-            >
-              По QR-коду
-            </span>
-          </div>
+          />
+          <span style={{ marginTop: 8, color: "#aaa", fontSize: 12 }}>
+            По QR-коду
+          </span>
+        </div>
 
-          {/* СБП */}
-          <div
+        {/* СБП */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.05)",
+            padding: 12,
+            borderRadius: 16,
+            flex: 1,
+          }}
+        >
+          <img
+            src="/icons/sbp.svg"
+            alt="Оплата через СБП"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              backgroundColor: "rgba(255,255,255,0.05)",
-              padding: 12,
-              borderRadius: 16,
-              flex: 1,
+              width: 40,
+              height: 40,
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
             }}
-          >
-            <img
-              src="/icons/sbp.svg"
-              alt="Оплата через СБП"
-              style={{
-                width: 40,
-                height: 40,
-                objectFit: "contain",
-                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-              }}
-            />
-            <span
-              style={{
-                marginTop: 8,
-                color: "#aaa",
-                fontSize: 12,
-              }}
-            >
-              Через СБП
-            </span>
-          </div>
-		</div>
-	  </div>
+          />
+          <span style={{ marginTop: 8, color: "#aaa", fontSize: 12 }}>
+            Через СБП
+          </span>
+        </div>
+      </div>
 
     </div>
   </div>
