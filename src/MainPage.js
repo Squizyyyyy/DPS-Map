@@ -888,16 +888,214 @@ if (!isAuthorized) {
 
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
-    <div style={{
-      backgroundColor: "#0a1f33",
-	  borderRadius: 24,
-      padding: 16,
-      width: "100%",
-	  maxWidth: 300,
-	  textAlign: "center",
-	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
-    }}>
-	</div>
+  <>
+    {/* Первый блок: статус подписки */}
+    <div
+      style={{
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        padding: 16,
+        width: "100%",
+        maxWidth: 300,
+        margin: "12px auto", // <-- вертикальный gap и центрирование
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      }}
+    >
+      {user?.subscription?.expiresAt ? (
+        <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
+          Подписка активна до:{" "}
+          <b style={{ color: "#fff" }}>
+            {new Date(user.subscription.expiresAt).toLocaleDateString()}
+          </b>
+        </p>
+      ) : (
+        <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
+          Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
+          Активируйте, чтобы воспользоваться всеми функциями карты.
+        </p>
+      )}
+    </div>
+
+    {/* Второй блок: кнопка и способы оплаты */}
+    <div
+      style={{
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        paddingTop: 30,
+        paddingBottom: 30,
+        paddingLeft: 16,
+        paddingRight: 16,
+        width: "100%",
+        maxWidth: 300,
+        margin: "12px auto", // <-- вертикальный gap и центрирование
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+        gap: 16,
+      }}
+    >
+      {/* Кнопка купить / продлить */}
+      <button
+        onClick={handleBuySubscription}
+        disabled={loadingSubscription}
+        style={{
+          padding: "14px 0",
+          background: "linear-gradient(90deg, #2787f5, #9f9cfa)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 20,
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: 15,
+          width: "100%",
+          transition: "all 0.2s",
+          fontFamily:
+            "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #1e6cd8, #0470ff)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #2787f5, #9f9cfa)")
+        }
+      >
+        {user?.subscription?.expiresAt
+          ? "Продлить подписку"
+          : "Активировать подписку"}
+      </button>
+
+      {/* Линия */}
+      <hr
+        style={{
+          border: "none",
+          height: 1,
+          backgroundColor: "rgba(255,255,255,0.1)",
+          width: "100%",
+          marginTop: 35,
+          marginBottom: 27,
+        }}
+      />
+
+      {/* Заголовок */}
+      <p
+        style={{
+          color: "#aaa",
+          fontSize: 16,
+          marginTop: 0,
+          marginBottom: 4,
+        }}
+      >
+        Оплата удобным для Вас способом.
+      </p>
+
+      <p
+        style={{
+          color: "#aaa",
+          fontSize: 16,
+          marginTop: 0,
+          marginBottom: 16,
+        }}
+      >
+        Чтобы активировать/продлить, нажмите кнопку выше.
+      </p>
+
+      {/* Мини-блоки с иконками */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
+        {/* Картой */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.05)",
+            padding: 12,
+            borderRadius: 16,
+            flex: 1,
+          }}
+        >
+          <img
+            src="/icons/card.svg"
+            alt="Картой онлайн"
+            style={{
+              width: 40,
+              height: 40,
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+            }}
+          />
+          <span style={{ marginTop: 8, color: "#aaa", fontSize: 12 }}>
+            Картой онлайн
+          </span>
+        </div>
+
+        {/* QR */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.05)",
+            padding: 12,
+            borderRadius: 16,
+            flex: 1,
+          }}
+        >
+          <img
+            src="/icons/qr.svg"
+            alt="Оплата по QR"
+            style={{
+              width: 40,
+              height: 40,
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+            }}
+          />
+          <span style={{ marginTop: 8, color: "#aaa", fontSize: 12 }}>
+            По QR-коду
+          </span>
+        </div>
+
+        {/* СБП */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.05)",
+            padding: 12,
+            borderRadius: 16,
+            flex: 1,
+          }}
+        >
+          <img
+            src="/icons/sbp.svg"
+            alt="Оплата через СБП"
+            style={{
+              width: 40,
+              height: 40,
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+            }}
+          />
+          <span style={{ marginTop: 8, color: "#aaa", fontSize: 12 }}>
+            Через СБП
+          </span>
+        </div>
+      </div>
+    </div>
+  </>
+)}
         </main>
       )}
     </div>
