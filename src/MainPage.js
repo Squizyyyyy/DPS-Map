@@ -583,17 +583,40 @@ if (!isAuthorized) {
         style={{
           flex: 1,
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
+          ustifyContent: "center",
           alignItems: "center",
+          padding: 24,
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
           color: "#fff",
-          padding: 16,
           textAlign: "center",
+          backgroundColor: tabColors.background,
         }}
       >
-        <h2>Выберите город</h2>
-        <p>Карта будет доступна после выбора города.</p>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 360,
+            padding: 24,
+            borderRadius: 24,                       // скруглённые углы
+            border: "2px solid rgba(255, 255, 255, 0.3)", // рамка
+            backgroundColor: "transparent",         // прозрачный блок
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+          }}
+        >
+          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>
+            Выберите город
+          </h2>
+
+          <p style={{ fontSize: 16, color: "#ccc", margin: 0 }}>
+            Карта будет доступна после выбора города.
+          </p>
+        </div>
       </div>
+    )}
     ) : (
       <div
         style={{
@@ -967,7 +990,7 @@ if (!isAuthorized) {
           backgroundColor: "rgba(255,255,255,0.1)",
           width: "100%",
 		  marginTop: 35,
-		  marginBottom: 30,
+		  marginBottom: 27,
         }}
       />
 
@@ -980,7 +1003,7 @@ if (!isAuthorized) {
           marginBottom: 16,
         }}
       >
-        Оплата удобным для Вас способом:
+        Оплата удобным для Вас способом. Чтобы активировать/продлить, нажмите кнопку выше
       </p>
 
       {/* Мини-блоки с иконками */}
