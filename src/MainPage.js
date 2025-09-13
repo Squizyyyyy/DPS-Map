@@ -894,7 +894,7 @@ if (!isAuthorized) {
       justifyContent: "center",
       alignItems: "center",
       minHeight: "calc(100vh - 80px)",
-      padding: "0 16px",
+      padding: 16,
       marginTop: -30,
       flexDirection: "column",
       gap: 24,
