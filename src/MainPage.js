@@ -888,8 +888,8 @@ if (!isAuthorized) {
 
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
-  <>
-    {/* Первый блок: статус подписки */}
+  <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif" }}>
+    {/* Первый блок */}
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -897,6 +897,7 @@ if (!isAuthorized) {
         padding: 16,
         width: "100%",
         maxWidth: 300,
+        margin: "12px auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       }}
@@ -916,7 +917,7 @@ if (!isAuthorized) {
       )}
     </div>
 
-    {/* Второй блок: кнопка и способы оплаты */}
+    {/* Второй блок */}
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -927,10 +928,12 @@ if (!isAuthorized) {
         paddingRight: 16,
         width: "100%",
         maxWidth: 300,
+        margin: "12px auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
         flexDirection: "column",
+        alignItems: "stretch",
         gap: 16,
       }}
     >
@@ -949,8 +952,6 @@ if (!isAuthorized) {
           fontSize: 15,
           width: "100%",
           transition: "all 0.2s",
-          fontFamily:
-            "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.background =
@@ -1091,7 +1092,7 @@ if (!isAuthorized) {
         </div>
       </div>
     </div>
-  </>
+  </div>
 )}
         </main>
       )}
