@@ -581,7 +581,7 @@ if (!isAuthorized) {
     selectedCity.name === "Не выбран" ? (
       <div
         style={{
-          flex: 1,
+		  height: "calc(100vh - 80px)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
