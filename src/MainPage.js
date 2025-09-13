@@ -875,6 +875,8 @@ if (!isAuthorized) {
       marginTop: -30,
       flexDirection: "column", // чтобы блоки шли друг под другом
       gap: 24, // расстояние между блоками
+	  fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     }}
   >
     {/* Первый блок: только текст */}
@@ -882,7 +884,8 @@ if (!isAuthorized) {
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        padding: 24,
+        paddingLeft: 16,
+        paddingRight: 16,
         width: "100%",
         maxWidth: 300,
         textAlign: "center",
@@ -909,8 +912,8 @@ if (!isAuthorized) {
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        paddingTop: 40,
-        paddingBottom: 34,
+        paddingTop: 30,
+        paddingBottom: 30,
         paddingLeft: 16,
         paddingRight: 16,
         width: "100%",
@@ -938,6 +941,8 @@ if (!isAuthorized) {
           fontSize: 15,
           width: "100%",
           transition: "all 0.2s",
+		  fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.background =
@@ -960,6 +965,8 @@ if (!isAuthorized) {
           height: 1,
           backgroundColor: "rgba(255,255,255,0.1)",
           width: "100%",
+		  marginTop: 35,
+		  marginBottom: 35,
         }}
       />
 
