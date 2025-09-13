@@ -889,14 +889,16 @@ if (!isAuthorized) {
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-        position: "relative",
-        minHeight: 300,
+        display: "flex", 
+        flexDirection: "column", 
+        alignItems: "center",
       }}
     >
       {/* Первый блок: только текст */}
       <div
         style={{
-          marginBottom: 20, // расстояние до второго блока
+		  width: "100%",
+          marginBottom: 30, // расстояние до второго блока
         }}
       >
         {user?.subscription?.expiresAt ? (
@@ -927,7 +929,14 @@ if (!isAuthorized) {
       </div>
 
       {/* Второй блок */}
-      <div style={{ marginTop: 20 }}>
+      <div
+        style={{
+		  width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         <button
 		 onClick={handleBuySubscription}
          disabled={loadingSubscription}
