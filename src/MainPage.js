@@ -616,7 +616,6 @@ if (!isAuthorized) {
           </p>
         </div>
       </div>
-    )}
     ) : (
       <div
         style={{
