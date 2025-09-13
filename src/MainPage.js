@@ -888,7 +888,7 @@ if (!isAuthorized) {
 
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
-  <div style={{
+    <div style={{
       backgroundColor: "#0a1f33",
 	  borderRadius: 24,
       padding: 16,
@@ -897,111 +897,7 @@ if (!isAuthorized) {
 	  textAlign: "center",
 	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
     }}>
-      {user?.subscription?.expiresAt ? (
-        <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
-          Подписка активна до:{" "}
-          <b style={{ color: "#fff" }}>
-            {new Date(user.subscription.expiresAt).toLocaleDateString()}
-          </b>
-        </p>
-      ) : (
-        <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
-          Ваша подписка <b style={{ color: "#fff" }}>неактивна</b>.<br />
-          Активируйте, чтобы воспользоваться всеми функциями карты.
-        </p>
-      )}
-    </div>
-
-    {/* ---- Второй блок: кнопка и способы оплаты ---- */}
-    <div
-      style={{
-        backgroundColor: "#0a1f33",
-        borderRadius: 24,
-        padding: 16, // используем padding как в Профиле
-        width: "100%",
-        maxWidth: 300,
-        margin: "0 auto",
-        textAlign: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "stretch",
-        gap: 16,
-        boxSizing: "border-box",
-      }}
-    >
-      {/* Кнопка купить / продлить */}
-      <button
-        onClick={handleBuySubscription}
-        disabled={loadingSubscription}
-        style={{
-          padding: "14px 0",
-          background: "linear-gradient(90deg, #2787f5, #9f9cfa)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 16, // совпадает с Профилем
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: 15,
-          width: "100%",
-          transition: "all 0.2s",
-        }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #9f9cfa)")
-        }
-      >
-        {user?.subscription?.expiresAt
-          ? "Продлить подписку"
-          : "Активировать подписку"}
-      </button>
-
-      {/* Способы оплаты */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        {[
-          { src: "/icons/card.svg", label: "Картой онлайн" },
-          { src: "/icons/qr.svg", label: "По QR-коду" },
-          { src: "/icons/sbp.svg", label: "Через СБП" },
-        ].map((item) => (
-          <div
-            key={item.label}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              backgroundColor: "rgba(255,255,255,0.05)",
-              padding: 12,
-              borderRadius: 16,
-              flex: 1,
-            }}
-          >
-            <img
-              src={item.src}
-              alt={item.label}
-              style={{
-                width: 40,
-                height: 40,
-                objectFit: "contain",
-                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-              }}
-            />
-            <span style={{ marginTop: 8, color: "#aaa", fontSize: 12 }}>
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-)}
+	</div>
         </main>
       )}
     </div>
