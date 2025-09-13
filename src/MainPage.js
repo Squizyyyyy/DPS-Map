@@ -714,7 +714,7 @@ if (!isAuthorized) {
     <div style={{
       backgroundColor: "#0a1f33",
 	  borderRadius: 24,
-      padding: 8,
+      padding: 16,
       width: "100%",
 	  maxWidth: 350,
 	  textAlign: "center",
@@ -730,7 +730,7 @@ if (!isAuthorized) {
     <div style={{
       backgroundColor: "#0a1f33",
 	  borderRadius: 24,
-      padding: 8,
+      padding: 16,
       width: "100%",
 	  maxWidth: 350,
 	  textAlign: "center",
