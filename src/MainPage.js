@@ -895,7 +895,7 @@ if (!isAuthorized) {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      padding: "0 16px", // минимальные боковые отступы
+      padding: "0 16px",
       boxSizing: "border-box",
     }}
   >
@@ -905,12 +905,12 @@ if (!isAuthorized) {
         backgroundColor: "#0a1f33",
         borderRadius: 24,
         padding: 16,
-        width: "clamp(260px, 90%, 300px)",
+        width: "100%",
+		maxWidth: 300,
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         marginBottom: 12,
         boxSizing: "border-box",
-		margin: "12px auto",
       }}
     >
       {user?.subscription?.expiresAt ? (
@@ -937,7 +937,8 @@ if (!isAuthorized) {
         paddingBottom: 30,
         paddingLeft: 16,
         paddingRight: 16,
-        width: "clamp(260px, 90%, 300px)",
+        width: "100%",
+		maxWidth: 300,
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
@@ -946,7 +947,6 @@ if (!isAuthorized) {
         gap: 16,
         marginBottom: 12,
         boxSizing: "border-box",
-		margin: "12px auto",
       }}
     >
       {/* Кнопка купить / продлить */}
