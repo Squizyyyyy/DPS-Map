@@ -888,7 +888,7 @@ if (!isAuthorized) {
 
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
-
+  <>
     {/* Первый блок */}
     <div
       style={{
@@ -1088,7 +1088,7 @@ if (!isAuthorized) {
         </div>
       </div>
     </div>
-  </div>
+  </>
 )}
         </main>
       )}
