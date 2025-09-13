@@ -883,7 +883,7 @@ if (!isAuthorized) {
     <div
       style={{
         backgroundColor: "#0a1f33",
-		padding: 24
+		padding: 24,
         borderRadius: 24,
         paddingLeft: 16,
         paddingRight: 16,
