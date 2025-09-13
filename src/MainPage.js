@@ -716,7 +716,7 @@ if (!isAuthorized) {
 	  borderRadius: 24,
       padding: 8,
       width: "100%",
-	  maxWidth: 300,
+	  maxWidth: 350,
 	  textAlign: "center",
 	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
     }}>
@@ -732,7 +732,7 @@ if (!isAuthorized) {
 	  borderRadius: 24,
       padding: 8,
       width: "100%",
-	  maxWidth: 300,
+	  maxWidth: 350,
 	  textAlign: "center",
 	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       display: "flex",
