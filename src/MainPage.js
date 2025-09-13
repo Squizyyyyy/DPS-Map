@@ -906,12 +906,11 @@ if (!isAuthorized) {
     <div
       style={{
         backgroundColor: "#0a1f33",
-		padding: 24,
+		padding: 16,
         borderRadius: 24,
-        paddingLeft: 16,
-        paddingRight: 16,
         width: "100%",
         maxWidth: 300,
+		margin: "0 auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       }}
@@ -942,6 +941,7 @@ if (!isAuthorized) {
         paddingRight: 16,
         width: "100%",
         maxWidth: 300,
+		margin: "0 auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
