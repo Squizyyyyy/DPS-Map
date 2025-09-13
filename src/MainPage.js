@@ -717,6 +717,7 @@ if (!isAuthorized) {
       padding: 16,
       width: "100%",
 	  maxWidth: 350,
+	  margin: "0 auto",
 	  textAlign: "center",
 	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
     }}>
@@ -733,6 +734,7 @@ if (!isAuthorized) {
       padding: 16,
       width: "100%",
 	  maxWidth: 350,
+	  margin: "0 auto",
 	  textAlign: "center",
 	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       display: "flex",
@@ -895,7 +897,7 @@ if (!isAuthorized) {
         backgroundColor: "#0a1f33",
         borderRadius: 24,
         padding: 16,
-		width: "calc(100% - 16px)",
+		width: "100%",
         maxWidth: 300,
         margin: "12px auto",
         textAlign: "center",
