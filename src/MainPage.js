@@ -888,8 +888,8 @@ if (!isAuthorized) {
 
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
-  <>
-    {/* Первый блок: статус подписки */}
+
+    {/* Первый блок */}
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -897,7 +897,6 @@ if (!isAuthorized) {
         padding: 16,
         width: "100%",
         maxWidth: 300,
-        margin: "12px auto", // <-- вертикальный gap и центрирование
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       }}
@@ -917,23 +916,18 @@ if (!isAuthorized) {
       )}
     </div>
 
-    {/* Второй блок: кнопка и способы оплаты */}
+    {/* Второй блок */}
     <div
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        paddingTop: 30,
-        paddingBottom: 30,
-        paddingLeft: 16,
-        paddingRight: 16,
+        padding: 16,
         width: "100%",
         maxWidth: 300,
-        margin: "12px auto", // <-- вертикальный gap и центрирование
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
         flexDirection: "column",
-        alignItems: "stretch",
         gap: 16,
       }}
     >
