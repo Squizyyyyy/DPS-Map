@@ -896,7 +896,7 @@ if (!isAuthorized) {
         backgroundColor: "#0a1f33",
         borderRadius: 24,
         padding: 16,
-		width: "100%",
+		width: "calc(100% - 16px)",
         maxWidth: 300,
         margin: "12px auto",
         textAlign: "center",
