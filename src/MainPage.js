@@ -896,20 +896,21 @@ if (!isAuthorized) {
       minHeight: "calc(100vh - 80px)",
       padding: "0 16px",
       marginTop: -30,
-      flexDirection: "column", // чтобы блоки шли друг под другом
-      gap: 24, // расстояние между блоками
+      flexDirection: "column",
+      gap: 24,
 	  fontFamily:
         "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     }}
   >
-    {/* Первый блок: только текст */}
+    {/* Первый блок */}
     <div
       style={{
         backgroundColor: "#0a1f33",
-		padding: 16,
         borderRadius: 24,
+		padding: 16,
         width: "100%",
         maxWidth: 300,
+		margin: "0 auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       }}
@@ -929,16 +930,15 @@ if (!isAuthorized) {
       )}
     </div>
 
-    {/* Второй блок: всё остальное */}
+    {/* Второй блок */}
     <div
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
-        paddingTop: 30,
-        paddingBottom: 30,
         padding: 16,
         width: "100%",
         maxWidth: 300,
+		margin: "0 auto",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
