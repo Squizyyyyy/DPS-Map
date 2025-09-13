@@ -710,38 +710,56 @@ if (!isAuthorized) {
 	fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif"
   }}>
 
-    {/* ---- Профиль ---- */}
-    <div style={{
-      backgroundColor: "#0a1f33",
-	  borderRadius: 24,
-      padding: 16,
-      width: "100%",
-	  maxWidth: 350,
-	  margin: "0 auto",
-	  textAlign: "center",
-	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
-    }}>
-	  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>Профиль</h2>
+{/* ---- Профиль ---- */}
+{activeTab === "profile" && (
+  <div
+    style={{
+      padding: "16px",
+      boxSizing: "border-box",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+    }}
+  >
+    {/* Первый блок */}
+    <div
+      style={{
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        padding: 16,
+        width: "100%",
+        maxWidth: 300,
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        boxSizing: "border-box",
+        marginBottom: 16,
+      }}
+    >
+      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>Профиль</h2>
       <p style={{ color: "#aaa", fontSize: 16, marginTop: 8 }}>
         <b>ID пользователя:</b> {user?.id || "—"}
       </p>
     </div>
 
-    {/* ---- Выбор города ---- */}
-    <div style={{
-      backgroundColor: "#0a1f33",
-	  borderRadius: 24,
-      padding: 16,
-      width: "100%",
-	  maxWidth: 350,
-	  margin: "0 auto",
-	  textAlign: "center",
-	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-      display: "flex",
-      flexDirection: "column",
-	  gap: 12
-    }}>
-	  <label style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>Ваш город</label>
+    {/* Выбор города */}
+    <div
+      style={{
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        padding: 16,
+        width: "100%",
+        maxWidth: 300,
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        boxSizing: "border-box",
+        marginBottom: 16,
+      }}
+    >
+      <label style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>Ваш город</label>
       <select
         value={selectedCity.name}
         onChange={(e) => {
@@ -749,23 +767,23 @@ if (!isAuthorized) {
           if (city) setSelectedCity(city);
         }}
         style={{
-		  padding: "10px 12px",
+          padding: "10px 12px",
           borderRadius: 16,
           border: "1px solid #1f3a5f",
           backgroundColor: "#063353",
           color: "#fff",
-		  fontSize: 14,
+          fontSize: 14,
           fontWeight: 500,
           cursor: "pointer",
           width: "100%",
           appearance: "none",
-		}}
+        }}
       >
         {cities.map((city) => (
           <option key={city.name} value={city.name}>{city.name}</option>
         ))}
       </select>
-	  <p style={{ color: "#aaa", fontSize: 14, margin: 0 }}>
+      <p style={{ color: "#aaa", fontSize: 14, margin: 0 }}>
         Выбран город: <b>{selectedCity.name}</b>
       </p>
       <button
@@ -786,105 +804,77 @@ if (!isAuthorized) {
           }
         }}
         style={{
-		  padding: "10px 0",
+          padding: "10px 0",
           background: "linear-gradient(90deg, #2787f5, #1e90ff)",
           color: "#fff",
           border: "none",
-		  borderRadius: 16,
+          borderRadius: 16,
           cursor: "pointer",
           fontWeight: 600,
-		  fontSize: 14,
+          fontSize: 14,
           width: "100%",
-		  transition: "all 0.2s"
+          transition: "all 0.2s"
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #0470ff)")}
-		onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #1e90ff)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #1e90ff)")}
       >
         Сохранить
       </button>
     </div>
 
-    {/* ---- Выйти ---- */}
+    {/* Выйти */}
     <button
       onClick={handleLogout}
       style={{
-		padding: "12px 0",
+        padding: "12px 0",
         background: "#d9534f",
         border: "none",
-		borderRadius: 16,
+        borderRadius: 16,
         color: "#fff",
         cursor: "pointer",
         fontWeight: 700,
-		fontSize: 14,
+        fontSize: 14,
         width: "100%",
-		maxWidth: 300,
+        maxWidth: 300,
         transition: "all 0.2s",
-		marginTop: 90,
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "#c9302c")}
       onMouseLeave={(e) => (e.currentTarget.style.background = "#d9534f")}
     >
       Выйти из профиля
     </button>
-	
-	{/* ---- Связь с нами ---- */}
+
+    {/* Связь с нами */}
     <div
       style={{
         marginTop: 24,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-		textDecoration: "underline",
+        textDecoration: "underline",
         gap: 8,
         color: "#aaa",
         fontSize: 14,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
       }}
     >
       <span>Связь с нами:</span>
-	  
-	  {/* Telegram */}
       <a
         href="https://t.me/dps_map_support"
         target="_blank"
         rel="noopener noreferrer"
         style={{ display: "flex", alignItems: "center", color: "inherit" }}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 240 240"
-          width="20"
-          height="20"
-          fill="currentColor"
-        >
-          <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
-        </svg>
-	  </a>
-		
-		{/* WhatsApp */}
-        <a
-          href="https://wa.me/+79958962951"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            textDecoration: "none",
-            color: "inherit",
-          }}
-        >
-          <WhatsAppIcon
-            width={20}
-            height={20}
-            style={{
-            cursor: "pointer",
-			fill: "currentColor",
-            }}
-          />
-        </a>
+        {/* Telegram SVG */}
+      </a>
+      <a
+        href="https://wa.me/+79958962951"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: "flex", alignItems: "center", color: "inherit" }}
+      >
+        {/* WhatsApp Icon */}
+      </a>
     </div>
-
   </div>
 )}
 
