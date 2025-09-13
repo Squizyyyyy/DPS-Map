@@ -883,6 +883,7 @@ if (!isAuthorized) {
     <div
       style={{
         backgroundColor: "#0a1f33",
+		padding: 24
         borderRadius: 24,
         paddingLeft: 16,
         paddingRight: 16,
@@ -966,7 +967,7 @@ if (!isAuthorized) {
           backgroundColor: "rgba(255,255,255,0.1)",
           width: "100%",
 		  marginTop: 35,
-		  marginBottom: 35,
+		  marginBottom: 30,
         }}
       />
 
