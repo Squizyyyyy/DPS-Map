@@ -897,7 +897,6 @@ if (!isAuthorized) {
         padding: 16,
         width: "100%",
         maxWidth: 300,
-        margin: "12px auto", // <-- вертикальный gap и центрирование
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       }}
@@ -928,7 +927,6 @@ if (!isAuthorized) {
         paddingRight: 16,
         width: "100%",
         maxWidth: 300,
-        margin: "12px auto", // <-- вертикальный gap и центрирование
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
