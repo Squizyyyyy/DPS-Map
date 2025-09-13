@@ -583,8 +583,9 @@ if (!isAuthorized) {
         style={{
           flex: 1,
           display: "flex",
-          ustifyContent: "center",
+          justifyContent: "center",
           alignItems: "center",
+		  flexDirection: "column",
           padding: 24,
           fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
           color: "#fff",
@@ -597,9 +598,9 @@ if (!isAuthorized) {
             width: "100%",
             maxWidth: 360,
             padding: 24,
-            borderRadius: 24,                       // скруглённые углы
-            border: "2px solid rgba(255, 255, 255, 0.3)", // рамка
-            backgroundColor: "transparent",         // прозрачный блок
+            borderRadius: 24,
+            border: "2px solid rgba(255, 255, 255, 0.3)",
+            backgroundColor: "transparent",
             boxSizing: "border-box",
             display: "flex",
             flexDirection: "column",
@@ -612,7 +613,7 @@ if (!isAuthorized) {
           </h2>
 
           <p style={{ fontSize: 16, color: "#ccc", margin: 0 }}>
-            Карта будет доступна после выбора города.
+            Карта будет доступна после выбора города во вкладке Профиль.
           </p>
         </div>
       </div>
@@ -999,10 +1000,21 @@ if (!isAuthorized) {
           color: "#aaa",
           fontSize: 16,
           marginTop: 0,
+          marginBottom: 4,
+        }}
+      >
+        Оплата удобным для Вас способом.
+      </p>
+	  
+	  <p
+        style={{
+          color: "#aaa",
+          fontSize: 16,
+          marginTop: 0,
           marginBottom: 16,
         }}
       >
-        Оплата удобным для Вас способом. Чтобы активировать/продлить, нажмите кнопку выше
+        Чтобы активировать/продлить, нажмите кнопку выше.
       </p>
 
       {/* Мини-блоки с иконками */}
