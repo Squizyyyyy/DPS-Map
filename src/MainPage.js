@@ -888,31 +888,15 @@ if (!isAuthorized) {
 
 {/* ---- Подписка ---- */}
 {activeTab === "subscription" && (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
+  <div style={{
+      backgroundColor: "#0a1f33",
+	  borderRadius: 24,
       padding: 16,
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-      boxSizing: "border-box",
-    }}
-  >
-    {/* ---- Первый блок: статус подписки ---- */}
-    <div
-      style={{
-        backgroundColor: "#0a1f33",
-        borderRadius: 24,
-        padding: 16,
-        width: "100%",
-        maxWidth: 300,
-        margin: "0 auto",
-        textAlign: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        boxSizing: "border-box",
-      }}
-    >
+      width: "100%",
+	  maxWidth: 300,
+	  textAlign: "center",
+	  boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
+    }}>
       {user?.subscription?.expiresAt ? (
         <p style={{ color: "#aaa", fontSize: 16, margin: 0 }}>
           Подписка активна до:{" "}
