@@ -10,7 +10,7 @@ export default function MapView2GIS({ city }) {
   const mapRef = useRef(null);
   const markersRef = useRef({}); // храним маркеры по id
 
-  // --- Загружаем SDK 2ГИС ---
+  // --- Загрузка SDK 2ГИС ---
   const load2Gis = () =>
     new Promise((resolve, reject) => {
       if (window.DG) return resolve(window.DG);
@@ -23,7 +23,7 @@ export default function MapView2GIS({ city }) {
       document.body.appendChild(script);
     });
 
-  // --- Загрузка маркеров с сервера ---
+  // --- Загрузка маркеров ---
   const fetchMarkers = async () => {
     try {
       const res = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
@@ -39,13 +39,15 @@ export default function MapView2GIS({ city }) {
               ? "https://cdn-icons-png.flaticon.com/128/5959/5959568.png"
               : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
 
-          const icon = DG.icon({
+          const icon = window.DG.icon({
             iconUrl,
             iconSize: [30, 30],
             iconAnchor: [15, 30],
           });
 
-          const marker = DG.marker([m.lat, m.lng], { icon }).addTo(mapRef.current);
+          const marker = window.DG
+            .marker([m.lat, m.lng], { icon })
+            .addTo(mapRef.current);
 
           // Попап
           const popupContent = document.createElement("div");
@@ -72,7 +74,9 @@ export default function MapView2GIS({ city }) {
           const deleteBtn = document.createElement("button");
           deleteBtn.textContent = "❌ Уехали";
           deleteBtn.onclick = () => {
-            const confirmDelete = window.confirm("Вы уверены, что хотите удалить метку?");
+            const confirmDelete = window.confirm(
+              "Вы уверены, что хотите удалить метку?"
+            );
             if (confirmDelete) handleDelete(m.id);
           };
 
@@ -90,7 +94,7 @@ export default function MapView2GIS({ city }) {
               ? "https://cdn-icons-png.flaticon.com/128/5959/5959568.png"
               : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
           existingMarker.setIcon(
-            DG.icon({
+            window.DG.icon({
               iconUrl,
               iconSize: [30, 30],
               iconAnchor: [15, 30],
@@ -168,7 +172,9 @@ export default function MapView2GIS({ city }) {
       return;
     }
 
-    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
+    const confirmAdd = window.confirm(
+      "Вы уверены, что хотите поставить метку здесь?"
+    );
     if (!confirmAdd) return;
 
     let comment = "";
@@ -200,9 +206,9 @@ export default function MapView2GIS({ city }) {
 
     let mapInstance;
 
-    load2Gis().then((DG) => {
-      DG.then(() => {
-        mapInstance = DG.map("map-2gis", {
+    load2Gis().then(() => {
+      window.DG.then(() => {
+        mapInstance = window.DG.map("map-2gis", {
           center: city.coords,
           zoom: 13,
         });
@@ -224,5 +230,7 @@ export default function MapView2GIS({ city }) {
     };
   }, [city]);
 
-  return <div id="map-2gis" style={{ width: "100%", height: "100%" }} />;
+  return (
+    <div id="map-2gis" style={{ width: "100%", height: "100vh" }} />
+  );
 }
