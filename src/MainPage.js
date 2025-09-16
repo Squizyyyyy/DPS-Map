@@ -632,14 +632,14 @@ if (!isAuthorized) {
           onClick={() => setActiveTab("account")}
           style={{
             position: "absolute",
-            top: 9,
+            top: 9.5,
             right: 10,
             width: 40,
             height: 40,
             borderRadius: "50%",
-			border: "5px solid #3d3d3d",
+			border: "4.5px solid #3d3d3d",
 			boxSizing: "border-box",
-            backgroundColor: "#f2f2f2",
+            background: "radial-gradient(circle, #f2f2f2 0%, #e6e6e6 100%)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
