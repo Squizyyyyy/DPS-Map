@@ -162,30 +162,68 @@ export default function MapView2GIS({ city }) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Ошибка подтверждения");
       }
-      
-	  const allMarkersRes = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers", { credentials: "include" });
+
+      // Получаем обновлённый маркер
+      const allMarkersRes = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers", { credentials: "include" });
       const allMarkers = await allMarkersRes.json();
       const updatedMarker = allMarkers.find((m) => m.id === id);
-      
-	  if (updatedMarker && markersRef.current[id]) {
-        const marker = markersRef.current[id];
-        const iconUrl =
-          updatedMarker.status === "unconfirmed"
-            ? "/icons/marker-gray.png"
-            : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
-        marker.setIcon(
-          window.DG.icon({
-            iconUrl,
-            iconSize: [30, 30],
-            iconAnchor: [15, 30],
-            popupAnchor: [0, -30],
-          })
-        );
+      if (!updatedMarker) return;
 
-        const popupContent = marker.getPopup()?.getContent();
-        const confirmationElem = popupContent?.querySelector(".confirmations-count");
-        if (confirmationElem) confirmationElem.innerHTML = `<b>✅ Подтверждений:</b> ${updatedMarker.confirmations || 0}`;
-      }
+      const marker = markersRef.current[id];
+      if (!marker) return;
+
+      // Обновляем иконку
+      const iconUrl =
+        updatedMarker.status === "unconfirmed"
+          ? "/icons/marker-gray.png"
+          : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
+      marker.setIcon(
+        window.DG.icon({
+          iconUrl,
+          iconSize: [30, 30],
+          iconAnchor: [15, 30],
+          popupAnchor: [0, -30],
+        })
+      );
+
+      // Пересоздаём попап
+      const popupContent = document.createElement("div");
+      popupContent.style.lineHeight = "1.4";
+
+      const statusText =
+        updatedMarker.status === "unconfirmed"
+          ? "⚠️ Метка устарела (не подтверждена)"
+          : "🚓 ДПС здесь";
+
+      popupContent.innerHTML = `
+        <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
+          ${statusText}
+        </p>
+        <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${updatedMarker.address || "Адрес не определён"}</p>
+        <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(updatedMarker.timestamp).toLocaleString()}</p>
+        ${updatedMarker.comment ? `<p style="margin: 3px 0;"><b>💬 Комментарий:</b> ${updatedMarker.comment}</p>` : ""}
+        <p class="confirmations-count" style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${updatedMarker.confirmations || 0}</p>
+      `;
+
+      const buttonsWrapper = document.createElement("div");
+      buttonsWrapper.style.display = "flex";
+      buttonsWrapper.style.justifyContent = "space-between";
+
+      const confirmBtn = document.createElement("button");
+      confirmBtn.textContent = "✅ Подтвердить";
+      confirmBtn.onclick = () => handleConfirm(id);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "❌ Уехали";
+      deleteBtn.onclick = () => {
+        if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(id);
+      };
+
+      buttonsWrapper.appendChild(confirmBtn);
+      buttonsWrapper.appendChild(deleteBtn);
+      popupContent.appendChild(buttonsWrapper);
+
+      marker.bindPopup(popupContent).openPopup();
 
       toast.success("Метка подтверждена");
     } catch (err) {
@@ -267,22 +305,22 @@ export default function MapView2GIS({ city }) {
     if (!city || !city.coords) return;
 
     let mapInstance;
-	let observer;
+    let observer;
 
     load2Gis().then(() => {
       window.DG.then(() => {
-		const BOUND_LAT_DIFF = 0.21;
-		const BOUND_LNG_DIFF = 0.40;
-		const maxBounds = [
-		  [city.coords[0] - BOUND_LAT_DIFF, city.coords[1] - BOUND_LNG_DIFF],
-		  [city.coords[0] + BOUND_LAT_DIFF, city.coords[1] + BOUND_LNG_DIFF],
+        const BOUND_LAT_DIFF = 0.21;
+        const BOUND_LNG_DIFF = 0.40;
+        const maxBounds = [
+          [city.coords[0] - BOUND_LAT_DIFF, city.coords[1] - BOUND_LNG_DIFF],
+          [city.coords[0] + BOUND_LAT_DIFF, city.coords[1] + BOUND_LNG_DIFF],
         ];
-        
-		mapInstance = window.DG.map("map-2gis", {
+
+        mapInstance = window.DG.map("map-2gis", {
           center: city.coords,
           zoom: 13,
-		  minZoom: 11,
-		  maxBounds,
+          minZoom: 11,
+          maxBounds,
           maxBoundsViscosity: 1.0,
         });
 
@@ -291,35 +329,35 @@ export default function MapView2GIS({ city }) {
 
         fetchMarkers();
         const interval = setInterval(fetchMarkers, 30000);
-		
-		// Скрываем атрибуцию 2GIS
-      const styleAttribution = () => {
-        const attr = document.querySelector(".dg-attribution");
-        if (attr) {
-          attr.style.position = "absolute";
-          attr.style.bottom = "-9999px";
-          attr.style.right = "-9999px";
-          attr.style.fontSize = "6px";
-          attr.style.opacity = "0.05";
-          attr.style.pointerEvents = "none";
-        }
-      };
 
-      styleAttribution();
+        // Скрываем атрибуцию 2GIS
+        const styleAttribution = () => {
+          const attr = document.querySelector(".dg-attribution");
+          if (attr) {
+            attr.style.position = "absolute";
+            attr.style.bottom = "-9999px";
+            attr.style.right = "-9999px";
+            attr.style.fontSize = "6px";
+            attr.style.opacity = "0.05";
+            attr.style.pointerEvents = "none";
+          }
+        };
 
-      observer = new MutationObserver(styleAttribution);
-      observer.observe(document.getElementById("map-2gis"), {
-        childList: true,
-        subtree: true,
+        styleAttribution();
+
+        observer = new MutationObserver(styleAttribution);
+        observer.observe(document.getElementById("map-2gis"), {
+          childList: true,
+          subtree: true,
+        });
+
+        return () => {
+          clearInterval(interval);
+          if (observer) observer.disconnect();
+        };
       });
-
-      return () => {
-        clearInterval(interval);
-        if (observer) observer.disconnect();
-      };
     });
-  });
-		
+
     return () => {
       if (mapInstance) {
         mapInstance.remove();
