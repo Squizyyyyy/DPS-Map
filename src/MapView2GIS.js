@@ -47,7 +47,10 @@ export default function MapView2GIS({ city }) {
           });
 
           const marker = window.DG
-            .marker([m.lat, m.lng], { icon })
+            .marker([m.lat, m.lng], { 
+              icon,
+              zIndexOffset: 1000 // фикс исчезновения метки при открытии попапа
+            })
             .addTo(mapRef.current);
 
           // Попап
@@ -60,10 +63,10 @@ export default function MapView2GIS({ city }) {
 
           popupContent.innerHTML = `
             <p>${statusText}</p>
-            <p><b>Адрес:</b> ${m.address || "Адрес не определён"}</p>
-            <p>⏱️ Поставлена: ${new Date(m.timestamp).toLocaleString()}</p>
-            ${m.comment ? `<p><b>Комментарий:</b> ${m.comment}</p>` : ""}
-            <p><b>Подтверждений:</b> ${m.confirmations || 0}</p>
+            <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+            <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+            ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+            <p><b>✔️ Подтверждений:</b> ${m.confirmations || 0}</p>
           `;
 
           // Кнопки подтверждения и удаления
