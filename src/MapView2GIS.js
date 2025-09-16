@@ -159,7 +159,31 @@ export default function MapView2GIS({ city }) {
         { method: "POST" }
       );
       if (!res.ok) throw new Error("Ошибка подтверждения");
-      await fetchMarkers();
+      
+	  const allMarkersRes = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
+      const allMarkers = await allMarkersRes.json();
+      const updatedMarker = allMarkers.find((m) => m.id === id);
+      if (updatedMarker && markersRef.current[id]) {
+        const marker = markersRef.current[id];
+        const iconUrl =
+          updatedMarker.status === "unconfirmed"
+            ? "/icons/marker-gray.png"
+            : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
+        marker.setIcon(
+          window.DG.icon({
+            iconUrl,
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30],
+          })
+        );
+
+        if (marker.getPopup()) {
+          const popupContent = marker.getPopup().getContent();
+          popupContent.querySelector("p:last-child").innerHTML = `<b>✅ Подтверждений:</b> ${updatedMarker.confirmations || 0}`;
+        }
+      }
+
       toast.success("Метка подтверждена");
     } catch {
       toast.error("Ошибка при подтверждении");
@@ -269,11 +293,11 @@ export default function MapView2GIS({ city }) {
         const attr = document.querySelector(".dg-attribution");
         if (attr) {
           attr.style.position = "absolute";
-          attr.style.bottom = "-50px"; // за пределы карты
-          attr.style.right = "-50px";  // за пределы карты
-          attr.style.fontSize = "6px"; // минимальный шрифт
-          attr.style.opacity = "0.05"; // почти прозрачная
-          attr.style.pointerEvents = "none"; // отключаем клики
+          attr.style.bottom = "-9999px";
+          attr.style.right = "-9999px";
+          attr.style.fontSize = "6px";
+          attr.style.opacity = "0.05";
+          attr.style.pointerEvents = "none";
         }
       };
 

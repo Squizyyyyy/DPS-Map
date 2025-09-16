@@ -397,6 +397,8 @@ app.post("/markers/:id/confirm", checkAuth, async (req, res) => {
   const id = Number(req.params.id);
   const marker = await markersCollection.findOne({ id });
   if (!marker) return res.sendStatus(404);
+  
+  const newConfirmations = marker.status === "unconfirmed" ? 1 : (marker.confirmations || 0) + 1;
   await markersCollection.updateOne(
     { id },
     { $set: { status: "active", timestamp: Date.now() }, $inc: { confirmations: 1 } }
@@ -420,9 +422,9 @@ async function updateMarkersStatus() {
   try {
     const now = Date.now();
 
-    await markersCollection.updateMany(
+    const result = await markersCollection.updateMany(
       { status: "active", timestamp: { $lt: now - 60 * 60 * 1000 } },
-      { $set: { status: "unconfirmed" } }
+      { $set: { status: "unconfirmed", confirmations: 0 } }
     );
 
     await markersCollection.deleteMany({

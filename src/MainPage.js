@@ -637,8 +637,9 @@ if (!isAuthorized) {
             width: 40,
             height: 40,
             borderRadius: "50%",
+			border: "2px solid #3d3d3d",
             border: "none",
-            backgroundColor: "#fff",
+            backgroundColor: "#e8e8e8",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -647,7 +648,7 @@ if (!isAuthorized) {
             fontWeight: "bold",
             transition: "background-color 0.2s",
             zIndex: 10000,
-            color: "black",
+            color: "#7a7a7a",
           }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = "#f4f4f4")
