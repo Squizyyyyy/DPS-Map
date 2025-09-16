@@ -91,7 +91,18 @@ export default function MapView2GIS({ city }) {
 		  
 		  marker.on("popupopen", () => {
             currentOpenPopupMarkerId = m.id;
-            marker.setZIndexOffset(10000); // поднять над остальными маркерами
+            marker.setZIndexOffset(10000);
+			
+			// Через 50мс восстанавливаем иконку
+            setTimeout(() => {
+              marker.setIcon(
+                window.DG.icon({
+                  iconUrl,
+                  iconSize: [30, 30],
+                  iconAnchor: [15, 30],
+                })
+              );
+            }, 50);
           });
           marker.on("popupclose", () => {
             currentOpenPopupMarkerId = null;
