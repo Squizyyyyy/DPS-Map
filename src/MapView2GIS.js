@@ -262,6 +262,14 @@ export default function MapView2GIS({ city }) {
 
         fetchMarkers();
         const interval = setInterval(fetchMarkers, 30000);
+		
+		// Скрываем атрибуцию 2GIS
+        const hideAttribution = () => {
+          const attributionEl = document.querySelector(".dg-attribution");
+          if (attributionEl) attributionEl.style.display = "none";
+        };
+		setTimeout(hideAttribution, 500);
+		
         return () => clearInterval(interval);
       });
     });
