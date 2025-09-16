@@ -515,6 +515,7 @@ if (!isAuthorized) {
       }}
     >
       <ToastContainer
+	    containerId="main-toast"
         position="top-center"
         autoClose={3000}
         hideProgressBar
