@@ -43,6 +43,7 @@ export default function MapView2GIS({ city }) {
             iconUrl,
             iconSize: [30, 30],
             iconAnchor: [15, 30],
+			popupAnchor: [0, -30],
           });
 
           const marker = window.DG
@@ -231,6 +232,14 @@ export default function MapView2GIS({ city }) {
   }, [city]);
 
   return (
-    <div id="map-2gis" style={{ width: "100%", height: "100vh" }} />
+    <div
+      id="map-2gis"
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        zIndex: 0,
+      }}
+    />
   );
 }

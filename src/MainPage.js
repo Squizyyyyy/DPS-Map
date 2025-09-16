@@ -514,7 +514,20 @@ if (!isAuthorized) {
         flexDirection: "column",
       }}
     >
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        draggable
+        pauseOnHover
+        style={{
+          marginTop: "20px",   // отступ от верха
+          zIndex: 9999
+        }}
+        toastClassName="ios-toast"
+      />
 
 {/* Нижняя панель вкладок */}
 <nav
