@@ -156,14 +156,18 @@ export default function MapView2GIS({ city }) {
     try {
       const res = await fetch(
         `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`,
-        { method: "POST" }
+        { method: "POST", credentials: "include" }
       );
-      if (!res.ok) throw new Error("Ошибка подтверждения");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Ошибка подтверждения");
+      }
       
-	  const allMarkersRes = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
+	  const allMarkersRes = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers", { credentials: "include" });
       const allMarkers = await allMarkersRes.json();
       const updatedMarker = allMarkers.find((m) => m.id === id);
-      if (updatedMarker && markersRef.current[id]) {
+      
+	  if (updatedMarker && markersRef.current[id]) {
         const marker = markersRef.current[id];
         const iconUrl =
           updatedMarker.status === "unconfirmed"
@@ -178,14 +182,14 @@ export default function MapView2GIS({ city }) {
           })
         );
 
-        if (marker.getPopup()) {
-          const popupContent = marker.getPopup().getContent();
-          popupContent.querySelector("p:last-child").innerHTML = `<b>✅ Подтверждений:</b> ${updatedMarker.confirmations || 0}`;
-        }
+        const popupContent = marker.getPopup()?.getContent();
+        const confirmationElem = popupContent?.querySelector(".confirmations-count");
+        if (confirmationElem) confirmationElem.innerHTML = `<b>✅ Подтверждений:</b> ${updatedMarker.confirmations || 0}`;
       }
 
       toast.success("Метка подтверждена");
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Ошибка при подтверждении");
     }
   };

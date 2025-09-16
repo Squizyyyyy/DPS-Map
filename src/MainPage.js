@@ -638,8 +638,8 @@ if (!isAuthorized) {
             height: 40,
             borderRadius: "50%",
 			border: "2px solid #3d3d3d",
-            border: "none",
-            backgroundColor: "#e8e8e8",
+			boxSizing: "border-box",
+            backgroundColor: "#ececec",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -651,10 +651,10 @@ if (!isAuthorized) {
             color: "#7a7a7a",
           }}
           onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f4f4f4")
+            (e.currentTarget.style.backgroundColor = "#dcdcdc")
           }
           onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#fff")
+            (e.currentTarget.style.backgroundColor = "#ececec")
           }
         >
           ←
