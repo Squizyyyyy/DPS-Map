@@ -62,32 +62,36 @@ export default function MapView2GIS({ city }) {
               : "🚓 ДПС здесь";
 
           popupContent.innerHTML = `
-            <p>${statusText}</p>
-            <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-            <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
-            ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-            <p><b>✔️ Подтверждений:</b> ${m.confirmations || 0}</p>
+            <p style="margin: 2px 0;">${statusText}</p>
+            <p style="margin: 2px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+            <p style="margin: 2px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+            ${m.comment ? `<p style="margin: 2px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+            <p style="margin: 2px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
           `;
 
           // Кнопки подтверждения и удаления
+          const buttonsWrapper = document.createElement("div");
+          buttonsWrapper.style.display = "flex";
+          buttonsWrapper.style.justifyContent = "space-between";
+          buttonsWrapper.style.marginTop = "6px"; // небольшой отступ сверху
+
           const confirmBtn = document.createElement("button");
           confirmBtn.textContent = "✅ Подтвердить";
-          confirmBtn.style.marginRight = "8px";
           confirmBtn.onclick = () => handleConfirm(m.id);
 
           const deleteBtn = document.createElement("button");
           deleteBtn.textContent = "❌ Уехали";
           deleteBtn.onclick = () => {
-            const confirmDelete = window.confirm(
-              "Вы уверены, что хотите удалить метку?"
-            );
+            const confirmDelete = window.confirm("Вы уверены, что хотите удалить метку?");
             if (confirmDelete) handleDelete(m.id);
           };
 
-          popupContent.appendChild(confirmBtn);
-          popupContent.appendChild(deleteBtn);
+          buttonsWrapper.appendChild(deleteBtn);   // слева
+          buttonsWrapper.appendChild(confirmBtn);  // справа
 
-          marker.bindPopup(popupContent, { autoPan: false });
+          popupContent.appendChild(buttonsWrapper);
+
+          marker.bindPopup(popupContent);
 		  
 		  marker.on("popupopen", () => {
             currentOpenPopupMarkerId = m.id;
