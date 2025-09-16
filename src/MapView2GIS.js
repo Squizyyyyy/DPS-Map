@@ -50,7 +50,7 @@ export default function MapView2GIS({ city }) {
             .marker([m.lat, m.lng], { 
               icon,
               zIndexOffset: 1000 // фикс исчезновения метки при открытии попапа
-            });
+            }).addTo(mapRef.current);
 
           // Попап
           const popupContent = document.createElement("div");
@@ -88,7 +88,12 @@ export default function MapView2GIS({ city }) {
 
           marker.bindPopup(popupContent, { autoPan: false });
 		  
-		  marker.addTo(mapRef.current);
+		  marker.on('popupopen', () => {
+            marker.setZIndexOffset(2000);
+	      });
+		  marker.on('popupclose', () => {
+            marker.setZIndexOffset(1000);
+          });
 
           markersRef.current[m.id] = marker;
         } else {
