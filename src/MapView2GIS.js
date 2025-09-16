@@ -43,7 +43,7 @@ export default function MapView2GIS({ city }) {
             iconUrl,
             iconSize: [30, 30],
             iconAnchor: [15, 30],
-			popupAnchor: [0, -30],
+			popupAnchor: [0, -40],
           });
 
           const marker = window.DG
@@ -89,7 +89,7 @@ export default function MapView2GIS({ city }) {
           marker.bindPopup(popupContent, { autoPan: false });
 		  
 		  marker.on('popupopen', () => {
-            marker.setZIndexOffset(2000);
+            marker.setZIndexOffset(10000);
 	      });
 		  marker.on('popupclose', () => {
             marker.setZIndexOffset(1000);
@@ -205,9 +205,9 @@ export default function MapView2GIS({ city }) {
         await res.json();
         lastAddTime = Date.now();
         await fetchMarkers();
-        toast.success("Метка добавлена", { containerId: "main-toast" });
+        toast.success("Метка добавлена");
       })
-      .catch(() => toast.error("Ошибка при добавлении метки", { containerId: "main-toast" }));
+      .catch(() => toast.error("Ошибка при добавлении метки"));
   };
 
   // --- Инициализация карты ---
