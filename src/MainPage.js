@@ -637,7 +637,7 @@ if (!isAuthorized) {
             width: 40,
             height: 40,
             borderRadius: "50%",
-			border: "4.9px solid #3d3d3d",
+			border: "5px solid #3d3d3d",
 			boxSizing: "border-box",
             background: "#f8f8f8",
             display: "flex",
