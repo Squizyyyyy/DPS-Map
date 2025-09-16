@@ -9,7 +9,7 @@ let currentOpenPopupMarkerId = null;
 
 export default function MapView2GIS({ city }) {
   const mapRef = useRef(null);
-  const markersRef = useRef({}); // храним маркеры по id
+  const markersRef = useRef({});
 
   // --- Загрузка SDK 2ГИС ---
   const load2Gis = () =>
@@ -37,7 +37,7 @@ export default function MapView2GIS({ city }) {
           // создаём новый маркер
           const iconUrl =
             m.status === "unconfirmed"
-              ? "https://cdn-icons-png.flaticon.com/128/5959/5959568.png"
+              ? "/icons/marker-gray.png"
               : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
 
           const icon = window.DG.icon({
@@ -55,6 +55,7 @@ export default function MapView2GIS({ city }) {
 
           // Попап
           const popupContent = document.createElement("div");
+		  popupContent.style.lineHeight = "1.4";
 
           const statusText =
             m.status === "unconfirmed"
@@ -62,19 +63,21 @@ export default function MapView2GIS({ city }) {
               : "🚓 ДПС здесь";
 
           popupContent.innerHTML = `
-            <p style="margin: 2px 0;">${statusText}</p>
-            <p style="margin: 2px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-            <p style="margin: 2px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
-            ${m.comment ? `<p style="margin: 2px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-            <p style="margin: 2px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
+            <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
+              ${statusText}
+            </p>
+            <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+            <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+            ${m.comment ? `<p style="margin: 3px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+            <p style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
           `;
 
-          // Кнопки подтверждения и удаления
+          // Контейнер для кнопок
           const buttonsWrapper = document.createElement("div");
           buttonsWrapper.style.display = "flex";
           buttonsWrapper.style.justifyContent = "space-between";
-          buttonsWrapper.style.marginTop = "6px"; // небольшой отступ сверху
 
+          // Кнопки
           const confirmBtn = document.createElement("button");
           confirmBtn.textContent = "✅ Подтвердить";
           confirmBtn.onclick = () => handleConfirm(m.id);
@@ -86,8 +89,9 @@ export default function MapView2GIS({ city }) {
             if (confirmDelete) handleDelete(m.id);
           };
 
-          buttonsWrapper.appendChild(deleteBtn);   // слева
-          buttonsWrapper.appendChild(confirmBtn);  // справа
+          // Добавляем кнопки в нужном порядке
+          buttonsWrapper.appendChild(confirmBtn);  // слева
+          buttonsWrapper.appendChild(deleteBtn);   // справа
 
           popupContent.appendChild(buttonsWrapper);
 
@@ -121,7 +125,7 @@ export default function MapView2GIS({ city }) {
           const existingMarker = markersRef.current[m.id];
           const iconUrl =
             m.status === "unconfirmed"
-              ? "https://cdn-icons-png.flaticon.com/128/5959/5959568.png"
+              ? "/icons/marker-gray.png"
               : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
           existingMarker.setIcon(
             window.DG.icon({
@@ -238,13 +242,22 @@ export default function MapView2GIS({ city }) {
 
     load2Gis().then(() => {
       window.DG.then(() => {
-        mapInstance = window.DG.map("map-2gis", {
+		const BOUND_LAT_DIFF = 0.21;
+		const BOUND_LNG_DIFF = 0.40;
+		const maxBounds = [
+		  [city.coords[0] - BOUND_LAT_DIFF, city.coords[1] - BOUND_LNG_DIFF],
+		  [city.coords[0] + BOUND_LAT_DIFF, city.coords[1] + BOUND_LNG_DIFF],
+        ];
+        
+		mapInstance = window.DG.map("map-2gis", {
           center: city.coords,
           zoom: 13,
+		  minZoom: 11,
+		  maxBounds,
+          maxBoundsViscosity: 1.0,
         });
 
         mapRef.current = mapInstance;
-
         mapInstance.on("click", handleMapClick);
 
         fetchMarkers();

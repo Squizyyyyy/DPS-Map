@@ -18,9 +18,9 @@ const tabColors = {
 const cities = [
   { name: "Не выбран", coords: null},
   { name: "Рязань", coords: [54.6296, 39.7412] },
-  //{ name: "Тула", coords: [54.1920, 37.6156] },//
-  //{ name: "Липецк", coords: [52.6106, 39.5946] },//
-  //{ name: "Тамбов", coords: [52.7216, 41.4523] },//
+  { name: "Тула", coords: [54.1920, 37.6156] },
+  { name: "Липецк", coords: [52.6106, 39.5946] },
+  { name: "Тамбов", coords: [52.7216, 41.4523] },
 ];
 
 export default function MainPage() {
