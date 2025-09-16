@@ -50,7 +50,7 @@ export default function MapView2GIS({ city }) {
           const marker = window.DG
             .marker([m.lat, m.lng], { 
               icon,
-              zIndexOffset: 1000 // фикс исчезновения метки при открытии попапа
+              zIndexOffset: 1000
             }).addTo(mapRef.current);
 
           // Попап
@@ -100,9 +100,10 @@ export default function MapView2GIS({ city }) {
                   iconUrl,
                   iconSize: [30, 30],
                   iconAnchor: [15, 30],
+				  popupAnchor: [0, -30],
                 })
               );
-            }, 50);
+            }, 0);
           });
           marker.on("popupclose", () => {
             currentOpenPopupMarkerId = null;
