@@ -639,7 +639,7 @@ if (!isAuthorized) {
             borderRadius: "50%",
 			border: "4.9px solid #3d3d3d",
 			boxSizing: "border-box",
-            background: "radial-gradient(circle, #ffffff 0%, #767676 100%)",
+            background: "#f8f8f8",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
