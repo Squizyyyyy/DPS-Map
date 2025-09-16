@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 let lastAddTime = 0;
 let lastDeleteTime = 0;
+let currentOpenPopupMarkerId = null;
 
 export default function MapView2GIS({ city }) {
   const mapRef = useRef(null);
@@ -43,7 +44,7 @@ export default function MapView2GIS({ city }) {
             iconUrl,
             iconSize: [30, 30],
             iconAnchor: [15, 30],
-			popupAnchor: [0, -40],
+			popupAnchor: [0, -30],
           });
 
           const marker = window.DG
@@ -88,15 +89,18 @@ export default function MapView2GIS({ city }) {
 
           marker.bindPopup(popupContent, { autoPan: false });
 		  
-		  marker.on('popupopen', () => {
-            marker.setZIndexOffset(10000);
-	      });
-		  marker.on('popupclose', () => {
+		  marker.on("popupopen", () => {
+            currentOpenPopupMarkerId = m.id;
+            marker.setZIndexOffset(10000); // поднять над остальными маркерами
+          });
+          marker.on("popupclose", () => {
+            currentOpenPopupMarkerId = null;
             marker.setZIndexOffset(1000);
           });
 
           markersRef.current[m.id] = marker;
         } else {
+		  if (currentOpenPopupMarkerId === m.id) return;
           // обновляем иконку существующего маркера
           const existingMarker = markersRef.current[m.id];
           const iconUrl =
