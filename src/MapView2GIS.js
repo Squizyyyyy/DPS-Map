@@ -265,21 +265,32 @@ export default function MapView2GIS({ city }) {
         const interval = setInterval(fetchMarkers, 30000);
 		
 		// Скрываем атрибуцию 2GIS
-        observer = new MutationObserver(() => {
-          const attributionEl = document.querySelector(".dg-attribution");
-          if (attributionEl) attributionEl.style.display = "none";
-        });
-		observer.observe(document.getElementById("map-2gis"), {
-          childList: true,
-          subtree: true,
-        });
-		
-		return () => {
-          clearInterval(interval);
-          if (observer) observer.disconnect();
-        };
+      const styleAttribution = () => {
+        const attr = document.querySelector(".dg-attribution");
+        if (attr) {
+          attr.style.position = "absolute";
+          attr.style.bottom = "-50px"; // за пределы карты
+          attr.style.right = "-50px";  // за пределы карты
+          attr.style.fontSize = "6px"; // минимальный шрифт
+          attr.style.opacity = "0.05"; // почти прозрачная
+          attr.style.pointerEvents = "none"; // отключаем клики
+        }
+      };
+
+      styleAttribution();
+
+      observer = new MutationObserver(styleAttribution);
+      observer.observe(document.getElementById("map-2gis"), {
+        childList: true,
+        subtree: true,
       });
+
+      return () => {
+        clearInterval(interval);
+        if (observer) observer.disconnect();
+      };
     });
+  });
 		
     return () => {
       if (mapInstance) {
