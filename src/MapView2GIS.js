@@ -239,6 +239,7 @@ export default function MapView2GIS({ city }) {
     if (!city || !city.coords) return;
 
     let mapInstance;
+	let observer;
 
     load2Gis().then(() => {
       window.DG.then(() => {
@@ -264,16 +265,22 @@ export default function MapView2GIS({ city }) {
         const interval = setInterval(fetchMarkers, 30000);
 		
 		// Скрываем атрибуцию 2GIS
-        const hideAttribution = () => {
+        observer = new MutationObserver(() => {
           const attributionEl = document.querySelector(".dg-attribution");
           if (attributionEl) attributionEl.style.display = "none";
-        };
-		setTimeout(hideAttribution, 500);
+        });
+		observer.observe(document.getElementById("map-2gis"), {
+          childList: true,
+          subtree: true,
+        });
 		
-        return () => clearInterval(interval);
+		return () => {
+          clearInterval(interval);
+          if (observer) observer.disconnect();
+        };
       });
     });
-
+		
     return () => {
       if (mapInstance) {
         mapInstance.remove();
