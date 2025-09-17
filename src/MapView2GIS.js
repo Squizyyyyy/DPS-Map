@@ -52,6 +52,11 @@ export default function MapView2GIS({ city }) {
               icon,
               zIndexOffset: 1000
             }).addTo(mapRef.current);
+			
+		  // Пересоздание попапа при открытии
+          marker.on("popupopen", () => {
+            currentOpenPopupMarkerId = m.id;
+            marker.setZIndexOffset(10000);
 
           // Попап
           const popupContent = document.createElement("div");
@@ -100,12 +105,6 @@ export default function MapView2GIS({ city }) {
 		  marker.on("popupopen", () => {
             currentOpenPopupMarkerId = m.id;
             marker.setZIndexOffset(10000);
-			
-			// Форсируем пересчёт позиции попапа
-            if (mapRef.current && marker.getPopup()) {
-                mapRef.current.invalidateSize();
-                marker.getPopup().update();
-			}
 			
 			// Через 50мс восстанавливаем иконку
             setTimeout(() => {
