@@ -105,6 +105,7 @@ export default function MapView2GIS({ city }) {
             if (mapRef.current && marker.getPopup()) {
                 mapRef.current.invalidateSize();
                 marker.getPopup().update();
+			}
 			
 			// Через 50мс восстанавливаем иконку
             setTimeout(() => {
