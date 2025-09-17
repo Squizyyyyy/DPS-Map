@@ -68,7 +68,7 @@ export default function MapView2GIS({ city }) {
             </p>
             <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
             <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
-            ${m.comment ? `<p style="margin: 3px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+            ${m.comment ? `<p style="margin: 3px 0; white-space: pre-wrap; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
             <p style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
           `;
 
@@ -101,9 +101,21 @@ export default function MapView2GIS({ city }) {
             currentOpenPopupMarkerId = m.id;
             marker.setZIndexOffset(10000);
 			
-			// Обновляем позицию иконки/попапа, чтобы ничего не наезжало
+			// Форсируем пересчёт позиции попапа
+            if (mapRef.current && marker.getPopup()) {
+                mapRef.current.invalidateSize();
+                marker.getPopup().update();
+			
+			// Через 50мс восстанавливаем иконку
             setTimeout(() => {
-              marker.update();
+              marker.setIcon(
+                window.DG.icon({
+                  iconUrl,
+                  iconSize: [30, 30],
+                  iconAnchor: [15, 30],
+				  popupAnchor: [0, -30],
+                })
+              );
             }, 0);
           });
           
@@ -195,9 +207,7 @@ export default function MapView2GIS({ city }) {
         </p>
         <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${updatedMarker.address || "Адрес не определён"}</p>
         <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(updatedMarker.timestamp).toLocaleString()}</p>
-        ${updatedMarker.comment ? `<p style="margin: 3px 0; word-wrap: break-word; white-space: pre-wrap;">
-          <b>💬 Комментарий:</b> ${updatedMarker.comment}
-        </p>` : ""}
+        ${updatedMarker.comment ? `<p style="margin: 3px 0; word-wrap: break-word; white-space: pre-wrap;"><b>💬 Комментарий:</b> ${updatedMarker.comment}</p>` : ""}
         <p class="confirmations-count" style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${updatedMarker.confirmations || 0}</p>
       `;
 
