@@ -901,7 +901,7 @@ if (!isAuthorized) {
       marginTop: "30px",
       fontFamily:
         "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      fontSize: 16, // общий размер текста
+      fontSize: 16,
       color: "#aaa",
     }}
   >
@@ -915,9 +915,6 @@ if (!isAuthorized) {
         maxWidth: 300,
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
         color: "#fff",
       }}
     >
@@ -973,9 +970,14 @@ if (!isAuthorized) {
         {loadingSubscription ? "Активируем..." : "Активировать подписку"}
       </button>
 
-      <p style={{ fontSize: 16, margin: "8px 0 0", color: "#aaa" }}>
-        Оплата удобным для Вас способом
-      </p>
+      {/* Разделительная линия */}
+      <div
+        style={{
+          height: 1,
+          background: "rgba(255,255,255,0.1)",
+          margin: "8px 0",
+        }}
+      />
 
       {/* Иконки способов оплаты */}
       <div
@@ -989,32 +991,32 @@ if (!isAuthorized) {
       >
         {/* 1. Картой */}
         <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/card.svg" alt="Card" style={{ width: 40, height: 40, marginBottom: 6 }} />
-          <div>Картой онлайн</div>
+          <img src="/icons/card.svg" alt="Card" style={{ width: 32, height: 32, marginBottom: 4 }} />
+          <div style={{ fontSize: 14 }}>Картой онлайн</div>
         </div>
 
         {/* 2. QR */}
         <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/qr.svg" alt="QR" style={{ width: 40, height: 40, marginBottom: 6 }} />
-          <div>По QR-коду</div>
+          <img src="/icons/qr.svg" alt="QR" style={{ width: 32, height: 32, marginBottom: 4 }} />
+          <div style={{ fontSize: 14 }}>По QR-коду</div>
         </div>
 
         {/* 3. СБП */}
         <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/sbp.svg" alt="SBP" style={{ width: 40, height: 40, marginBottom: 6 }} />
-          <div>Через СБП</div>
+          <img src="/icons/sbp.svg" alt="SBP" style={{ width: 32, height: 32, marginBottom: 4 }} />
+          <div style={{ fontSize: 14 }}>Через СБП</div>
         </div>
 
         {/* 4. T-Pay */}
         <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/Tpay.svg" alt="T-Pay" style={{ width: 40, height: 40, marginBottom: 6 }} />
-          <div>По T-Pay</div>
+          <img src="/icons/Tpay.svg" alt="T-Pay" style={{ width: 32, height: 32, marginBottom: 4 }} />
+          <div style={{ fontSize: 14 }}>По T-Pay</div>
         </div>
 
-        {/* 5. SberPay */}
+        {/* 5. SberPay (по центру на всю ширину) */}
         <div style={{ textAlign: "center", color: "#aaa", gridColumn: "span 2" }}>
-          <img src="/icons/Sberpay.svg" alt="SberPay" style={{ width: 40, height: 40, marginBottom: 6 }} />
-          <div>По Sber-Pay</div>
+          <img src="/icons/Sberpay.svg" alt="SberPay" style={{ width: 32, height: 32, marginBottom: 4 }} />
+          <div style={{ fontSize: 14 }}>По Sber-Pay</div>
         </div>
       </div>
     </div>
