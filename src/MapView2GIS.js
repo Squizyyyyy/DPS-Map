@@ -271,7 +271,9 @@ export default function MapView2GIS({ city }) {
 
   // --- Клик по карте (добавление) ---
   const handleMapClick = (e) => {
-    const { lat, lng } = e.latlng;
+	if (e.originalEvent.target.closest(".leaflet-marker-icon")) return;
+    
+	const { lat, lng } = e.latlng;
     const now = Date.now();
 
     if (now - lastAddTime < 5 * 60 * 1000) {
