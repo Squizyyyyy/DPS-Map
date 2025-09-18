@@ -903,7 +903,34 @@ if (!isAuthorized) {
         "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
     }}
   >
-    {/* ---- Карточка подписки ---- */}
+    {/* ---- Блок 1: Статус подписки ---- */}
+    <div
+      style={{
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        padding: 16,
+        width: "100%",
+        maxWidth: 300,
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        color: "#fff",
+        fontSize: 15,
+      }}
+    >
+      {hasSubscription && user?.subscription?.expiresAt ? (
+        <p style={{ margin: 0 }}>
+          Активна до:{" "}
+          <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
+        </p>
+      ) : (
+        <p style={{ margin: 0, color: "#aaa" }}>Подписка не активна</p>
+      )}
+    </div>
+
+    {/* ---- Блок 2: Покупка подписки ---- */}
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -918,25 +945,6 @@ if (!isAuthorized) {
         gap: 12,
       }}
     >
-      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>
-        Подписка
-      </h2>
-      <p style={{ color: "#aaa", fontSize: 15, margin: 0 }}>
-        Получите доступ ко всем функциям карты:
-        <br />✅ добавление меток
-        <br />✅ подтверждение ДПС
-        <br />✅ просмотр города
-      </p>
-      <div
-        style={{
-          fontSize: 22,
-          fontWeight: 700,
-          color: "#fff",
-          margin: "10px 0",
-        }}
-      >
-        99 ₽ / месяц
-      </div>
       <button
         onClick={handleBuySubscription}
         disabled={loadingSubscription}
@@ -964,19 +972,45 @@ if (!isAuthorized) {
         {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
       </button>
 
-      {/* Если подписка активна */}
-      {hasSubscription && user?.subscription?.expiresAt && (
-        <p
+      <p style={{ color: "#aaa", fontSize: 13, margin: "8px 0 0" }}>
+        Оплата удобным для Вас способом
+      </p>
+
+      {/* Тут потом добавим иконки */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 12,
+          marginTop: 4,
+        }}
+      >
+        {/* Пример: <VisaIcon />, <MastercardIcon />, <MirIcon /> */}
+        <div
           style={{
-            color: "#0af",
-            fontSize: 14,
-            marginTop: 8,
+            width: 32,
+            height: 20,
+            background: "#222",
+            borderRadius: 4,
           }}
-        >
-          Активна до:{" "}
-          <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
-        </p>
-      )}
+        />
+        <div
+          style={{
+            width: 32,
+            height: 20,
+            background: "#333",
+            borderRadius: 4,
+          }}
+        />
+        <div
+          style={{
+            width: 32,
+            height: 20,
+            background: "#444",
+            borderRadius: 4,
+          }}
+        />
+      </div>
     </div>
   </div>
 )}
