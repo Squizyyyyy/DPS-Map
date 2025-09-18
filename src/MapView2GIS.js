@@ -102,11 +102,6 @@ export default function MapView2GIS({ city }) {
 
           marker.bindPopup(popupContent);
 		  
-		  marker.on("popupopen", () => {
-            currentOpenPopupMarkerId = m.id;
-            marker.setZIndexOffset(10000);
-		  });
-			
 			// Через 50мс восстанавливаем иконку
             setTimeout(() => {
               marker.setIcon(
