@@ -52,11 +52,6 @@ export default function MapView2GIS({ city }) {
               icon,
               zIndexOffset: 1000
             }).addTo(mapRef.current);
-			
-		  // Пересоздание попапа при открытии
-          marker.on("popupopen", () => {
-            currentOpenPopupMarkerId = m.id;
-            marker.setZIndexOffset(10000);
 
           // Попап
           const popupContent = document.createElement("div");
@@ -102,6 +97,10 @@ export default function MapView2GIS({ city }) {
 
           marker.bindPopup(popupContent);
 		  
+		  marker.on("popupopen", () => {
+            currentOpenPopupMarkerId = m.id;
+            marker.setZIndexOffset(10000);
+			
 			// Через 50мс восстанавливаем иконку
             setTimeout(() => {
               marker.setIcon(
@@ -114,8 +113,7 @@ export default function MapView2GIS({ city }) {
               );
             }, 0);
           });
-          
-		  marker.on("popupclose", () => {
+          marker.on("popupclose", () => {
             currentOpenPopupMarkerId = null;
             marker.setZIndexOffset(1000);
           });
@@ -266,9 +264,7 @@ export default function MapView2GIS({ city }) {
 
   // --- Клик по карте (добавление) ---
   const handleMapClick = (e) => {
-	if (e.originalEvent.target.closest(".leaflet-marker-icon")) return;
-    
-	const { lat, lng } = e.latlng;
+    const { lat, lng } = e.latlng;
     const now = Date.now();
 
     if (now - lastAddTime < 5 * 60 * 1000) {
