@@ -901,6 +901,8 @@ if (!isAuthorized) {
       marginTop: "30px",
       fontFamily:
         "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      fontSize: 16, // общий размер текста
+      color: "#aaa",
     }}
   >
     {/* ---- Блок 1: Статус подписки ---- */}
@@ -917,7 +919,6 @@ if (!isAuthorized) {
         flexDirection: "column",
         gap: 8,
         color: "#fff",
-        fontSize: 15,
       }}
     >
       {hasSubscription && user?.subscription?.expiresAt ? (
@@ -942,74 +943,79 @@ if (!isAuthorized) {
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        gap: 14,
       }}
     >
       <button
         onClick={handleBuySubscription}
         disabled={loadingSubscription}
         style={{
-          padding: "10px 0",
-          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+          padding: "14px 0",
+          background: "linear-gradient(90deg, #2787f5, #7a5cff)",
           color: "#fff",
           border: "none",
           borderRadius: 16,
           cursor: "pointer",
           fontWeight: 600,
-          fontSize: 14,
+          fontSize: 15,
           width: "100%",
           transition: "all 0.2s",
         }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.background =
-            "linear-gradient(90deg, #1e6cd8, #0470ff)")
+            "linear-gradient(90deg, #1e6cd8, #693bff)")
         }
         onMouseLeave={(e) =>
           (e.currentTarget.style.background =
-            "linear-gradient(90deg, #2787f5, #0a90ff)")
+            "linear-gradient(90deg, #2787f5, #7a5cff)")
         }
       >
-        {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
+        {loadingSubscription ? "Активируем..." : "Активировать подписку"}
       </button>
 
-      <p style={{ color: "#aaa", fontSize: 13, margin: "8px 0 0" }}>
+      <p style={{ fontSize: 16, margin: "8px 0 0", color: "#aaa" }}>
         Оплата удобным для Вас способом
       </p>
 
-      {/* Тут потом добавим иконки */}
+      {/* Иконки способов оплаты */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 12,
-          marginTop: 4,
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: 16,
+          justifyItems: "center",
+          marginTop: 8,
         }}
       >
-        {/* Пример: <VisaIcon />, <MastercardIcon />, <MirIcon /> */}
-        <div
-          style={{
-            width: 32,
-            height: 20,
-            background: "#222",
-            borderRadius: 4,
-          }}
-        />
-        <div
-          style={{
-            width: 32,
-            height: 20,
-            background: "#333",
-            borderRadius: 4,
-          }}
-        />
-        <div
-          style={{
-            width: 32,
-            height: 20,
-            background: "#444",
-            borderRadius: 4,
-          }}
-        />
+        {/* 1. Картой */}
+        <div style={{ textAlign: "center", color: "#aaa" }}>
+          <img src="/icons/card.svg" alt="Card" style={{ width: 40, height: 40, marginBottom: 6 }} />
+          <div>Картой онлайн</div>
+        </div>
+
+        {/* 2. QR */}
+        <div style={{ textAlign: "center", color: "#aaa" }}>
+          <img src="/icons/qr.svg" alt="QR" style={{ width: 40, height: 40, marginBottom: 6 }} />
+          <div>По QR-коду</div>
+        </div>
+
+        {/* 3. СБП */}
+        <div style={{ textAlign: "center", color: "#aaa" }}>
+          <img src="/icons/sbp.svg" alt="SBP" style={{ width: 40, height: 40, marginBottom: 6 }} />
+          <div>Через СБП</div>
+        </div>
+
+        {/* 4. T-Pay */}
+        <div style={{ textAlign: "center", color: "#aaa" }}>
+          <img src="/icons/Tpay.svg" alt="T-Pay" style={{ width: 40, height: 40, marginBottom: 6 }} />
+          <div>По T-Pay</div>
+        </div>
+
+        {/* 5. SberPay */}
+        <div style={{ textAlign: "center", color: "#aaa", gridColumn: "span 2" }}>
+          <img src="/icons/Sberpay.svg" alt="SberPay" style={{ width: 40, height: 40, marginBottom: 6 }} />
+          <div>По Sber-Pay</div>
+        </div>
       </div>
     </div>
   </div>
