@@ -933,7 +933,7 @@ if (!isAuthorized) {
       onClick={handleBuySubscription}
       disabled={loadingSubscription}
       style={{
-        marginTop: 18, // чуть больше отступ сверху
+        marginTop: 18,
         padding: "14px 0",
         background: "linear-gradient(90deg, #2787f5, #7a5cff)",
         color: "#fff",
@@ -941,7 +941,7 @@ if (!isAuthorized) {
         borderRadius: 16,
         cursor: "pointer",
         fontWeight: 600,
-        fontSize: 15,
+        fontSize: 16,
         width: "100%",
         maxWidth: 300,
         transition: "all 0.2s",
@@ -963,7 +963,7 @@ if (!isAuthorized) {
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
-        margin: "14px 0", // отступ увеличен
+        margin: "18px 0",
         width: "100%",
         maxWidth: 300,
       }}
@@ -980,10 +980,50 @@ if (!isAuthorized) {
       }}
     >
       {[
-        "Какая стоимость подписки?",
-        "Как активировать или продлить подписку?",
-        "Какие способы оплаты есть?",
-      ].map((question, idx) => (
+        {
+          q: "Какая стоимость подписки?",
+          a: "Стоимость подписки составляет 99₽/мес.",
+        },
+        {
+          q: "Как активировать/продлить подписку?",
+          a: (
+		    <div style={{ color: "#888", fontSize: 14 }}>
+              <p style={{ margin: "0 0 6px 0" }}>
+                Чтобы активировать/продлить подписку:
+              </p>
+              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 14 }}>
+                <li>Кликните по кнопке выше.</li>
+                <li>Вы будете перенаправлены на страницу оплаты.</li>
+                <li>Выберите удобный для Вас способ оплаты и нажмите «Оплатить».</li>
+              </ul>
+			</div>
+          ),
+        },
+        {
+          q: "Какие способы оплаты есть?",
+          a: (
+		    <div style={{ color: "#888", fontSize: 14 }}>
+              <p style={{ margin: "0 0 6px 0" }}>
+                Мы предлагаем самые распространённые и удобные способы оплаты:
+              </p>
+              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 14 }}>
+			    <li>Онлайн по карте</li>
+                <li>Через СБП</li>
+                <li>Через T-Pay или Sber-Pay</li>
+              </ul>
+			</div>
+          ),
+        },
+        {
+          q: "Можно ли подключить автоплатёж?",
+          a: (
+            <p style={{ margin: 0, fontSize: 14, color: "#888" }}>
+              Да. На странице оплаты Вы можете подключить автоплатёж и не оплачивать вручную каждый месяц.{" "}
+              <i>*Автоплатёж можно отключить в любой момент.</i>
+            </p>
+          ),
+        },
+      ].map((item, idx) => (
         <details
           key={idx}
           style={{
@@ -1004,12 +1044,26 @@ if (!isAuthorized) {
               padding: "6px 0",
             }}
           >
-            {question}
-            <span style={{ transform: "rotate(90deg)", fontSize: 14 }}>⌄</span>
+            {item.q}
+            <span
+              style={{
+                display: "inline-block",
+                transition: "transform 0.3s ease",
+              }}
+            >
+              ⌄
+            </span>
           </summary>
-          <p style={{ marginTop: 6, fontSize: 14, color: "#888" }}>
-            Здесь ваш текст
-          </p>
+          <div style={{ marginTop: 6 }}>{item.a}</div>
+
+          {/* анимация стрелки */}
+          <style>
+            {`
+              details[open] summary span {
+                transform: rotate(180deg);
+              }
+            `}
+          </style>
         </details>
       ))}
     </div>
