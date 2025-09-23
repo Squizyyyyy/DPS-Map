@@ -969,7 +969,7 @@ if (!isAuthorized) {
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
-        marginTop: 18,
+        marginTop: 20,
 		marginBottom: 16,
         width: "100%",
         maxWidth: 300,
