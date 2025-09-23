@@ -928,97 +928,90 @@ if (!isAuthorized) {
       )}
     </div>
 
-    {/* ---- Блок 2: Покупка подписки ---- */}
-    <div
+    {/* ---- Кнопка подписки ---- */}
+    <button
+      onClick={handleBuySubscription}
+      disabled={loadingSubscription}
       style={{
-        backgroundColor: "#0a1f33",
-        borderRadius: 24,
-        padding: 16,
+        marginTop: 18, // чуть больше отступ сверху
+        padding: "14px 0",
+        background: "linear-gradient(90deg, #2787f5, #7a5cff)",
+        color: "#fff",
+        border: "none",
+        borderRadius: 16,
+        cursor: "pointer",
+        fontWeight: 600,
+        fontSize: 15,
         width: "100%",
         maxWidth: 300,
-        textAlign: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        transition: "all 0.2s",
+      }}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.background =
+          "linear-gradient(90deg, #1e6cd8, #693bff)")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.background =
+          "linear-gradient(90deg, #2787f5, #7a5cff)")
+      }
+    >
+      {loadingSubscription ? "Активируем..." : "Активировать подписку"}
+    </button>
+
+    {/* ---- Разделительная линия ---- */}
+    <div
+      style={{
+        height: 1,
+        background: "rgba(255,255,255,0.1)",
+        margin: "14px 0", // отступ увеличен
+        width: "100%",
+        maxWidth: 300,
+      }}
+    />
+
+    {/* ---- Вопросы (аккордеон) ---- */}
+    <div
+      style={{
         display: "flex",
         flexDirection: "column",
-        gap: 14,
+        gap: 12,
+        width: "100%",
+        maxWidth: 300,
       }}
     >
-      <button
-        onClick={handleBuySubscription}
-        disabled={loadingSubscription}
-        style={{
-          padding: "14px 0",
-          background: "linear-gradient(90deg, #2787f5, #7a5cff)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 16,
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: 15,
-          width: "100%",
-          transition: "all 0.2s",
-        }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.background =
-            "linear-gradient(90deg, #1e6cd8, #693bff)")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.background =
-            "linear-gradient(90deg, #2787f5, #7a5cff)")
-        }
-      >
-        {loadingSubscription ? "Активируем..." : "Активировать подписку"}
-      </button>
-
-      {/* Разделительная линия */}
-      <div
-        style={{
-          height: 1,
-          background: "rgba(255,255,255,0.1)",
-          margin: "8px 0",
-        }}
-      />
-
-      {/* Иконки способов оплаты */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 16,
-          justifyItems: "center",
-          marginTop: 8,
-        }}
-      >
-        {/* 1. Картой */}
-        <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/card.svg" alt="Card" style={{ width: 32, height: 32, marginBottom: 4 }} />
-          <div style={{ fontSize: 14 }}>Картой онлайн</div>
-        </div>
-
-        {/* 2. QR */}
-        <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/qr.svg" alt="QR" style={{ width: 32, height: 32, marginBottom: 4 }} />
-          <div style={{ fontSize: 14 }}>По QR-коду</div>
-        </div>
-
-        {/* 3. СБП */}
-        <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/sbp.svg" alt="SBP" style={{ width: 32, height: 32, marginBottom: 4 }} />
-          <div style={{ fontSize: 14 }}>Через СБП</div>
-        </div>
-
-        {/* 4. T-Pay */}
-        <div style={{ textAlign: "center", color: "#aaa" }}>
-          <img src="/icons/Tpay.svg" alt="T-Pay" style={{ width: 32, height: 32, marginBottom: 4 }} />
-          <div style={{ fontSize: 14 }}>По T-Pay</div>
-        </div>
-
-        {/* 5. SberPay (по центру на всю ширину) */}
-        <div style={{ textAlign: "center", color: "#aaa", gridColumn: "span 2" }}>
-          <img src="/icons/Sberpay.svg" alt="SberPay" style={{ width: 32, height: 32, marginBottom: 4 }} />
-          <div style={{ fontSize: 14 }}>По Sber-Pay</div>
-        </div>
-      </div>
+      {[
+        "Какая стоимость подписки?",
+        "Как активировать или продлить подписку?",
+        "Какие способы оплаты есть?",
+      ].map((question, idx) => (
+        <details
+          key={idx}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#aaa",
+            cursor: "pointer",
+          }}
+        >
+          <summary
+            style={{
+              listStyle: "none",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              cursor: "pointer",
+              fontSize: 16,
+              padding: "6px 0",
+            }}
+          >
+            {question}
+            <span style={{ transform: "rotate(90deg)", fontSize: 14 }}>⌄</span>
+          </summary>
+          <p style={{ marginTop: 6, fontSize: 14, color: "#888" }}>
+            Здесь ваш текст
+          </p>
+        </details>
+      ))}
     </div>
   </div>
 )}
