@@ -939,7 +939,7 @@ if (!isAuthorized) {
       onClick={handleBuySubscription}
       disabled={loadingSubscription}
       style={{
-        marginTop: 18,
+        marginTop: 17,
         padding: "14px 0",
         background: "linear-gradient(90deg, #2787f5, #7a5cff)",
         color: "#fff",
@@ -969,7 +969,7 @@ if (!isAuthorized) {
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
-        margin: "18px 0",
+        margin: "2px 0",
         width: "100%",
         maxWidth: 300,
       }}
@@ -987,19 +987,15 @@ if (!isAuthorized) {
     >
       {[
         {
-          q: "Какая стоимость подписки?",
-          a: "Стоимость подписки составляет 99₽/мес.",
-        },
-        {
           q: "Как активировать/продлить подписку?",
           a: (
-		    <div style={{ color: "#888", fontSize: 14 }}>
+		    <div style={{ color: "#888", fontSize: 15 }}>
               <p style={{ margin: "0 0 6px 0" }}>
                 Чтобы активировать/продлить подписку:
               </p>
-              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 14 }}>
-                <li>Кликните по кнопке выше.</li>
-                <li>Вы будете перенаправлены на страницу оплаты.</li>
+              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 15 }}>
+                <li>Кликните по кнопке выше;</li>
+                <li>Вы будете перенаправлены на страницу оплаты;</li>
                 <li>Выберите удобный для Вас способ оплаты и нажмите «Оплатить».</li>
               </ul>
 			</div>
@@ -1008,11 +1004,11 @@ if (!isAuthorized) {
         {
           q: "Какие способы оплаты есть?",
           a: (
-		    <div style={{ color: "#888", fontSize: 14 }}>
+		    <div style={{ color: "#888", fontSize: 15 }}>
               <p style={{ margin: "0 0 6px 0" }}>
                 Мы предлагаем самые распространённые и удобные способы оплаты:
               </p>
-              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 14 }}>
+              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 15 }}>
 			    <li>Онлайн по карте</li>
                 <li>Через СБП</li>
                 <li>Через T-Pay или Sber-Pay</li>
@@ -1020,12 +1016,26 @@ if (!isAuthorized) {
 			</div>
           ),
         },
+		{
+          q: "Какая стоимость подписки?",
+          a: (
+		    <div style={{ color: "#888", fontSize: 15 }}>
+              <p style={{ margin: "0 0 6px 0" }}>
+                Стоимость подписки составляет 99₽/мес.
+              </p>
+			</div>
+		  ),
+        },
         {
           q: "Можно ли подключить автоплатёж?",
           a: (
-            <p style={{ margin: 0, fontSize: 14, color: "#888" }}>
-              Да. На странице оплаты Вы можете подключить автоплатёж и не оплачивать вручную каждый месяц.{" "}
-              <i>*Автоплатёж можно отключить в любой момент.</i>
+            <p style={{ margin: 0, fontSize: 15, color: "#888" }}>
+              Да. На странице оплаты Вы можете подключить автоплатёж и не оплачивать вручную каждый месяц.
+              <i>
+			    <p>
+			       * Автоплатёж можно отключить в любой момент.
+				</p>
+			  </i>
             </p>
           ),
         },
