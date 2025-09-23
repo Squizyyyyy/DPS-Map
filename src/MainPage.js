@@ -664,35 +664,41 @@ if (!isAuthorized) {
   ) : (
     <div
       style={{
-        flex: 1,
+        height: "calc(100vh - 80px)",
         display: "flex",
-        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        color: "#fff",
-        padding: 16,
+        flexDirection: "column",
+        padding: 24,
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
         textAlign: "center",
+        backgroundColor: tabColors.background,
       }}
     >
-      <h2>Доступ к карте ограничен</h2>
-      <p>Оформите подписку, чтобы использовать карту.</p>
-      <button
-        onClick={handleBuySubscription}
-        disabled={loadingSubscription}
+      <div
         style={{
-          padding: "12px 24px",
-          marginTop: "16px",
-          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
-          color: "#fff",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          fontWeight: 600,
-          transition: "all 0.2s",
+          width: "100%",
+          maxWidth: 360,
+          padding: 24,
+          borderRadius: 24,
+          border: "2px solid rgba(255, 255, 255, 0.3)",
+          backgroundColor: "transparent",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 16,
         }}
       >
-        {loadingSubscription ? "Оформляем..." : "Оформить подписку"}
-      </button>
+        <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: "#fff" }}>
+          Доступ к карте ограничен
+        </h2>
+
+        <p style={{ fontSize: 16, color: "#ccc", margin: 0 }}>
+          Чтобы использовать карту, активируйте подписку во вкладке Подписка.
+        </p>
+      </div>
     </div>
   )
 ) : (
