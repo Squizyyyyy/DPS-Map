@@ -893,25 +893,25 @@ if (!isAuthorized) {
   </div>
 )}
 
-{/* Подписка */}
-{activeTab === "subscription" && (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 16,
-      padding: "0 30px",
-      maxWidth: 500,
-      margin: "0 auto",
-      marginTop: "30px",
-      fontFamily:
-        "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      fontSize: 16,
-      color: "#aaa",
-    }}
-  >
-    {/* ---- Блок 1: Статус подписки ---- */}
+  {/* Подписка */}
+  {activeTab === "subscription" && (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 16,
+        padding: "0 30px",
+        maxWidth: 500,
+        margin: "0 auto",
+        marginTop: "30px",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+        fontSize: 16,
+        color: "#aaa",
+      }}
+    >
+    {/* Блок 1: Статус подписки */}
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -930,16 +930,16 @@ if (!isAuthorized) {
           <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
         </p>
       ) : (
-        <p style={{ margin: 0, color: "#aaa" }}>Подписка не активна</p>
+        <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
       )}
     </div>
 
-    {/* ---- Кнопка подписки ---- */}
+    {/* Кнопка подписки */}
     <button
       onClick={handleBuySubscription}
       disabled={loadingSubscription}
       style={{
-        marginTop: 17,
+        marginTop: 16,
         padding: "14px 0",
         background: "linear-gradient(90deg, #2787f5, #7a5cff)",
         color: "#fff",
@@ -964,18 +964,19 @@ if (!isAuthorized) {
       {loadingSubscription ? "Активируем..." : "Активировать подписку"}
     </button>
 
-    {/* ---- Разделительная линия ---- */}
+    {/* Разделительная линия */}
     <div
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
-        margin: "2px 0",
+        marginTop: 18,
+		marginBottom: 16
         width: "100%",
         maxWidth: 300,
       }}
     />
 
-    {/* ---- Вопросы (аккордеон) ---- */}
+    {/* Вопросы (аккордеон) */}
     <div
       style={{
         display: "flex",
