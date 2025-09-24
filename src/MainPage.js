@@ -425,14 +425,14 @@ if (!isAuthorized) {
 			  display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 12,
+              gap: 14,
             }}
           >
 		    {/* Иконка ВК */}
             <img
               src="/icons/vk.png"
               alt="VK"
-              style={{ width: 30, height: 30, marginLeft: 4 }}
+              style={{ width: 25, height: 25, marginLeft: 1 }}
             />
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
