@@ -96,7 +96,6 @@ export default function MapViewMapGL({ city }) {
       </div>
     `;
 
-    // Позиционирование над маркером
     const point = mapRef.current.project([m.lng, m.lat]);
     popupRef.current.style.position = "absolute";
     popupRef.current.style.left = point[0] - 120 + "px";
@@ -155,7 +154,7 @@ export default function MapViewMapGL({ city }) {
 
   // --- Клик по карте (добавление) ---
   const handleMapClick = (event) => {
-    const [lng, lat] = event.coordinates;
+    const [lng, lat] = event.lngLat; // ← исправлено
     const now = Date.now();
 
     if (now - lastAddTime < 5 * 60 * 1000) {
@@ -170,7 +169,8 @@ export default function MapViewMapGL({ city }) {
 
     let comment = "";
     const addComment = window.confirm("Добавить комментарий к метке?");
-    if (addComment) comment = window.prompt("Введите комментарий к метке:") || "";
+    if (addComment)
+      comment = window.prompt("Введите комментарий к метке:") || "";
 
     fetch("https://dps-map-rzn-h0uq.onrender.com/markers", {
       method: "POST",
@@ -198,13 +198,13 @@ export default function MapViewMapGL({ city }) {
     loadMapGL().then(() => {
       mapInstance = new window.mapgl.Map("map-2gis", {
         key: "2c1ac712-b749-4168-a3f2-d24bf6c3a7e4",
-        center: [city.coords[1], city.coords[0]], // [долгота, широта]
+        center: [city.coords[1], city.coords[0]], // [lng, lat]
         zoom: 13,
         minZoom: 11,
         maxZoom: 18,
         restrictArea: [
-          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF],
-          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF],
+          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF], // SW [lng, lat]
+          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF], // NE [lng, lat]
         ],
       });
 
