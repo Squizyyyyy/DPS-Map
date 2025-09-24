@@ -419,6 +419,7 @@ if (!isAuthorized) {
               border: "none",
               borderRadius: 7,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
+			  fontWeight: 400,
 			  fontSize: "16px",
               transition: "all 0.2s",
 			  display: "flex",
@@ -431,7 +432,7 @@ if (!isAuthorized) {
             <img
               src="/icons/vk.png"
               alt="VK"
-              style={{ width: 20, height: 20 }}
+              style={{ width: 20, height: 20, marginLeft: 10 }}
             />
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
