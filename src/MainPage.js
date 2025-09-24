@@ -419,11 +419,20 @@ if (!isAuthorized) {
               border: "none",
               borderRadius: 7,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
-              fontWeight: 600,
 			  fontSize: "16px",
               transition: "all 0.2s",
+			  display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
             }}
           >
+		    {/* Иконка ВК */}
+            <img
+              src="/icons/vk.png"
+              alt="VK"
+              style={{ width: 20, height: 20 }}
+            />
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
 
@@ -441,12 +450,12 @@ if (!isAuthorized) {
 		{/* Блок контактов поддержки */}
         <div
           style={{
-            marginTop: 24,           // расстояние от блока кнопок
+            marginTop: 24,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
 			textDecoration: "underline",
-            gap: 8,                  // расстояние между текстом и иконкой
+            gap: 8,
             color: "#ccc",
             fontSize: 14,
           }}
