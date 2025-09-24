@@ -1,0 +1,225 @@
+// src/MapView2GIS.js
+import React, { useEffect, useRef } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+let lastAddTime = 0;
+let lastDeleteTime = 0;
+let currentOpenPopupMarkerId = null;
+
+export default function MapView2GIS({ city }) {
+  const mapRef = useRef(null);
+  const markersRef = useRef({});
+  const popupRef = useRef(null);
+
+  // --- Загрузка SDK 2ГИС ---
+  const load2Gis = () =>
+    new Promise((resolve, reject) => {
+      if (window.mapgl) return resolve(window.mapgl);
+
+      const script = document.createElement("script");
+      script.src = "https://mapgl.2gis.com/api/js/v1";
+      script.async = true;
+      script.onload = () => resolve(window.mapgl);
+      script.onerror = () => reject(new Error("Не удалось загрузить 2ГИС MapGL SDK"));
+      document.body.appendChild(script);
+    });
+
+  // --- Загрузка маркеров ---
+  const fetchMarkers = async () => {
+    try {
+      const res = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
+      if (!res.ok) throw new Error("Ошибка сети");
+      const data = await res.json();
+
+      data.forEach((m) => {
+        if (!markersRef.current[m.id]) {
+          const iconUrl =
+            m.status === "unconfirmed"
+              ? "/icons/marker-gray.png"
+              : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
+
+          const marker = new window.mapgl.Marker(mapRef.current, {
+            coordinates: [m.lng, m.lat],
+            icon: iconUrl,
+            size: [30, 30],
+            anchor: [0.5, 1],
+          });
+
+          marker.on("click", () => openPopup(m));
+
+          markersRef.current[m.id] = marker;
+        }
+      });
+
+      // удаляем отсутствующие
+      const currentIds = data.map((m) => m.id);
+      Object.keys(markersRef.current).forEach((id) => {
+        if (!currentIds.includes(Number(id))) {
+          markersRef.current[id].destroy();
+          delete markersRef.current[id];
+        }
+      });
+    } catch (e) {
+      toast.error("Ошибка сети при загрузке меток");
+      console.error(e);
+    }
+  };
+
+  // --- Кастомный попап ---
+  const openPopup = (m) => {
+    currentOpenPopupMarkerId = m.id;
+
+    if (!popupRef.current) {
+      popupRef.current = document.createElement("div");
+      popupRef.current.className = "custom-popup";
+      document.body.appendChild(popupRef.current);
+    }
+
+    popupRef.current.innerHTML = `
+      <div style="background: white; border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); max-width: 240px;">
+        <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
+          ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
+        </p>
+        <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+        <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+        ${m.comment ? `<p style="margin: 3px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+        <p style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
+        <div style="display: flex; justify-content: space-between; gap: 8px;">
+          <button id="confirm-${m.id}" style="flex:1; padding: 5px; background: #28a745; color: white; border: none; border-radius: 6px;">✅ Подтвердить</button>
+          <button id="delete-${m.id}" style="flex:1; padding: 5px; background: #dc3545; color: white; border: none; border-radius: 6px;">❌ Уехали</button>
+        </div>
+      </div>
+    `;
+
+    // позиционируем над маркером
+    const point = mapRef.current.project([m.lng, m.lat]);
+    popupRef.current.style.position = "absolute";
+    popupRef.current.style.left = point[0] - 120 + "px";
+    popupRef.current.style.top = point[1] - 140 + "px";
+
+    // обработчики кнопок
+    document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
+    document.getElementById(`delete-${m.id}`).onclick = () => {
+      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
+    };
+  };
+
+  // --- Подтверждение ---
+  const handleConfirm = async (id) => {
+    try {
+      const res = await fetch(
+        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`,
+        { method: "POST", credentials: "include" }
+      );
+      if (!res.ok) throw new Error("Ошибка подтверждения");
+      toast.success("Метка подтверждена");
+      fetchMarkers();
+    } catch {
+      toast.error("Ошибка при подтверждении");
+    }
+  };
+
+  // --- Удаление ---
+  const handleDelete = async (id) => {
+    const now = Date.now();
+    if (now - lastDeleteTime < 5 * 60 * 1000) {
+      toast.warn("Удалять метки можно раз в 5 минут");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/delete`,
+        { method: "POST" }
+      );
+      if (res.ok) {
+        lastDeleteTime = Date.now();
+        if (markersRef.current[id]) {
+          markersRef.current[id].destroy();
+          delete markersRef.current[id];
+        }
+        toast.success("Метка удалена");
+      } else {
+        toast.error("Ошибка при удалении");
+      }
+    } catch {
+      toast.error("Ошибка при удалении");
+    }
+  };
+
+  // --- Клик по карте (добавление) ---
+  const handleMapClick = (e) => {
+    const [lng, lat] = e.coordinates;
+    const now = Date.now();
+
+    if (now - lastAddTime < 5 * 60 * 1000) {
+      toast.warn("Добавлять метки можно раз в 5 минут");
+      return;
+    }
+
+    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
+    if (!confirmAdd) return;
+
+    let comment = "";
+    const addComment = window.confirm("Добавить комментарий к метке?");
+    if (addComment) comment = window.prompt("Введите комментарий к метке:") || "";
+
+    fetch("https://dps-map-rzn-h0uq.onrender.com/markers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lat, lng, comment }),
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Ошибка при добавлении");
+        await res.json();
+        lastAddTime = Date.now();
+        await fetchMarkers();
+        toast.success("Метка добавлена");
+      })
+      .catch(() => toast.error("Ошибка при добавлении метки"));
+  };
+
+  // --- Инициализация карты ---
+  useEffect(() => {
+    if (!city || !city.coords) return;
+
+    let mapInstance;
+
+    load2Gis().then(() => {
+      mapInstance = new window.mapgl.Map("map-2gis", {
+        center: city.coords,
+        zoom: 13,
+        key: "2c1ac712-b749-4168-a3f2-d24bf6c3a7e4", // API KEY
+      });
+
+      mapRef.current = mapInstance;
+      mapInstance.on("click", handleMapClick);
+
+      fetchMarkers();
+      const interval = setInterval(fetchMarkers, 30000);
+
+      return () => {
+        clearInterval(interval);
+      };
+    });
+
+    return () => {
+      if (mapInstance) {
+        mapInstance.destroy();
+      }
+    };
+  }, [city]);
+
+  return (
+    <div
+      id="map-2gis"
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        zIndex: 0,
+      }}
+    />
+  );
+}

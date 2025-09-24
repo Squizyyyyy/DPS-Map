@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import MapView2GIS from "./MapView2GIS";
+import MapViewMapGL from "./MapViewMapGL";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ReactComponent as AccountIcon } from "./assets/icons/account.svg";
@@ -638,7 +638,7 @@ if (!isAuthorized) {
           zIndex: 9999,
         }}
       >
-        <MapView2GIS city={selectedCity} />
+        <MapViewMapGL city={selectedCity} />
         <button
           onClick={() => setActiveTab("account")}
           style={{
