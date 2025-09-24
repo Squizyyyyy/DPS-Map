@@ -433,7 +433,7 @@ if (!isAuthorized) {
             <img
               src="/icons/vk.png"
               alt="VK"
-              style={{ width: 22, height: 15, marginLeft: 14 }}
+              style={{ width: 23, height: 15, marginLeft: 14 }}
             />
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
