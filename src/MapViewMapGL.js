@@ -199,9 +199,8 @@ export default function MapViewMapGL({ city }) {
       mapInstance = new window.mapgl.Map("map-2gis", {
         key: "2c1ac712-b749-4168-a3f2-d24bf6c3a7e4",
         center: [city.coords[1], city.coords[0]], // [lng, lat]
-        zoom: 13,
+        zoom: 12,
         minZoom: 11,
-        maxZoom: 18,
         restrictArea: [
           [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF], // SW [lng, lat]
           [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF], // NE [lng, lat]
