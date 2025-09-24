@@ -419,20 +419,20 @@ if (!isAuthorized) {
               border: "none",
               borderRadius: 7,
               cursor: sdkReady && !loadingLogin ? "pointer" : "default",
-			  fontWeight: 400,
+			  fontWeight: 500,
 			  fontSize: "16px",
               transition: "all 0.2s",
 			  display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 8,
+              gap: 12,
             }}
           >
 		    {/* Иконка ВК */}
             <img
               src="/icons/vk.png"
               alt="VK"
-              style={{ width: 20, height: 20, marginLeft: 10 }}
+              style={{ width: 30, height: 30, marginLeft: 4 }}
             />
             {loadingLogin ? "Входим..." : "Войти через VK ID"}
           </button>
