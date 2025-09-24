@@ -29,9 +29,7 @@ export default function MapViewMapGL({ city }) {
   // --- Загрузка маркеров ---
   const fetchMarkers = async () => {
     try {
-      const res = await fetch(
-        "https://dps-map-rzn-h0uq.onrender.com/markers"
-      );
+      const res = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
       if (!res.ok) throw new Error("Ошибка сети");
       const data = await res.json();
 
@@ -49,7 +47,9 @@ export default function MapViewMapGL({ city }) {
             anchor: [0.5, 1],
           });
 
-          marker.on("click", () => openPopup(m));
+          // Открываем попап через requestAnimationFrame
+          marker.on("click", () => requestAnimationFrame(() => openPopup(m)));
+
           markersRef.current[m.id] = marker;
         }
       });
@@ -96,16 +96,16 @@ export default function MapViewMapGL({ city }) {
       </div>
     `;
 
+    // Позиционирование попапа
     const point = mapRef.current.project([m.lng, m.lat]);
     popupRef.current.style.position = "absolute";
     popupRef.current.style.left = point[0] - 120 + "px";
     popupRef.current.style.top = point[1] - 140 + "px";
 
-    document.getElementById(`confirm-${m.id}`).onclick = () =>
-      handleConfirm(m.id);
+    // Обработчики кнопок
+    document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
     document.getElementById(`delete-${m.id}`).onclick = () => {
-      if (window.confirm("Вы уверены, что хотите удалить метку?"))
-        handleDelete(m.id);
+      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
     };
   };
 
@@ -154,7 +154,7 @@ export default function MapViewMapGL({ city }) {
 
   // --- Клик по карте (добавление) ---
   const handleMapClick = (event) => {
-    const [lng, lat] = event.lngLat; // ← исправлено
+    const [lng, lat] = event.lngLat; // исправлено для MapGL
     const now = Date.now();
 
     if (now - lastAddTime < 5 * 60 * 1000) {
@@ -162,15 +162,12 @@ export default function MapViewMapGL({ city }) {
       return;
     }
 
-    const confirmAdd = window.confirm(
-      "Вы уверены, что хотите поставить метку здесь?"
-    );
+    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
     if (!confirmAdd) return;
 
     let comment = "";
     const addComment = window.confirm("Добавить комментарий к метке?");
-    if (addComment)
-      comment = window.prompt("Введите комментарий к метке:") || "";
+    if (addComment) comment = window.prompt("Введите комментарий к метке:") || "";
 
     fetch("https://dps-map-rzn-h0uq.onrender.com/markers", {
       method: "POST",
@@ -202,9 +199,10 @@ export default function MapViewMapGL({ city }) {
         zoom: 12,
         minZoom: 11,
         restrictArea: [
-          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF], // SW [lng, lat]
-          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF], // NE [lng, lat]
+          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF], // SW
+          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF], // NE
         ],
+        maxBoundsViscosity: 1.0, // запрещаем выход за пределы
       });
 
       mapRef.current = mapInstance;
