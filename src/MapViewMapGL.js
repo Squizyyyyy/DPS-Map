@@ -70,11 +70,14 @@ export default function MapViewMapGL({ city }) {
       popupRef.current.className = "custom-popup";
       popupRef.current.style.position = "absolute";
       popupRef.current.style.zIndex = "999";
+      popupRef.current.style.maxWidth = "240px";
+      popupRef.current.style.pointerEvents = "auto";
       mapRef.current.getContainer().appendChild(popupRef.current);
     }
 
     popupRef.current.innerHTML = `
-      <div style="background: white; border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); max-width: 240px;">
+      <div style="position: relative; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+        <button id="close-popup" style="position: absolute; top: 4px; right: 4px; border: none; background: transparent; font-size: 16px; cursor: pointer;">✖️</button>
         <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
           ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
         </p>
@@ -89,14 +92,39 @@ export default function MapViewMapGL({ city }) {
       </div>
     `;
 
-    const point = mapRef.current.project([m.lng, m.lat]);
-    popupRef.current.style.left = `${point[0] - 120}px`;
-    popupRef.current.style.top = `${point[1] - 140}px`;
-
     document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
     document.getElementById(`delete-${m.id}`).onclick = () => {
       if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
     };
+    document.getElementById("close-popup").onclick = () => {
+      popupRef.current.style.display = "none";
+    };
+
+    // позиционируем над маркером
+    const updatePosition = () => {
+      const point = mapRef.current.project([m.lng, m.lat]);
+      popupRef.current.style.left = `${point[0] - popupRef.current.offsetWidth / 2}px`;
+      popupRef.current.style.top = `${point[1] - popupRef.current.offsetHeight - 10}px`;
+
+      // Проверка, если попап выходит за границы, центрируем карту
+      const mapWidth = mapRef.current.getContainer().clientWidth;
+      const mapHeight = mapRef.current.getContainer().clientHeight;
+      const padding = 20;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (point[0] - popupRef.current.offsetWidth / 2 < padding)
+        offsetX = point[0] - popupRef.current.offsetWidth / 2 - padding;
+      else if (point[0] + popupRef.current.offsetWidth / 2 > mapWidth - padding)
+        offsetX = point[0] + popupRef.current.offsetWidth / 2 - mapWidth + padding;
+
+      if (point[1] - popupRef.current.offsetHeight - 10 < padding)
+        offsetY = point[1] - popupRef.current.offsetHeight - 10 - padding;
+
+      if (offsetX || offsetY) mapRef.current.panBy([offsetX, offsetY]);
+    };
+
+    updatePosition();
   };
 
   const handleConfirm = async (id) => {
@@ -181,8 +209,8 @@ export default function MapViewMapGL({ city }) {
         minZoom: 11,
         maxBoundsViscosity: 1.0,
         restrictArea: [
-          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF], // SW [lng, lat]
-          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF], // NE [lng, lat]
+          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF],
+          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF],
         ],
       });
 
