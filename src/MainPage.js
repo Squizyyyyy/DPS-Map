@@ -411,6 +411,7 @@ if (!isAuthorized) {
             disabled={!sdkReady || loadingLogin}
             style={{
               width: "100%", //  растягиваем под ширину контейнера
+			  height: 40,
               padding: "10px 0", //  подогнали внутренние отступы
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
@@ -424,7 +425,7 @@ if (!isAuthorized) {
               transition: "all 0.2s",
 			  display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: "flex-start",
               gap: 14,
             }}
           >
