@@ -1,4 +1,4 @@
-// src/MapView2GIS.js
+// src/MapViewMapGL.js
 import React, { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -7,13 +7,13 @@ let lastAddTime = 0;
 let lastDeleteTime = 0;
 let currentOpenPopupMarkerId = null;
 
-export default function MapView2GIS({ city }) {
+export default function MapViewMapGL({ city }) {
   const mapRef = useRef(null);
   const markersRef = useRef({});
   const popupRef = useRef(null);
 
-  // --- Загрузка SDK 2ГИС ---
-  const load2Gis = () =>
+  // --- Загрузка MapGL SDK ---
+  const loadMapGL = () =>
     new Promise((resolve, reject) => {
       if (window.mapgl) return resolve(window.mapgl);
 
@@ -21,14 +21,17 @@ export default function MapView2GIS({ city }) {
       script.src = "https://mapgl.2gis.com/api/js/v1";
       script.async = true;
       script.onload = () => resolve(window.mapgl);
-      script.onerror = () => reject(new Error("Не удалось загрузить 2ГИС MapGL SDK"));
+      script.onerror = () =>
+        reject(new Error("Не удалось загрузить 2ГИС MapGL SDK"));
       document.body.appendChild(script);
     });
 
   // --- Загрузка маркеров ---
   const fetchMarkers = async () => {
     try {
-      const res = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
+      const res = await fetch(
+        "https://dps-map-rzn-h0uq.onrender.com/markers"
+      );
       if (!res.ok) throw new Error("Ошибка сети");
       const data = await res.json();
 
@@ -40,19 +43,18 @@ export default function MapView2GIS({ city }) {
               : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
 
           const marker = new window.mapgl.Marker(mapRef.current, {
-            coordinates: [m.lng, m.lat],
+            coordinates: [m.lng, m.lat], // [долгота, широта]
             icon: iconUrl,
             size: [30, 30],
             anchor: [0.5, 1],
           });
 
           marker.on("click", () => openPopup(m));
-
           markersRef.current[m.id] = marker;
         }
       });
 
-      // удаляем отсутствующие
+      // Удаляем отсутствующие
       const currentIds = data.map((m) => m.id);
       Object.keys(markersRef.current).forEach((id) => {
         if (!currentIds.includes(Number(id))) {
@@ -82,7 +84,9 @@ export default function MapView2GIS({ city }) {
           ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
         </p>
         <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-        <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+        <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(
+          m.timestamp
+        ).toLocaleString()}</p>
         ${m.comment ? `<p style="margin: 3px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
         <p style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
         <div style="display: flex; justify-content: space-between; gap: 8px;">
@@ -92,16 +96,17 @@ export default function MapView2GIS({ city }) {
       </div>
     `;
 
-    // позиционируем над маркером
+    // Позиционирование над маркером
     const point = mapRef.current.project([m.lng, m.lat]);
     popupRef.current.style.position = "absolute";
     popupRef.current.style.left = point[0] - 120 + "px";
     popupRef.current.style.top = point[1] - 140 + "px";
 
-    // обработчики кнопок
-    document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
+    document.getElementById(`confirm-${m.id}`).onclick = () =>
+      handleConfirm(m.id);
     document.getElementById(`delete-${m.id}`).onclick = () => {
-      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
+      if (window.confirm("Вы уверены, что хотите удалить метку?"))
+        handleDelete(m.id);
     };
   };
 
@@ -149,8 +154,8 @@ export default function MapView2GIS({ city }) {
   };
 
   // --- Клик по карте (добавление) ---
-  const handleMapClick = (e) => {
-    const [lng, lat] = e.coordinates;
+  const handleMapClick = (event) => {
+    const [lng, lat] = event.coordinates;
     const now = Date.now();
 
     if (now - lastAddTime < 5 * 60 * 1000) {
@@ -158,7 +163,9 @@ export default function MapView2GIS({ city }) {
       return;
     }
 
-    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
+    const confirmAdd = window.confirm(
+      "Вы уверены, что хотите поставить метку здесь?"
+    );
     if (!confirmAdd) return;
 
     let comment = "";
@@ -185,12 +192,20 @@ export default function MapView2GIS({ city }) {
     if (!city || !city.coords) return;
 
     let mapInstance;
+    const BOUND_LAT_DIFF = 0.21;
+    const BOUND_LNG_DIFF = 0.40;
 
-    load2Gis().then(() => {
+    loadMapGL().then(() => {
       mapInstance = new window.mapgl.Map("map-2gis", {
-        center: city.coords,
+        key: "2c1ac712-b749-4168-a3f2-d24bf6c3a7e4",
+        center: [city.coords[1], city.coords[0]], // [долгота, широта]
         zoom: 13,
-        key: "2c1ac712-b749-4168-a3f2-d24bf6c3a7e4", // API KEY
+        minZoom: 11,
+        maxZoom: 18,
+        restrictArea: [
+          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF],
+          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF],
+        ],
       });
 
       mapRef.current = mapInstance;
@@ -199,15 +214,11 @@ export default function MapView2GIS({ city }) {
       fetchMarkers();
       const interval = setInterval(fetchMarkers, 30000);
 
-      return () => {
-        clearInterval(interval);
-      };
+      return () => clearInterval(interval);
     });
 
     return () => {
-      if (mapInstance) {
-        mapInstance.destroy();
-      }
+      if (mapInstance) mapInstance.destroy();
     };
   }, [city]);
 
