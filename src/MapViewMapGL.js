@@ -12,21 +12,17 @@ export default function MapViewMapGL({ city }) {
   const markersRef = useRef({});
   const popupRef = useRef(null);
 
-  // --- Загрузка MapGL SDK ---
   const loadMapGL = () =>
     new Promise((resolve, reject) => {
       if (window.mapgl) return resolve(window.mapgl);
-
       const script = document.createElement("script");
       script.src = "https://mapgl.2gis.com/api/js/v1";
       script.async = true;
       script.onload = () => resolve(window.mapgl);
-      script.onerror = () =>
-        reject(new Error("Не удалось загрузить 2ГИС MapGL SDK"));
+      script.onerror = () => reject(new Error("Не удалось загрузить 2ГИС MapGL SDK"));
       document.body.appendChild(script);
     });
 
-  // --- Загрузка маркеров ---
   const fetchMarkers = async () => {
     try {
       const res = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
@@ -41,20 +37,18 @@ export default function MapViewMapGL({ city }) {
               : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
 
           const marker = new window.mapgl.Marker(mapRef.current, {
-            coordinates: [m.lng, m.lat], // [долгота, широта]
+            coordinates: [m.lng, m.lat],
             icon: iconUrl,
             size: [30, 30],
             anchor: [0.5, 1],
           });
 
-          // Открываем попап через requestAnimationFrame
-          marker.on("click", () => requestAnimationFrame(() => openPopup(m)));
-
+          marker.on("click", () => openPopup(m));
           markersRef.current[m.id] = marker;
         }
       });
 
-      // Удаляем отсутствующие
+      // удаляем отсутствующие
       const currentIds = data.map((m) => m.id);
       Object.keys(markersRef.current).forEach((id) => {
         if (!currentIds.includes(Number(id))) {
@@ -68,14 +62,15 @@ export default function MapViewMapGL({ city }) {
     }
   };
 
-  // --- Кастомный попап ---
   const openPopup = (m) => {
     currentOpenPopupMarkerId = m.id;
 
     if (!popupRef.current) {
       popupRef.current = document.createElement("div");
       popupRef.current.className = "custom-popup";
-      document.body.appendChild(popupRef.current);
+      popupRef.current.style.position = "absolute";
+      popupRef.current.style.zIndex = "999";
+      mapRef.current.getContainer().appendChild(popupRef.current);
     }
 
     popupRef.current.innerHTML = `
@@ -84,9 +79,7 @@ export default function MapViewMapGL({ city }) {
           ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
         </p>
         <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-        <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(
-          m.timestamp
-        ).toLocaleString()}</p>
+        <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
         ${m.comment ? `<p style="margin: 3px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
         <p style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
         <div style="display: flex; justify-content: space-between; gap: 8px;">
@@ -96,26 +89,22 @@ export default function MapViewMapGL({ city }) {
       </div>
     `;
 
-    // Позиционирование попапа
     const point = mapRef.current.project([m.lng, m.lat]);
-    popupRef.current.style.position = "absolute";
-    popupRef.current.style.left = point[0] - 120 + "px";
-    popupRef.current.style.top = point[1] - 140 + "px";
+    popupRef.current.style.left = `${point[0] - 120}px`;
+    popupRef.current.style.top = `${point[1] - 140}px`;
 
-    // Обработчики кнопок
     document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
     document.getElementById(`delete-${m.id}`).onclick = () => {
       if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
     };
   };
 
-  // --- Подтверждение ---
   const handleConfirm = async (id) => {
     try {
-      const res = await fetch(
-        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`,
-        { method: "POST", credentials: "include" }
-      );
+      const res = await fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`, {
+        method: "POST",
+        credentials: "include"
+      });
       if (!res.ok) throw new Error("Ошибка подтверждения");
       toast.success("Метка подтверждена");
       fetchMarkers();
@@ -124,7 +113,6 @@ export default function MapViewMapGL({ city }) {
     }
   };
 
-  // --- Удаление ---
   const handleDelete = async (id) => {
     const now = Date.now();
     if (now - lastDeleteTime < 5 * 60 * 1000) {
@@ -133,10 +121,7 @@ export default function MapViewMapGL({ city }) {
     }
 
     try {
-      const res = await fetch(
-        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/delete`,
-        { method: "POST" }
-      );
+      const res = await fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/delete`, { method: "POST" });
       if (res.ok) {
         lastDeleteTime = Date.now();
         if (markersRef.current[id]) {
@@ -144,17 +129,14 @@ export default function MapViewMapGL({ city }) {
           delete markersRef.current[id];
         }
         toast.success("Метка удалена");
-      } else {
-        toast.error("Ошибка при удалении");
-      }
+      } else toast.error("Ошибка при удалении");
     } catch {
       toast.error("Ошибка при удалении");
     }
   };
 
-  // --- Клик по карте (добавление) ---
   const handleMapClick = (event) => {
-    const [lng, lat] = event.lngLat; // исправлено для MapGL
+    const [lng, lat] = event.lngLat;
     const now = Date.now();
 
     if (now - lastAddTime < 5 * 60 * 1000) {
@@ -184,7 +166,6 @@ export default function MapViewMapGL({ city }) {
       .catch(() => toast.error("Ошибка при добавлении метки"));
   };
 
-  // --- Инициализация карты ---
   useEffect(() => {
     if (!city || !city.coords) return;
 
@@ -195,14 +176,14 @@ export default function MapViewMapGL({ city }) {
     loadMapGL().then(() => {
       mapInstance = new window.mapgl.Map("map-2gis", {
         key: "2c1ac712-b749-4168-a3f2-d24bf6c3a7e4",
-        center: [city.coords[1], city.coords[0]], // [lng, lat]
+        center: [city.coords[1], city.coords[0]],
         zoom: 12,
         minZoom: 11,
+        maxBoundsViscosity: 1.0,
         restrictArea: [
-          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF], // SW
-          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF], // NE
+          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF], // SW [lng, lat]
+          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF], // NE [lng, lat]
         ],
-        maxBoundsViscosity: 1.0, // запрещаем выход за пределы
       });
 
       mapRef.current = mapInstance;
@@ -210,24 +191,13 @@ export default function MapViewMapGL({ city }) {
 
       fetchMarkers();
       const interval = setInterval(fetchMarkers, 30000);
-
       return () => clearInterval(interval);
     });
 
     return () => {
-      if (mapInstance) mapInstance.destroy();
+      if (mapRef.current) mapRef.current.destroy();
     };
   }, [city]);
 
-  return (
-    <div
-      id="map-2gis"
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        zIndex: 0,
-      }}
-    />
-  );
+  return <div id="map-2gis" style={{ width: "100%", height: "100%", position: "relative" }} />;
 }
