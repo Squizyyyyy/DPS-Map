@@ -63,53 +63,55 @@ export default function MapViewMapGL({ city }) {
   };
 
   const openPopup = (m) => {
-    // закрываем предыдущий попап
-    if (popupRef.current) {
-      popupRef.current.destroy();
-      popupRef.current = null;
-    }
+  // закрываем предыдущий попап
+  if (popupRef.current) {
+    popupRef.current.destroy();
+    popupRef.current = null;
+  }
 
-    const popup = new window.mapgl.Popup(mapRef.current, {
-      coordinates: [m.lng, m.lat],
-      offset: [0, -30], // чтобы чуть выше маркера
-      closeButton: true,
-      closeOnClick: true,
-    });
+  const popup = new window.mapgl.Popup(mapRef.current, {
+    coordinates: [m.lng, m.lat],
+    offset: [0, -30], // чтобы чуть выше маркера
+    closeButton: true,
+    closeOnClick: true,
+  });
 
-    popup.setHTML(`
-      <div style="font-size:14px; max-width:240px;">
-        <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
-          ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
-        </p>
-        <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-        <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
-        ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-        <p><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
-        <div style="display: flex; justify-content: space-between; gap: 8px; margin-top: 8px;">
-          <button id="confirm-${m.id}" style="flex:1; padding: 5px; background: #28a745; color: white; border: none; border-radius: 6px; cursor:pointer;">
-            ✅ Подтвердить
-          </button>
-          <button id="delete-${m.id}" style="flex:1; padding: 5px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor:pointer;">
-            ❌ Уехали
-          </button>
-        </div>
+  popup.setHTML(`
+    <div style="font-size:14px; max-width:240px;">
+      <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
+        ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
+      </p>
+      <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+      <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+      ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+      <p><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
+      <div style="display: flex; justify-content: space-between; gap: 8px; margin-top: 8px;">
+        <button id="confirm-${m.id}" style="flex:1; padding: 5px; background: #28a745; color: white; border: none; border-radius: 6px; cursor:pointer;">
+          ✅ Подтвердить
+        </button>
+        <button id="delete-${m.id}" style="flex:1; padding: 5px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor:pointer;">
+          ❌ Уехали
+        </button>
       </div>
-    `);
+    </div>
+  `);
 
-    popupRef.current = popup;
+  popup.open(); // <<< ВОТ ЭТО ОБЯЗАТЕЛЬНО
 
-    // обработчики кнопок
-    setTimeout(() => {
-      const confirmBtn = document.getElementById(`confirm-${m.id}`);
-      const deleteBtn = document.getElementById(`delete-${m.id}`);
-      if (confirmBtn) confirmBtn.onclick = () => handleConfirm(m.id);
-      if (deleteBtn)
-        deleteBtn.onclick = () => {
-          if (window.confirm("Вы уверены, что хотите удалить метку?"))
-            handleDelete(m.id);
-        };
-    }, 0);
-  };
+  popupRef.current = popup;
+
+  // обработчики кнопок
+  setTimeout(() => {
+    const confirmBtn = document.getElementById(`confirm-${m.id}`);
+    const deleteBtn = document.getElementById(`delete-${m.id}`);
+    if (confirmBtn) confirmBtn.onclick = () => handleConfirm(m.id);
+    if (deleteBtn)
+      deleteBtn.onclick = () => {
+        if (window.confirm("Вы уверены, что хотите удалить метку?"))
+          handleDelete(m.id);
+      };
+  }, 0);
+};
 
   const handleConfirm = async (id) => {
     try {
