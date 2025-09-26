@@ -69,9 +69,18 @@ export default function MapViewMapGL({ city }) {
     popupRef.current = null;
   }
 
-  const popup = new window.mapgl.Popup(mapRef.current, {
+  // Проверяем, что доступно в SDK
+  const PopupClass =
+    window.mapgl.Balloon || window.mapgl.Popup || null;
+
+  if (!PopupClass) {
+    console.error("Popup/Balloon в 2ГИС SDK не найден");
+    return;
+  }
+
+  const popup = new PopupClass(mapRef.current, {
     coordinates: [m.lng, m.lat],
-    offset: [0, -30], // чтобы чуть выше маркера
+    offset: [0, -30],
     closeButton: true,
     closeOnClick: true,
   });
@@ -96,7 +105,9 @@ export default function MapViewMapGL({ city }) {
     </div>
   `);
 
-  popup.open(); // <<< ВОТ ЭТО ОБЯЗАТЕЛЬНО
+  if (popup.open) {
+    popup.open(); // у Popup
+  }
 
   popupRef.current = popup;
 
