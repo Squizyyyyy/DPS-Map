@@ -5,7 +5,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 let lastAddTime = 0;
 let lastDeleteTime = 0;
-let currentOpenPopupMarkerId = null;
 
 export default function MapViewMapGL({ city }) {
   const mapRef = useRef(null);
@@ -19,7 +18,8 @@ export default function MapViewMapGL({ city }) {
       script.src = "https://mapgl.2gis.com/api/js/v1";
       script.async = true;
       script.onload = () => resolve(window.mapgl);
-      script.onerror = () => reject(new Error("Не удалось загрузить 2ГИС MapGL SDK"));
+      script.onerror = () =>
+        reject(new Error("Не удалось загрузить 2ГИС MapGL SDK"));
       document.body.appendChild(script);
     });
 
@@ -63,76 +63,63 @@ export default function MapViewMapGL({ city }) {
   };
 
   const openPopup = (m) => {
-    currentOpenPopupMarkerId = m.id;
-
-    if (!popupRef.current) {
-      popupRef.current = document.createElement("div");
-      popupRef.current.className = "custom-popup";
-      popupRef.current.style.position = "absolute";
-      popupRef.current.style.zIndex = "999";
-      popupRef.current.style.maxWidth = "240px";
-      popupRef.current.style.pointerEvents = "auto";
-      mapRef.current.getContainer().appendChild(popupRef.current);
+    // закрываем предыдущий попап
+    if (popupRef.current) {
+      popupRef.current.destroy();
+      popupRef.current = null;
     }
 
-    popupRef.current.innerHTML = `
-      <div style="position: relative; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-        <button id="close-popup" style="position: absolute; top: 4px; right: 4px; border: none; background: transparent; font-size: 16px; cursor: pointer;">✖️</button>
+    const popup = new window.mapgl.Popup(mapRef.current, {
+      coordinates: [m.lng, m.lat],
+      offset: [0, -30], // чтобы чуть выше маркера
+      closeButton: true,
+      closeOnClick: true,
+    });
+
+    popup.setHTML(`
+      <div style="font-size:14px; max-width:240px;">
         <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
           ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
         </p>
-        <p style="margin: 3px 0;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-        <p style="margin: 3px 0;"><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
-        ${m.comment ? `<p style="margin: 3px 0;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-        <p style="margin: 0 0 12px 0;"><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
-        <div style="display: flex; justify-content: space-between; gap: 8px;">
-          <button id="confirm-${m.id}" style="flex:1; padding: 5px; background: #28a745; color: white; border: none; border-radius: 6px;">✅ Подтвердить</button>
-          <button id="delete-${m.id}" style="flex:1; padding: 5px; background: #dc3545; color: white; border: none; border-radius: 6px;">❌ Уехали</button>
+        <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+        <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+        ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+        <p><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
+        <div style="display: flex; justify-content: space-between; gap: 8px; margin-top: 8px;">
+          <button id="confirm-${m.id}" style="flex:1; padding: 5px; background: #28a745; color: white; border: none; border-radius: 6px; cursor:pointer;">
+            ✅ Подтвердить
+          </button>
+          <button id="delete-${m.id}" style="flex:1; padding: 5px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor:pointer;">
+            ❌ Уехали
+          </button>
         </div>
       </div>
-    `;
+    `);
 
-    document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
-    document.getElementById(`delete-${m.id}`).onclick = () => {
-      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
-    };
-    document.getElementById("close-popup").onclick = () => {
-      popupRef.current.style.display = "none";
-    };
+    popupRef.current = popup;
 
-    // позиционируем над маркером
-    const updatePosition = () => {
-      const point = mapRef.current.project([m.lng, m.lat]);
-      popupRef.current.style.left = `${point[0] - popupRef.current.offsetWidth / 2}px`;
-      popupRef.current.style.top = `${point[1] - popupRef.current.offsetHeight - 10}px`;
-
-      // Проверка, если попап выходит за границы, центрируем карту
-      const mapWidth = mapRef.current.getContainer().clientWidth;
-      const mapHeight = mapRef.current.getContainer().clientHeight;
-      const padding = 20;
-      let offsetX = 0;
-      let offsetY = 0;
-
-      if (point[0] - popupRef.current.offsetWidth / 2 < padding)
-        offsetX = point[0] - popupRef.current.offsetWidth / 2 - padding;
-      else if (point[0] + popupRef.current.offsetWidth / 2 > mapWidth - padding)
-        offsetX = point[0] + popupRef.current.offsetWidth / 2 - mapWidth + padding;
-
-      if (point[1] - popupRef.current.offsetHeight - 10 < padding)
-        offsetY = point[1] - popupRef.current.offsetHeight - 10 - padding;
-
-      if (offsetX || offsetY) mapRef.current.panBy([offsetX, offsetY]);
-    };
-
-    updatePosition();
+    // обработчики кнопок
+    setTimeout(() => {
+      const confirmBtn = document.getElementById(`confirm-${m.id}`);
+      const deleteBtn = document.getElementById(`delete-${m.id}`);
+      if (confirmBtn) confirmBtn.onclick = () => handleConfirm(m.id);
+      if (deleteBtn)
+        deleteBtn.onclick = () => {
+          if (window.confirm("Вы уверены, что хотите удалить метку?"))
+            handleDelete(m.id);
+        };
+    }, 0);
   };
 
   const handleConfirm = async (id) => {
     try {
-      const res = await fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`, {
-        method: "POST",
-        credentials: "include"
-      });
+      const res = await fetch(
+        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
       if (!res.ok) throw new Error("Ошибка подтверждения");
       toast.success("Метка подтверждена");
       fetchMarkers();
@@ -149,7 +136,10 @@ export default function MapViewMapGL({ city }) {
     }
 
     try {
-      const res = await fetch(`https://dps-map-rzn-h0uq.onrender.com/markers/${id}/delete`, { method: "POST" });
+      const res = await fetch(
+        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/delete`,
+        { method: "POST" }
+      );
       if (res.ok) {
         lastDeleteTime = Date.now();
         if (markersRef.current[id]) {
@@ -172,7 +162,9 @@ export default function MapViewMapGL({ city }) {
       return;
     }
 
-    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
+    const confirmAdd = window.confirm(
+      "Вы уверены, что хотите поставить метку здесь?"
+    );
     if (!confirmAdd) return;
 
     let comment = "";
@@ -199,7 +191,7 @@ export default function MapViewMapGL({ city }) {
 
     let mapInstance;
     const BOUND_LAT_DIFF = 0.21;
-    const BOUND_LNG_DIFF = 0.40;
+    const BOUND_LNG_DIFF = 0.4;
 
     loadMapGL().then(() => {
       mapInstance = new window.mapgl.Map("map-2gis", {
@@ -207,7 +199,6 @@ export default function MapViewMapGL({ city }) {
         center: [city.coords[1], city.coords[0]],
         zoom: 12,
         minZoom: 11,
-        maxBoundsViscosity: 1.0,
         restrictArea: [
           [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF],
           [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF],
@@ -227,5 +218,10 @@ export default function MapViewMapGL({ city }) {
     };
   }, [city]);
 
-  return <div id="map-2gis" style={{ width: "100%", height: "100%", position: "relative" }} />;
+  return (
+    <div
+      id="map-2gis"
+      style={{ width: "100%", height: "100%", position: "relative" }}
+    />
+  );
 }
