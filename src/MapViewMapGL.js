@@ -123,40 +123,37 @@ setTimeout(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    const popupRect = content.getBoundingClientRect();
+    const markerPx = map.project([m.lng, m.lat]);
     const canvas = map.getCanvas();
     const canvasWidth = canvas.clientWidth;
     const canvasHeight = canvas.clientHeight;
 
-    // пиксели положения маркера
-    const markerPx = map.project([m.lng, m.lat]);
+    const popupWidth = 240; // фикс ширина
+    const popupHeight = content.offsetHeight; // фактическая высота DOM
 
-    // границы попапа в пикселях канваса
-    const popupLeft = markerPx.x - popupRect.width / 2;
-    const popupRight = markerPx.x + popupRect.width / 2;
-    const popupTop = markerPx.y - popupRect.height;
+    // вычисляем края попапа
+    const popupLeft = markerPx.x - popupWidth / 2;
+    const popupRight = markerPx.x + popupWidth / 2;
+    const popupTop = markerPx.y - popupHeight;
     const popupBottom = markerPx.y;
 
     let dx = 0, dy = 0;
-    if (popupLeft < 0) dx = popupLeft - 20; // левый край вылез
+    if (popupLeft < 0) dx = popupLeft - 20;
     else if (popupRight > canvasWidth) dx = popupRight - canvasWidth + 20;
 
-    if (popupTop < 0) dy = popupTop - 20; // верхний край вылез
+    if (popupTop < 0) dy = popupTop - 20;
     else if (popupBottom > canvasHeight) dy = popupBottom - canvasHeight + 20;
 
     if (dx !== 0 || dy !== 0) {
-      // текущий центр в пикселях
       const centerPx = map.project(map.getCenter());
       const newCenterPx = [centerPx.x + dx, centerPx.y + dy];
-
-      // переводим обратно в геокоординаты
       const newCenterGeo = map.unproject(newCenterPx);
       map.setCenter(newCenterGeo);
     }
   } catch (e) {
     console.error("Ошибка пододвигания карты:", e);
   }
-}, 100);
+}, 50);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
