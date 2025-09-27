@@ -118,23 +118,25 @@ export default function MapViewMapGL({ city }) {
     const content = popup.getContent();
 
     // ✅ Пододвигаем карту, чтобы попап точно влез
-    setTimeout(() => {
-      const map = mapRef.current;
-      const popupRect = content.getBoundingClientRect();
-      const markerPixel = map.project([m.lng, m.lat]);
+setTimeout(() => {
+  const map = mapRef.current;
+  const popupRect = content.getBoundingClientRect();
+  const markerPixel = map.project([m.lng, m.lat]);
 
-      const boundsPx = [
-        [markerPixel.x - popupRect.width / 2, markerPixel.y - popupRect.height],
-        [markerPixel.x + popupRect.width / 2, markerPixel.y],
-      ];
+  // смещение от маркера до углов попапа в пикселях
+  const leftTop = [markerPixel.x - popupRect.width / 2, markerPixel.y - popupRect.height];
+  const rightBottom = [markerPixel.x + popupRect.width / 2, markerPixel.y];
 
-      const boundsGeo = [
-        map.unproject(boundsPx[0]),
-        map.unproject(boundsPx[1]),
-      ];
+  // переводим углы в географические координаты
+  const geoLeftTop = map.unproject(leftTop);
+  const geoRightBottom = map.unproject(rightBottom);
 
-      map.ensureVisible(boundsGeo, { padding: 20, duration: 300 });
-    }, 100);
+  // теперь ensureVisible будет работать
+  map.ensureVisible([geoLeftTop, geoRightBottom], {
+    padding: 40,
+    duration: 300,
+  });
+}, 100);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
