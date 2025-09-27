@@ -43,7 +43,7 @@ export default function MapViewMapGL({ city }) {
             anchor: [0.5, 1],
           });
 
-          marker.on("click", () => openPopup(m));
+          marker.on("click", () => openPopup(m, marker));
           markersRef.current[m.id] = marker;
         }
       });
@@ -62,30 +62,25 @@ export default function MapViewMapGL({ city }) {
     }
   };
 
-  const openPopup = (m) => {
-  // закрываем предыдущий
-  if (popupRef.current) {
-    popupRef.current.destroy();
-    popupRef.current = null;
-  }
+  const openPopup = (m, marker) => {
+    // скрываем предыдущий попап
+    if (popupRef.current) {
+      popupRef.current.getContent().style.display = "none";
+      popupRef.current = null;
+    }
 
-  const html = `
-    <div 
-      style="
-        background: white; 
-        padding: 10px; 
-        border-radius: 10px; 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        font-size: 14px; 
-        max-width: 240px; 
-        position: relative;
-      "
-    >
-      <button 
-        id="close-${m.id}" 
-        style="position: absolute; top: 5px; right: 8px; border: none; background: transparent; font-size: 16px; cursor: pointer;"
-      >✖</button>
-      
+    const html = document.createElement("div");
+    html.className = "popup";
+    html.style.background = "white";
+    html.style.padding = "10px";
+    html.style.borderRadius = "10px";
+    html.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+    html.style.fontSize = "14px";
+    html.style.maxWidth = "240px";
+    html.style.position = "relative";
+
+    html.innerHTML = `
+      <button class="popup-close" style="position:absolute;top:5px;right:8px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
       <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
       </p>
@@ -93,37 +88,41 @@ export default function MapViewMapGL({ city }) {
       <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
       ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
       <p><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
-      <div style="display:flex; justify-content:space-between; gap:8px; margin-top:8px;">
-        <button id="confirm-${m.id}" style="flex:1; padding:5px; background:#28a745; color:white; border:none; border-radius:6px; cursor:pointer;">✅ Подтвердить</button>
-        <button id="delete-${m.id}" style="flex:1; padding:5px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer;">❌ Уехали</button>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;">
+        <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
+        <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
-    </div>
-  `;
+    `;
 
-  // создаём HtmlMarker
-  const popup = new window.mapgl.HtmlMarker(mapRef.current, {
-    coordinates: [m.lng, m.lat],
-    html,
-    anchor: [0.5, 1.2], // чуть выше метки
-  });
+    const popup = new window.mapgl.HtmlMarker(mapRef.current, {
+      coordinates: [m.lng, m.lat],
+      html,
+      anchor: [0.5, 1.2],
+    });
 
-  popupRef.current = popup;
+    popupRef.current = popup;
 
-  // кнопки и крестик
-  setTimeout(() => {
-    document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
-    document.getElementById(`delete-${m.id}`).onclick = () => {
-      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
-    };
-    document.getElementById(`close-${m.id}`).onclick = () => {
-      popup.destroy();
+    const content = popup.getContent();
+    content.querySelector(".popup-close").addEventListener("click", () => {
+      content.style.display = "none";
       popupRef.current = null;
-    };
-  }, 0);
+    });
+    content.querySelector(".confirm-btn").addEventListener("click", () =>
+      handleConfirm(m.id)
+    );
+    content.querySelector(".delete-btn").addEventListener("click", () => {
+      if (window.confirm("Вы уверены, что хотите удалить метку?"))
+        handleDelete(m.id);
+    });
 
-  // центрируем карту
-  mapRef.current.setCenter([m.lng, m.lat]);
-};
+    // скрываем попап при клике на карту вне маркера
+    mapRef.current.on("click", (ev) => {
+      if (!marker.getBounds().contains(ev.lngLat)) {
+        content.style.display = "none";
+        popupRef.current = null;
+      }
+    });
+  };
 
   const handleConfirm = async (id) => {
     try {
@@ -167,7 +166,6 @@ export default function MapViewMapGL({ city }) {
   const handleMapClick = (event) => {
     const [lng, lat] = event.lngLat;
     const now = Date.now();
-
     if (now - lastAddTime < 5 * 60 * 1000) {
       toast.warn("Добавлять метки можно раз в 5 минут");
       return;
