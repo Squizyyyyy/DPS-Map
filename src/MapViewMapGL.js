@@ -123,30 +123,43 @@ setTimeout(() => {
     const map = mapRef.current;
     if (!map) return;
 
+    // 1. Координаты метки в пикселях
     const markerPx = map.project([m.lng, m.lat]);
     const canvas = map.getCanvas();
     const canvasWidth = canvas.clientWidth;
     const canvasHeight = canvas.clientHeight;
 
-    const popupWidth = 240; // фикс ширина
-    const popupHeight = content.offsetHeight; // фактическая высота DOM
+    // 2. Размеры попапа (у тебя фикс ширина + динамическая высота)
+    const popupWidth = 240;
+    const popupHeight = content.offsetHeight;
 
-    // вычисляем края попапа
+    // 3. Координаты попапа в пикселях (относительно canvas)
     const popupLeft = markerPx.x - popupWidth / 2;
     const popupRight = markerPx.x + popupWidth / 2;
-    const popupTop = markerPx.y - popupHeight;
+    const popupTop = markerPx.y - popupHeight - 10; // -10 чтобы учесть стрелочку
     const popupBottom = markerPx.y;
 
-    let dx = 0, dy = 0;
-    if (popupLeft < 0) dx = popupLeft - 20;
-    else if (popupRight > canvasWidth) dx = popupRight - canvasWidth + 20;
+    // 4. Проверяем, вылезает ли попап
+    let shiftX = 0;
+    let shiftY = 0;
+    const padding = 20;
 
-    if (popupTop < 0) dy = popupTop - 20;
-    else if (popupBottom > canvasHeight) dy = popupBottom - canvasHeight + 20;
+    if (popupLeft < padding) {
+      shiftX = popupLeft - padding;
+    } else if (popupRight > canvasWidth - padding) {
+      shiftX = popupRight - (canvasWidth - padding);
+    }
 
-    if (dx !== 0 || dy !== 0) {
+    if (popupTop < padding) {
+      shiftY = popupTop - padding;
+    } else if (popupBottom > canvasHeight - padding) {
+      shiftY = popupBottom - (canvasHeight - padding);
+    }
+
+    // 5. Если вылезает → двигаем центр карты
+    if (shiftX !== 0 || shiftY !== 0) {
       const centerPx = map.project(map.getCenter());
-      const newCenterPx = [centerPx.x + dx, centerPx.y + dy];
+      const newCenterPx = [centerPx.x + shiftX, centerPx.y + shiftY];
       const newCenterGeo = map.unproject(newCenterPx);
       map.setCenter(newCenterGeo);
     }
