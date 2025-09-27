@@ -48,7 +48,6 @@ export default function MapViewMapGL({ city }) {
         }
       });
 
-      // удаляем отсутствующие
       const currentIds = data.map((m) => m.id);
       Object.keys(markersRef.current).forEach((id) => {
         if (!currentIds.includes(Number(id))) {
@@ -63,7 +62,6 @@ export default function MapViewMapGL({ city }) {
   };
 
   const openPopup = (m, marker) => {
-    // скрываем предыдущий попап
     if (popupRef.current) {
       popupRef.current.getContent().style.display = "none";
       popupRef.current = null;
@@ -71,33 +69,36 @@ export default function MapViewMapGL({ city }) {
 
     const html = document.createElement("div");
     html.className = "popup";
+    html.style.position = "relative";
     html.style.background = "white";
     html.style.padding = "10px";
     html.style.borderRadius = "10px";
     html.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
     html.style.fontSize = "14px";
     html.style.maxWidth = "240px";
-    html.style.position = "relative";
 
     html.innerHTML = `
-      <button class="popup-close" style="position:absolute;top:5px;right:8px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
-      <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
-        ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
-      </p>
-      <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-      <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
-      ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-      <p><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
-      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;">
-        <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
-        <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
+      <div class="popup-content" style="position: relative; z-index:1;">
+        <button class="popup-close" style="position:absolute;top:5px;right:8px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
+        <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
+          ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
+        </p>
+        <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+        <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
+        ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+        <p><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;">
+          <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
+          <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
+        </div>
       </div>
+      <div class="popup-tip" style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid white;margin:0 auto;"></div>
     `;
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
       coordinates: [m.lng, m.lat],
       html,
-      anchor: [0.5, 1.2],
+      anchor: [0.5, 1],
     });
 
     popupRef.current = popup;
@@ -115,13 +116,15 @@ export default function MapViewMapGL({ city }) {
         handleDelete(m.id);
     });
 
-    // скрываем попап при клике на карту вне маркера
-    mapRef.current.on("click", (ev) => {
+    // Скрываем попап при клике на карту вне маркера
+    const mapClickHandler = (ev) => {
       if (!marker.getBounds().contains(ev.lngLat)) {
         content.style.display = "none";
         popupRef.current = null;
+        mapRef.current.off("click", mapClickHandler);
       }
-    });
+    };
+    mapRef.current.on("click", mapClickHandler);
   };
 
   const handleConfirm = async (id) => {
