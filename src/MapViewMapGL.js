@@ -78,24 +78,34 @@ export default function MapViewMapGL({ city }) {
     html.style.fontSize = "14px";
     html.style.color = "black";
     html.style.fontFamily = "Arial, sans-serif";
-    html.style.transform = "translate(-40%, -100%)";
+    html.style.transform = "translate(-45%, -100%)";
     html.style.zIndex = "1000";
     html.style.overflow = "visible";
 
     html.innerHTML = `
-      <button class="popup-close" style="position:absolute;top:5px;right:5px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
-      <p style="margin: 3px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
+      <button class="popup-close" style="position:absolute;top:5px;right:3px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
+      <p style="margin: 4px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
       <p style="margin:2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
       <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
       ${m.comment ? `<p style="margin:2px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-      <p style="margin:2px 0 6px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
+      <p style="margin:2px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
       <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
-      <div class="popup-tip" style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid white;margin:4px auto 0;"></div>
+      <div class="popup-tip" style="
+        width:0; 
+        height:0; 
+        border-left:8px solid transparent; 
+        border-right:8px solid transparent; 
+        border-top:8px solid white; 
+        position:absolute; 
+        bottom:-8px; 
+        left:50%; 
+        transform:translateX(-50%);
+      "></div>
     `;
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
@@ -106,8 +116,8 @@ export default function MapViewMapGL({ city }) {
 
     popupRef.current = popup;
     const content = popup.getContent();
-	
-	// Панорамирование карты для видимости попапа
+
+    // Пододвигаем карту, если попап выходит за пределы экрана
     setTimeout(() => {
       const mapCanvas = mapRef.current.getCanvas();
       const rect = content.getBoundingClientRect();
