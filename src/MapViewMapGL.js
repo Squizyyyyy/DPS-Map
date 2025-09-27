@@ -78,23 +78,24 @@ export default function MapViewMapGL({ city }) {
     html.style.fontSize = "14px";
     html.style.color = "black";
     html.style.fontFamily = "Arial, sans-serif";
-    html.style.transform = "translate(-40%, -100%)"; // сдвиг чуть правее
+    html.style.transform = "translate(-40%, -100%)";
     html.style.zIndex = "1000";
+    html.style.overflow = "visible";
 
     html.innerHTML = `
-      <button class="popup-close" style="position:absolute;top:5px;right:8px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
-      <p style="margin: 2px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
-        ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
+      <button class="popup-close" style="position:absolute;top:5px;right:5px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
+      <p style="margin: 3px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
+        ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
-      <p style="margin: 2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-      <p style="margin: 2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
+      <p style="margin:2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+      <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
       ${m.comment ? `<p style="margin:2px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-      <p style="margin: 2px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
+      <p style="margin:2px 0 6px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
       <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
-      <div class="popup-tip" style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid white;margin:5px auto 0;"></div>
+      <div class="popup-tip" style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid white;margin:4px auto 0;"></div>
     `;
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
@@ -107,13 +108,11 @@ export default function MapViewMapGL({ city }) {
 
     const content = popup.getContent();
 
-    // Закрытие попапа
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
       popupRef.current = null;
     });
 
-    // Подтвердить и обновить текущий попап
     content.querySelector(".confirm-btn").addEventListener("click", async () => {
       try {
         const res = await fetch(
@@ -121,7 +120,6 @@ export default function MapViewMapGL({ city }) {
           { method: "POST", credentials: "include" }
         );
         if (!res.ok) throw new Error("Ошибка подтверждения");
-        // обновляем данные текущей метки
         const updatedRes = await fetch(`https://dps-map-rzn-h0uq.onrender.com/markers`);
         const markers = await updatedRes.json();
         const updatedMarker = markers.find((mk) => mk.id === m.id);
@@ -135,13 +133,11 @@ export default function MapViewMapGL({ city }) {
       }
     });
 
-    // Удалить
     content.querySelector(".delete-btn").addEventListener("click", () => {
       if (window.confirm("Вы уверены, что хотите удалить метку?"))
         handleDelete(m.id);
     });
 
-    // скрываем попап при клике на карту вне маркера
     const mapClickHandler = (ev) => {
       if (!marker.getBounds().contains(ev.lngLat)) {
         content.style.display = "none";
