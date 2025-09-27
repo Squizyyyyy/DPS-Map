@@ -1,4 +1,3 @@
-// src/MapViewMapGL.js
 import React, { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -76,6 +75,7 @@ export default function MapViewMapGL({ city }) {
     html.style.borderRadius = "10px";
     html.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
     html.style.fontSize = "14px";
+	html.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif";
     html.style.color = "black";
     html.style.fontFamily = "Arial, sans-serif";
     html.style.transform = "translate(-45%, -100%)";
@@ -83,7 +83,7 @@ export default function MapViewMapGL({ city }) {
     html.style.overflow = "visible";
 
     html.innerHTML = `
-      <button class="popup-close" style="position:absolute;top:5px;right:3px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
+      <button class="popup-close" style="position:absolute;top:2px;right:2px;border:none;background:transparent;font-size:16px;cursor:pointer;">×</button>
       <p style="margin: 4px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
@@ -116,58 +116,6 @@ export default function MapViewMapGL({ city }) {
 
     popupRef.current = popup;
     const content = popup.getContent();
-
-    // ✅ Пододвигаем карту, чтобы попап влез
-setTimeout(() => {
-  try {
-    const map = mapRef.current;
-    if (!map) return;
-
-    // 🎯 Получаем координаты метки в пикселях
-    const markerPx = map.project([m.lng, m.lat]);
-    const canvas = map.getCanvas();
-    const canvasWidth = canvas.clientWidth;
-    const canvasHeight = canvas.clientHeight;
-
-    // 📏 Размеры попапа
-    const popupWidth = 240; // у тебя фиксировано
-    const popupHeight = content.offsetHeight;
-
-    // 📦 Границы попапа в пикселях
-    const popupLeft = markerPx.x - popupWidth / 2;
-    const popupRight = markerPx.x + popupWidth / 2;
-    const popupTop = markerPx.y - popupHeight - 10; // 10px на стрелочку
-    const popupBottom = markerPx.y;
-
-    // 🛑 Проверка вылета за экран
-    let shiftX = 0;
-    let shiftY = 0;
-    const padding = 20;
-
-    if (popupLeft < padding) {
-      shiftX = popupLeft - padding;
-    } else if (popupRight > canvasWidth - padding) {
-      shiftX = popupRight - (canvasWidth - padding);
-    }
-
-    if (popupTop < padding) {
-      shiftY = popupTop - padding;
-    } else if (popupBottom > canvasHeight - padding) {
-      shiftY = popupBottom - (canvasHeight - padding);
-    }
-
-    // 🔄 Двигаем центр карты
-    if (shiftX !== 0 || shiftY !== 0) {
-      const centerPx = map.project(map.getCenter());
-      const newCenterPx = [centerPx.x + shiftX, centerPx.y + shiftY];
-      const newCenterGeo = map.unproject(newCenterPx);
-
-      map.setCenter(newCenterGeo);
-    }
-  } catch (e) {
-    console.error("Ошибка пододвигания карты:", e);
-  }
-}, 50);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
@@ -261,7 +209,7 @@ setTimeout(() => {
         await fetchMarkers();
         toast.success("Метка добавлена");
       })
-      .catch(() => toast.error("Ошибка при добавлении метки"));
+      .catch(() => toast.error("Добавлять метки можно раз в 5 минут"));
   };
 
   useEffect(() => {
@@ -284,6 +232,14 @@ setTimeout(() => {
       });
 
       mapRef.current = mapInstance;
+	  
+	  // Подвинуть логотип 2GIS
+      const logo = document.querySelector(".maplibregl-ctrl-logo");
+      if (logo) {
+        logo.style.bottom = "10px"; // сместить выше
+        logo.style.right = "10px";  // сместить левее
+      }
+	  
       mapInstance.on("click", handleMapClick);
 
       fetchMarkers();

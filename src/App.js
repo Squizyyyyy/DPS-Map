@@ -1,4 +1,3 @@
-// src/App.js
 import React from "react";
 import MainPage from "./MainPage";
 import { ToastContainer } from "react-toastify";
