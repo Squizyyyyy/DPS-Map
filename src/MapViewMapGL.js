@@ -120,8 +120,11 @@ export default function MapViewMapGL({ city }) {
     // ✅ Пододвигаем карту, чтобы попап точно влез
 setTimeout(() => {
   const map = mapRef.current;
+  if (!map) return;
+
   const popupRect = content.getBoundingClientRect();
-  const mapRect = map.getContainer().getBoundingClientRect();
+  const container = map.getContainer(); // сам div карты
+  const mapRect = container.getBoundingClientRect();
   const markerPixel = map.project([m.lng, m.lat]);
 
   let dx = 0;
@@ -142,9 +145,9 @@ setTimeout(() => {
   }
 
   if (dx !== 0 || dy !== 0) {
-    map.panBy([dx, dy], { duration: 300 });
+    map.panBy([dx, dy], { duration: 300 }); // 👈 ключевой момент
   }
-}, 100);
+}, 200);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
