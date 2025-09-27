@@ -80,7 +80,7 @@ export default function MapViewMapGL({ city }) {
 	html.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif";
     html.style.color = "black";
     html.style.fontFamily = "Arial, sans-serif";
-    html.style.transform = "translate(-45%, -100%)";
+    html.style.transform = "translate(-45%, -105%)";
     html.style.zIndex = "1000";
     html.style.overflow = "visible";
 
