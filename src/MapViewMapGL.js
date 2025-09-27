@@ -121,21 +121,29 @@ export default function MapViewMapGL({ city }) {
 setTimeout(() => {
   const map = mapRef.current;
   const popupRect = content.getBoundingClientRect();
+  const mapRect = map.getContainer().getBoundingClientRect();
   const markerPixel = map.project([m.lng, m.lat]);
 
-  // пиксельные координаты углов попапа
-  const leftTop = [markerPixel.x - popupRect.width / 2, markerPixel.y - popupRect.height];
-  const rightBottom = [markerPixel.x + popupRect.width / 2, markerPixel.y];
+  let dx = 0;
+  let dy = 0;
 
-  // переводим их в географические координаты
-  const geoLeftTop = map.unproject(leftTop);
-  const geoRightBottom = map.unproject(rightBottom);
+  // проверка по горизонтали
+  if (markerPixel.x - popupRect.width / 2 < 0) {
+    dx = -(markerPixel.x - popupRect.width / 2) + 20;
+  } else if (markerPixel.x + popupRect.width / 2 > mapRect.width) {
+    dx = mapRect.width - (markerPixel.x + popupRect.width / 2) - 20;
+  }
 
-  // заставляем карту показать весь прямоугольник
-  map.fitBounds([geoLeftTop, geoRightBottom], {
-    padding: 40,
-    duration: 300,
-  });
+  // проверка по вертикали
+  if (markerPixel.y - popupRect.height < 0) {
+    dy = -(markerPixel.y - popupRect.height) + 20;
+  } else if (markerPixel.y > mapRect.height) {
+    dy = mapRect.height - markerPixel.y - 20;
+  }
+
+  if (dx !== 0 || dy !== 0) {
+    map.panBy([dx, dy], { duration: 300 });
+  }
 }, 100);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
