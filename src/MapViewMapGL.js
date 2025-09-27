@@ -123,16 +123,16 @@ setTimeout(() => {
   const popupRect = content.getBoundingClientRect();
   const markerPixel = map.project([m.lng, m.lat]);
 
-  // смещение от маркера до углов попапа в пикселях
+  // пиксельные координаты углов попапа
   const leftTop = [markerPixel.x - popupRect.width / 2, markerPixel.y - popupRect.height];
   const rightBottom = [markerPixel.x + popupRect.width / 2, markerPixel.y];
 
-  // переводим углы в географические координаты
+  // переводим их в географические координаты
   const geoLeftTop = map.unproject(leftTop);
   const geoRightBottom = map.unproject(rightBottom);
 
-  // теперь ensureVisible будет работать
-  map.ensureVisible([geoLeftTop, geoRightBottom], {
+  // заставляем карту показать весь прямоугольник
+  map.fitBounds([geoLeftTop, geoRightBottom], {
     padding: 40,
     duration: 300,
   });
