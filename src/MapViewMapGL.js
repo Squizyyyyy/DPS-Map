@@ -119,32 +119,39 @@ export default function MapViewMapGL({ city }) {
 
     // ✅ Пододвигаем карту, чтобы попап точно влез
 setTimeout(() => {
-  const map = mapRef.current;
-  if (!map) return;
+      try {
+        const map = mapRef.current;
+        if (!map) return;
 
-  const popupRect = content.getBoundingClientRect();
-  const markerPixel = map.project([m.lng, m.lat]);
+        const canvasRect = map.getCanvas().getBoundingClientRect();
+        const popupRect = content.getBoundingClientRect();
+        const padding = 12;
 
-  // рассчитываем углы попапа в пикселях
-  const leftTopPx = [
-    markerPixel.x - popupRect.width / 2,
-    markerPixel.y - popupRect.height,
-  ];
-  const rightBottomPx = [
-    markerPixel.x + popupRect.width / 2,
-    markerPixel.y,
-  ];
+        const overflowLeft = canvasRect.left + padding - popupRect.left;
+        const overflowRight = popupRect.right - (canvasRect.right - padding);
+        const overflowTop = canvasRect.top + padding - popupRect.top;
+        const overflowBottom = popupRect.bottom - (canvasRect.bottom - padding);
 
-  // конвертируем пиксели в геокоординаты
-  const leftTopGeo = map.unproject(leftTopPx);
-  const rightBottomGeo = map.unproject(rightBottomPx);
+        let dx = 0, dy = 0;
+        if (overflowLeft > 0) dx = -overflowLeft;
+        else if (overflowRight > 0) dx = overflowRight;
+        if (overflowTop > 0) dy = -overflowTop;
+        else if (overflowBottom > 0) dy = overflowBottom;
 
-  // двигаем карту так, чтобы весь прямоугольник влез
-  map.ensureVisible([leftTopGeo, rightBottomGeo], {
-    padding: 20,
-    duration: 300,
-  });
-}, 200);
+        if (dx !== 0 || dy !== 0) {
+          // центр в пикселях относительно canvas
+          const centerPx = [canvasRect.width / 2, canvasRect.height / 2];
+          const newCenterPx = [centerPx[0] + dx, centerPx[1] + dy];
+
+          // unproject ожидает координаты относительно canvas (x,y), вернёт [lng, lat]
+          const newCenterGeo = map.unproject([newCenterPx[0], newCenterPx[1]]);
+          // плавно переместим центр (setCenter можно заменить на smooth-переход, но используем setCenter)
+          map.setCenter(newCenterGeo);
+        }
+      } catch (e) {
+        console.error("Ошибка при попытке пододвинуть карту для попапа:", e);
+      }
+    }, 80);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
