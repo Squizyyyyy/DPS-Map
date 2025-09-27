@@ -123,30 +123,27 @@ setTimeout(() => {
   if (!map) return;
 
   const popupRect = content.getBoundingClientRect();
-  const container = map.getContainer(); // сам div карты
-  const mapRect = container.getBoundingClientRect();
   const markerPixel = map.project([m.lng, m.lat]);
 
-  let dx = 0;
-  let dy = 0;
+  // рассчитываем углы попапа в пикселях
+  const leftTopPx = [
+    markerPixel.x - popupRect.width / 2,
+    markerPixel.y - popupRect.height,
+  ];
+  const rightBottomPx = [
+    markerPixel.x + popupRect.width / 2,
+    markerPixel.y,
+  ];
 
-  // проверка по горизонтали
-  if (markerPixel.x - popupRect.width / 2 < 0) {
-    dx = -(markerPixel.x - popupRect.width / 2) + 20;
-  } else if (markerPixel.x + popupRect.width / 2 > mapRect.width) {
-    dx = mapRect.width - (markerPixel.x + popupRect.width / 2) - 20;
-  }
+  // конвертируем пиксели в геокоординаты
+  const leftTopGeo = map.unproject(leftTopPx);
+  const rightBottomGeo = map.unproject(rightBottomPx);
 
-  // проверка по вертикали
-  if (markerPixel.y - popupRect.height < 0) {
-    dy = -(markerPixel.y - popupRect.height) + 20;
-  } else if (markerPixel.y > mapRect.height) {
-    dy = mapRect.height - markerPixel.y - 20;
-  }
-
-  if (dx !== 0 || dy !== 0) {
-    map.panBy([dx, dy], { duration: 300 }); // 👈 ключевой момент
-  }
+  // двигаем карту так, чтобы весь прямоугольник влез
+  map.ensureVisible([leftTopGeo, rightBottomGeo], {
+    padding: 20,
+    duration: 300,
+  });
 }, 200);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
