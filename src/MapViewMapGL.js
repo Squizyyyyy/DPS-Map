@@ -117,41 +117,46 @@ export default function MapViewMapGL({ city }) {
     popupRef.current = popup;
     const content = popup.getContent();
 
-    // ✅ Пододвигаем карту, чтобы попап точно влез
+    // ✅ Пододвигаем карту, чтобы попап влез
 setTimeout(() => {
-      try {
-        const map = mapRef.current;
-        if (!map) return;
+  try {
+    const map = mapRef.current;
+    if (!map) return;
 
-        const canvasRect = map.getCanvas().getBoundingClientRect();
-        const popupRect = content.getBoundingClientRect();
-        const padding = 12;
+    const popupRect = content.getBoundingClientRect();
+    const canvas = map.getCanvas();
+    const canvasWidth = canvas.clientWidth;
+    const canvasHeight = canvas.clientHeight;
 
-        const overflowLeft = canvasRect.left + padding - popupRect.left;
-        const overflowRight = popupRect.right - (canvasRect.right - padding);
-        const overflowTop = canvasRect.top + padding - popupRect.top;
-        const overflowBottom = popupRect.bottom - (canvasRect.bottom - padding);
+    // пиксели положения маркера
+    const markerPx = map.project([m.lng, m.lat]);
 
-        let dx = 0, dy = 0;
-        if (overflowLeft > 0) dx = -overflowLeft;
-        else if (overflowRight > 0) dx = overflowRight;
-        if (overflowTop > 0) dy = -overflowTop;
-        else if (overflowBottom > 0) dy = overflowBottom;
+    // границы попапа в пикселях канваса
+    const popupLeft = markerPx.x - popupRect.width / 2;
+    const popupRight = markerPx.x + popupRect.width / 2;
+    const popupTop = markerPx.y - popupRect.height;
+    const popupBottom = markerPx.y;
 
-        if (dx !== 0 || dy !== 0) {
-          // центр в пикселях относительно canvas
-          const centerPx = [canvasRect.width / 2, canvasRect.height / 2];
-          const newCenterPx = [centerPx[0] + dx, centerPx[1] + dy];
+    let dx = 0, dy = 0;
+    if (popupLeft < 0) dx = popupLeft - 20; // левый край вылез
+    else if (popupRight > canvasWidth) dx = popupRight - canvasWidth + 20;
 
-          // unproject ожидает координаты относительно canvas (x,y), вернёт [lng, lat]
-          const newCenterGeo = map.unproject([newCenterPx[0], newCenterPx[1]]);
-          // плавно переместим центр (setCenter можно заменить на smooth-переход, но используем setCenter)
-          map.setCenter(newCenterGeo);
-        }
-      } catch (e) {
-        console.error("Ошибка при попытке пододвинуть карту для попапа:", e);
-      }
-    }, 80);
+    if (popupTop < 0) dy = popupTop - 20; // верхний край вылез
+    else if (popupBottom > canvasHeight) dy = popupBottom - canvasHeight + 20;
+
+    if (dx !== 0 || dy !== 0) {
+      // текущий центр в пикселях
+      const centerPx = map.project(map.getCenter());
+      const newCenterPx = [centerPx.x + dx, centerPx.y + dy];
+
+      // переводим обратно в геокоординаты
+      const newCenterGeo = map.unproject(newCenterPx);
+      map.setCenter(newCenterGeo);
+    }
+  } catch (e) {
+    console.error("Ошибка пододвигания карты:", e);
+  }
+}, 100);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
