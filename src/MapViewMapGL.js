@@ -105,8 +105,25 @@ export default function MapViewMapGL({ city }) {
     });
 
     popupRef.current = popup;
-
     const content = popup.getContent();
+	
+	// Панорамирование карты для видимости попапа
+    setTimeout(() => {
+      const mapCanvas = mapRef.current.getCanvas();
+      const rect = content.getBoundingClientRect();
+      const mapRect = mapCanvas.getBoundingClientRect();
+
+      const offsetX = Math.max(0, rect.right - mapRect.right + 20) - Math.max(0, mapRect.left - rect.left - 20);
+      const offsetY = Math.max(0, rect.bottom - mapRect.bottom + 20) - Math.max(0, mapRect.top - rect.top - 20);
+
+      if (offsetX !== 0 || offsetY !== 0) {
+        const center = mapRef.current.getCenter();
+        const deltaLng = (offsetX / mapRect.width) * (mapRef.current.getBounds().east - mapRef.current.getBounds().west);
+        const deltaLat = (offsetY / mapRect.height) * (mapRef.current.getBounds().north - mapRef.current.getBounds().south);
+
+        mapRef.current.setCenter([center[0] + deltaLng, center[1] - deltaLat]);
+      }
+    }, 50);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
