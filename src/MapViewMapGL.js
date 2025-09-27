@@ -25,7 +25,7 @@ export default function MapViewMapGL({ city }) {
 
   const fetchMarkers = async () => {
     try {
-      const res = await fetch("https://dps-map-rzn-h0uq.onrender.com/markers");
+      const res = await fetch("https://dps-map-2.onrender.com/markers");
       if (!res.ok) throw new Error("Ошибка сети");
       const data = await res.json();
 
@@ -146,11 +146,11 @@ setTimeout(() => {
     content.querySelector(".confirm-btn").addEventListener("click", async () => {
       try {
         const res = await fetch(
-          `https://dps-map-rzn-h0uq.onrender.com/markers/${m.id}/confirm`,
+          `https://dps-map-2.onrender.com/markers/${m.id}/confirm`,
           { method: "POST", credentials: "include" }
         );
         if (!res.ok) throw new Error("Ошибка подтверждения");
-        const updatedRes = await fetch(`https://dps-map-rzn-h0uq.onrender.com/markers`);
+        const updatedRes = await fetch(`https://dps-map-2.onrender.com/markers`);
         const markers = await updatedRes.json();
         const updatedMarker = markers.find((mk) => mk.id === m.id);
         if (updatedMarker) {
@@ -187,7 +187,7 @@ setTimeout(() => {
 
     try {
       const res = await fetch(
-        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/delete`,
+        `https://dps-map-2.onrender.com/markers/${id}/delete`,
         { method: "POST" }
       );
       if (res.ok) {
@@ -218,7 +218,7 @@ setTimeout(() => {
     const addComment = window.confirm("Добавить комментарий к метке?");
     if (addComment) comment = window.prompt("Введите комментарий к метке:") || "";
 
-    fetch("https://dps-map-rzn-h0uq.onrender.com/markers", {
+    fetch("https://dps-map-2.onrender.com/markers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ lat, lng, comment }),
