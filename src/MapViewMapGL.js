@@ -62,13 +62,11 @@ export default function MapViewMapGL({ city }) {
   };
 
   const openPopup = (m, marker) => {
-    // скрываем предыдущий попап
     if (popupRef.current) {
       popupRef.current.getContent().style.display = "none";
       popupRef.current = null;
     }
 
-    // создаём HTML контейнер с фиксированной шириной и CSS transform
     const html = document.createElement("div");
     html.className = "popup";
     html.style.position = "absolute";
@@ -80,41 +78,64 @@ export default function MapViewMapGL({ city }) {
     html.style.fontSize = "14px";
     html.style.color = "black";
     html.style.fontFamily = "Arial, sans-serif";
-    html.style.transform = "translate(-50%, -100%)";
+    html.style.transform = "translate(-40%, -100%)"; // сдвиг чуть правее
     html.style.zIndex = "1000";
 
     html.innerHTML = `
       <button class="popup-close" style="position:absolute;top:5px;right:8px;border:none;background:transparent;font-size:16px;cursor:pointer;">✖</button>
-      <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
+      <p style="margin: 2px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
       </p>
-      <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-      <p><b>⏱️ Поставлена:</b> ${new Date(m.timestamp).toLocaleString()}</p>
-      ${m.comment ? `<p><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-      <p><b>✅ Подтверждений:</b> ${m.confirmations || 0}</p>
+      <p style="margin: 2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+      <p style="margin: 2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
+      ${m.comment ? `<p style="margin:2px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+      <p style="margin: 2px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
       <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
-      <div class="popup-tip" style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid white;margin:0 auto;"></div>
+      <div class="popup-tip" style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid white;margin:5px auto 0;"></div>
     `;
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
       coordinates: [m.lng, m.lat],
       html,
-      anchor: [0.5, 1], // уже корректно работает с transform
+      anchor: [0.5, 1],
     });
 
     popupRef.current = popup;
 
     const content = popup.getContent();
+
+    // Закрытие попапа
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
       popupRef.current = null;
     });
-    content.querySelector(".confirm-btn").addEventListener("click", () =>
-      handleConfirm(m.id)
-    );
+
+    // Подтвердить и обновить текущий попап
+    content.querySelector(".confirm-btn").addEventListener("click", async () => {
+      try {
+        const res = await fetch(
+          `https://dps-map-rzn-h0uq.onrender.com/markers/${m.id}/confirm`,
+          { method: "POST", credentials: "include" }
+        );
+        if (!res.ok) throw new Error("Ошибка подтверждения");
+        // обновляем данные текущей метки
+        const updatedRes = await fetch(`https://dps-map-rzn-h0uq.onrender.com/markers`);
+        const markers = await updatedRes.json();
+        const updatedMarker = markers.find((mk) => mk.id === m.id);
+        if (updatedMarker) {
+          content.querySelector(".popup-confirmations").textContent = updatedMarker.confirmations || 0;
+          content.querySelector(".popup-time").textContent = new Date(updatedMarker.timestamp).toLocaleString();
+        }
+        toast.success("Метка подтверждена");
+      } catch {
+        toast.error("Ошибка при подтверждении");
+      }
+    });
+
+    // Удалить
     content.querySelector(".delete-btn").addEventListener("click", () => {
       if (window.confirm("Вы уверены, что хотите удалить метку?"))
         handleDelete(m.id);
@@ -129,20 +150,6 @@ export default function MapViewMapGL({ city }) {
       }
     };
     mapRef.current.on("click", mapClickHandler);
-  };
-
-  const handleConfirm = async (id) => {
-    try {
-      const res = await fetch(
-        `https://dps-map-rzn-h0uq.onrender.com/markers/${id}/confirm`,
-        { method: "POST", credentials: "include" }
-      );
-      if (!res.ok) throw new Error("Ошибка подтверждения");
-      toast.success("Метка подтверждена");
-      fetchMarkers();
-    } catch {
-      toast.error("Ошибка при подтверждении");
-    }
   };
 
   const handleDelete = async (id) => {
