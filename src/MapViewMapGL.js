@@ -123,23 +123,23 @@ setTimeout(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    // 1. Координаты метки в пикселях
+    // 🎯 Получаем координаты метки в пикселях
     const markerPx = map.project([m.lng, m.lat]);
     const canvas = map.getCanvas();
     const canvasWidth = canvas.clientWidth;
     const canvasHeight = canvas.clientHeight;
 
-    // 2. Размеры попапа (у тебя фикс ширина + динамическая высота)
-    const popupWidth = 240;
+    // 📏 Размеры попапа
+    const popupWidth = 240; // у тебя фиксировано
     const popupHeight = content.offsetHeight;
 
-    // 3. Координаты попапа в пикселях (относительно canvas)
+    // 📦 Границы попапа в пикселях
     const popupLeft = markerPx.x - popupWidth / 2;
     const popupRight = markerPx.x + popupWidth / 2;
-    const popupTop = markerPx.y - popupHeight - 10; // -10 чтобы учесть стрелочку
+    const popupTop = markerPx.y - popupHeight - 10; // 10px на стрелочку
     const popupBottom = markerPx.y;
 
-    // 4. Проверяем, вылезает ли попап
+    // 🛑 Проверка вылета за экран
     let shiftX = 0;
     let shiftY = 0;
     const padding = 20;
@@ -156,11 +156,12 @@ setTimeout(() => {
       shiftY = popupBottom - (canvasHeight - padding);
     }
 
-    // 5. Если вылезает → двигаем центр карты
+    // 🔄 Двигаем центр карты
     if (shiftX !== 0 || shiftY !== 0) {
       const centerPx = map.project(map.getCenter());
       const newCenterPx = [centerPx.x + shiftX, centerPx.y + shiftY];
       const newCenterGeo = map.unproject(newCenterPx);
+
       map.setCenter(newCenterGeo);
     }
   } catch (e) {
