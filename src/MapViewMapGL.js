@@ -69,16 +69,24 @@ export default function MapViewMapGL({ city }) {
     popupRef.current = null;
   }
 
-  const popup = new window.mapgl.Popup(mapRef.current, {
-    closeButton: true,
-    closeOnClick: false,
-  });
-
-  popup.setCoordinates([m.lng, m.lat]);
-  popup.setHTML(`
-    <div style="font-size:14px; max-width:240px; position: relative;">
-      <button class="popup-close" style="position: absolute; top:5px; right:8px; border:none; background:transparent; font-size:16px; cursor:pointer;">✖</button>
-      <p style="margin:3px 0 8px 0; text-align:center; font-weight:bold;">
+  const html = `
+    <div 
+      style="
+        background: white; 
+        padding: 10px; 
+        border-radius: 10px; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        font-size: 14px; 
+        max-width: 240px; 
+        position: relative;
+      "
+    >
+      <button 
+        id="close-${m.id}" 
+        style="position: absolute; top: 5px; right: 8px; border: none; background: transparent; font-size: 16px; cursor: pointer;"
+      >✖</button>
+      
+      <p style="margin: 3px 0 8px 0; text-align: center; font-weight: bold;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела" : "🚓 ДПС здесь"}
       </p>
       <p><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
@@ -90,37 +98,28 @@ export default function MapViewMapGL({ city }) {
         <button id="delete-${m.id}" style="flex:1; padding:5px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer;">❌ Уехали</button>
       </div>
     </div>
-  `);
+  `;
 
-  popup.show();
+  // создаём HtmlMarker
+  const popup = new window.mapgl.HtmlMarker(mapRef.current, {
+    coordinates: [m.lng, m.lat],
+    html,
+    anchor: [0.5, 1.2], // чуть выше метки
+  });
 
   popupRef.current = popup;
 
-  const popupHtml = popup.getContent();
-
-  // крестик
-  const closeBtn = popupHtml.querySelector(".popup-close");
-  if (closeBtn) closeBtn.addEventListener("click", () => {
-    popup.destroy();
-    popupRef.current = null;
-  });
-
-  // кнопки
-  const confirmBtn = popupHtml.querySelector(`#confirm-${m.id}`);
-  const deleteBtn = popupHtml.querySelector(`#delete-${m.id}`);
-  if (confirmBtn) confirmBtn.onclick = () => handleConfirm(m.id);
-  if (deleteBtn) deleteBtn.onclick = () => {
-    if (window.confirm("Вы уверены, что хотите удалить метку?"))
-      handleDelete(m.id);
-  };
-
-  // закрытие при клике по карте
-  const mapClickHandler = () => {
-    popup.destroy();
-    popupRef.current = null;
-    mapRef.current.off("click", mapClickHandler);
-  };
-  mapRef.current.on("click", mapClickHandler);
+  // кнопки и крестик
+  setTimeout(() => {
+    document.getElementById(`confirm-${m.id}`).onclick = () => handleConfirm(m.id);
+    document.getElementById(`delete-${m.id}`).onclick = () => {
+      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
+    };
+    document.getElementById(`close-${m.id}`).onclick = () => {
+      popup.destroy();
+      popupRef.current = null;
+    };
+  }, 0);
 
   // центрируем карту
   mapRef.current.setCenter([m.lng, m.lat]);
