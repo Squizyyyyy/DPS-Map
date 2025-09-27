@@ -70,7 +70,9 @@ export default function MapViewMapGL({ city }) {
     html.className = "popup";
     html.style.position = "absolute";
     html.style.width = "240px";
-    html.style.background = "white";
+    html.style.background = "rgba(255, 255, 255, 0.2)";
+    html.style.backdropFilter = "blur(10px)";
+    html.style.border = "1px solid rgba(255,255,255,0.3)";
     html.style.padding = "10px";
     html.style.borderRadius = "10px";
     html.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
@@ -83,15 +85,15 @@ export default function MapViewMapGL({ city }) {
     html.style.overflow = "visible";
 
     html.innerHTML = `
-      <button class="popup-close" style="position:absolute;top:2px;right:2px;border:none;background:transparent;font-size:16px;cursor:pointer;">×</button>
-      <p style="margin: 4px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
+      <button class="popup-close" style="position:absolute;top:2px;right:2px;border:none;background:transparent;font-size:16px;cursor:pointer;color:black;">×</button>
+      <p style="margin: 2px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
-      <p style="margin:2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-      <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
-      ${m.comment ? `<p style="margin:2px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-      <p style="margin:2px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
-      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;">
+      <p style="margin:1.7px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+      <p style="margin:1.7px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
+      ${m.comment ? `<p style="margin:1.7px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+      <p style="margin:1.7px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:9px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
