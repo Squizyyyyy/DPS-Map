@@ -117,34 +117,24 @@ export default function MapViewMapGL({ city }) {
     popupRef.current = popup;
     const content = popup.getContent();
 
-    // Пододвигаем карту, если попап выходит за пределы экрана
+    // ✅ Пододвигаем карту, чтобы попап точно влез
     setTimeout(() => {
-       const map = mapRef.current;
-       const popupRect = content.getBoundingClientRect();
-       const mapRect = map.getCanvas().getBoundingClientRect();
-       const markerPixel = map.project([m.lng, m.lat]);
+      const map = mapRef.current;
+      const popupRect = content.getBoundingClientRect();
+      const markerPixel = map.project([m.lng, m.lat]);
 
-       let offsetX = 0, offsetY = 0;
+      const boundsPx = [
+        [markerPixel.x - popupRect.width / 2, markerPixel.y - popupRect.height],
+        [markerPixel.x + popupRect.width / 2, markerPixel.y],
+      ];
 
-       if (markerPixel.x - popupRect.width / 2 < 0) {
-         offsetX = -(markerPixel.x - popupRect.width / 2) + 10;
-       } else if (markerPixel.x + popupRect.width / 2 > mapRect.width) {
-         offsetX = mapRect.width - (markerPixel.x + popupRect.width / 2) - 10;
-       }
+      const boundsGeo = [
+        map.unproject(boundsPx[0]),
+        map.unproject(boundsPx[1]),
+      ];
 
-       if (markerPixel.y - popupRect.height < 0) {
-         offsetY = -(markerPixel.y - popupRect.height) + 10;
-       } else if (markerPixel.y > mapRect.height) {
-         offsetY = mapRect.height - markerPixel.y - 10;
-       }
-
-       if (offsetX !== 0 || offsetY !== 0) {
-         const center = map.getCenter();
-         const deltaLng = (offsetX / mapRect.width) * (map.getBounds().east - map.getBounds().west);
-         const deltaLat = (offsetY / mapRect.height) * (map.getBounds().north - map.getBounds().south);
-         map.setCenter([center[0] - deltaLng, center[1] + deltaLat]);
-       }
-     }, 50);
+      map.ensureVisible(boundsGeo, { padding: 20, duration: 300 });
+    }, 100);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
