@@ -119,21 +119,32 @@ export default function MapViewMapGL({ city }) {
 
     // Пододвигаем карту, если попап выходит за пределы экрана
     setTimeout(() => {
-      const mapCanvas = mapRef.current.getCanvas();
-      const rect = content.getBoundingClientRect();
-      const mapRect = mapCanvas.getBoundingClientRect();
+       const map = mapRef.current;
+       const popupRect = content.getBoundingClientRect();
+       const mapRect = map.getCanvas().getBoundingClientRect();
+       const markerPixel = map.project([m.lng, m.lat]);
 
-      const offsetX = Math.max(0, rect.right - mapRect.right + 20) - Math.max(0, mapRect.left - rect.left - 20);
-      const offsetY = Math.max(0, rect.bottom - mapRect.bottom + 20) - Math.max(0, mapRect.top - rect.top - 20);
+       let offsetX = 0, offsetY = 0;
 
-      if (offsetX !== 0 || offsetY !== 0) {
-        const center = mapRef.current.getCenter();
-        const deltaLng = (offsetX / mapRect.width) * (mapRef.current.getBounds().east - mapRef.current.getBounds().west);
-        const deltaLat = (offsetY / mapRect.height) * (mapRef.current.getBounds().north - mapRef.current.getBounds().south);
+       if (markerPixel.x - popupRect.width / 2 < 0) {
+         offsetX = -(markerPixel.x - popupRect.width / 2) + 10;
+       } else if (markerPixel.x + popupRect.width / 2 > mapRect.width) {
+         offsetX = mapRect.width - (markerPixel.x + popupRect.width / 2) - 10;
+       }
 
-        mapRef.current.setCenter([center[0] + deltaLng, center[1] - deltaLat]);
-      }
-    }, 50);
+       if (markerPixel.y - popupRect.height < 0) {
+         offsetY = -(markerPixel.y - popupRect.height) + 10;
+       } else if (markerPixel.y > mapRect.height) {
+         offsetY = mapRect.height - markerPixel.y - 10;
+       }
+
+       if (offsetX !== 0 || offsetY !== 0) {
+         const center = map.getCenter();
+         const deltaLng = (offsetX / mapRect.width) * (map.getBounds().east - map.getBounds().west);
+         const deltaLat = (offsetY / mapRect.height) * (map.getBounds().north - map.getBounds().south);
+         map.setCenter([center[0] - deltaLng, center[1] + deltaLat]);
+       }
+     }, 50);
 
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
