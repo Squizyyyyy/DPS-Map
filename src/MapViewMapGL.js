@@ -311,11 +311,11 @@ export default function MapViewMapGL({ city }) {
         style={{
           position: "absolute",
           top: "50%",
-          right: "8px",
+          right: "6px",
           transform: "translateY(-50%)",
           display: "flex",
           flexDirection: "column",
-          gap: "10px",
+          gap: "8px",
           zIndex: 1000,
         }}
       >
@@ -343,8 +343,8 @@ export default function MapViewMapGL({ city }) {
 }
 
   const zoomButtonStyle = {
-    width: "38px",
-    height: "38px",
+    width: "36px",
+    height: "36px",
     boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
@@ -352,9 +352,9 @@ export default function MapViewMapGL({ city }) {
     padding: 0,
     lineHeight: 1,
     borderRadius: "50%",
-    background: "rgba(0, 0, 0, 0.15)",
-    backdropFilter: "blur(8px)",
-    border: "1px solid rgba(0, 0, 0, 0.25)",
+    background: "rgba(255, 255, 255, 0.2)",
+    backdropFilter: "blur(10px)",
+    border: "2px solid rgba(0, 0, 0, 0.3)",
     boxShadow: "none",
     cursor: "pointer",
     fontSize: "20px",
