@@ -306,80 +306,83 @@ export default function MapViewMapGL({ city }) {
         id="map-2gis"
         style={{ width: "100%", height: "100%", position: "relative" }}
       />
-      {/* Кастомные кнопки */}
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          right: "5px",
-          transform: "translateY(-50%)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-          zIndex: 1000,
+    {/* Кастомные кнопки */}
+    <div
+      style={{
+        position: "absolute",
+        top: "50%",
+        right: "5px",
+        transform: "translateY(-50%)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        zIndex: 1000,
+      }}
+    >
+      <button
+        onClick={() => {
+          if (mapRef.current) {
+            mapRef.current.setBearing(0);
+            mapRef.current.setPitch(0);
+          }
         }}
+        className="map-btn"
       >
-	   <button
-         onClick={() => {
-           if (mapRef.current) {
-             mapRef.current.setBearing(0);
-             mapRef.current.setPitch(0);
-           }
-         }}
-         style={zoomButtonStyle}
-         onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)")}
-         onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)")}
-       >
-         <img 
-           src="/icons/compass.png" 
-           alt="Сброс ориентации" 
-           style={{ width: 20, height: 20 }} 
-         />
-       </button>
+        <img 
+          src="/icons/compass.png" 
+          alt="Сброс ориентации" 
+          style={{ width: 22, height: 22 }} 
+        />
+      </button>
 
-        <button
-          onClick={() =>
-            mapRef.current &&
-            mapRef.current.setZoom(mapRef.current.getZoom() + 1)
-          }
-          style={zoomButtonStyle}
-		  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)")}
-        >
-          +
-        </button>
-        <button
-          onClick={() =>
-            mapRef.current &&
-            mapRef.current.setZoom(mapRef.current.getZoom() - 1)
-          }
-          style={zoomButtonStyle}
-		  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)")}
-        >
-          -
-        </button>
-      </div>
+      <button
+        onClick={() =>
+          mapRef.current &&
+          mapRef.current.setZoom(mapRef.current.getZoom() + 1)
+        }
+        className="map-btn"
+      >
+        +
+      </button>
+
+      <button
+        onClick={() =>
+          mapRef.current &&
+          mapRef.current.setZoom(mapRef.current.getZoom() - 1)
+        }
+        className="map-btn"
+      >
+        -
+      </button>
     </div>
-  );
-}
 
-  const zoomButtonStyle = {
-    width: "36px",
-    height: "36px",
-    boxSizing: "border-box",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 0,
-    lineHeight: 1,
-    borderRadius: "50%",
-    background: "rgba(64, 64, 64, 0.15)",
-    border: "3px solid rgba(0, 0, 0, 0.5)",
-    boxShadow: "none",
-    cursor: "pointer",
-    fontSize: "20px",
-    fontWeight: "bold",
-    color: "white",
-    transition: "all 0.2s ease",
-  };
+    {/* Стили кнопок */}
+    <style>
+      {`
+        .map-btn {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: rgba(64, 64, 64, 0.15);
+          border: 3px solid rgba(0, 0, 0, 0.5);
+          color: white;
+          font-size: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .map-btn:hover {
+          background: rgba(0, 0, 0, 0.35);
+        }
+
+        .map-btn img {
+          pointer-events: none;
+        }
+      `}
+    </style>
+  </div>
+);
