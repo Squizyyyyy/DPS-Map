@@ -643,8 +643,8 @@ if (!isAuthorized) {
           onClick={() => setActiveTab("account")}
           style={{
             position: "absolute",
-            top: 6,
-            right: 6,
+            top: 5,
+            right: 5,
             width: 42,
             height: 42,
             boxSizing: "border-box",
@@ -654,14 +654,13 @@ if (!isAuthorized) {
             padding: 0,
             lineHeight: 1,
             borderRadius: "50%",
-            background: "rgba(255, 255, 255, 0.2)",
-            backdropFilter: "blur(10px)",
-            border: "2px solid rgba(0, 0, 0, 0.3)",
+            background: "rgba(200, 200, 200, 0.1)",
+            border: "3px solid rgba(0, 0, 0, 0.5)",
             boxShadow: "none",
             cursor: "pointer",
             fontSize: 20,
             fontWeight: "bold",
-            color: "white",
+            color: "#cccccc",
             transition: "all 0.2s ease",
             zIndex: 10000,
           }}
