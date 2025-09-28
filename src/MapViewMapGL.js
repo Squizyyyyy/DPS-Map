@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react"; // 🔥 MODIFIED: добавлен useState
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -9,8 +9,12 @@ export default function MapViewMapGL({ city }) {
   const mapRef = useRef(null);
   const markersRef = useRef({});
   const popupRef = useRef(null);
-  const zoomInBtnRef = useRef(null);
-  const zoomOutBtnRef = useRef(null);
+
+  // 🔥 NEW: состояния для маршрутов
+  const [route, setRoute] = useState(null);
+  const [showRoutePanel, setShowRoutePanel] = useState(false);
+  const [fromAddress, setFromAddress] = useState("");
+  const [toAddress, setToAddress] = useState("");
 
   const loadMapGL = () =>
     new Promise((resolve, reject) => {
@@ -253,6 +257,80 @@ export default function MapViewMapGL({ city }) {
       .catch(() => toast.warn("Добавлять метки можно раз в 5 минут"));
   };
 
+  // 🔥 NEW: функция построения маршрута через Nominatim + OSRM
+  const buildRoute = async () => {
+    if (!fromAddress || !toAddress) {
+      toast.error("Введите оба адреса!");
+      return;
+    }
+
+    try {
+      const geocode = async (addr) => {
+        const resp = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            addr
+          )}`
+        );
+        const data = await resp.json();
+        if (!data.length) throw new Error(`Не найден адрес: ${addr}`);
+        return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+      };
+
+      const fromCoords = await geocode(fromAddress);
+      const toCoords = await geocode(toAddress);
+
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(
+        ","
+      )};${toCoords.join(",")}?overview=full&geometries=geojson`;
+      const res = await fetch(osrmUrl);
+      const data = await res.json();
+      if (!data.routes || !data.routes.length)
+        throw new Error("Не удалось построить маршрут");
+
+      const routeGeoJSON = data.routes[0].geometry;
+
+      if (mapRef.current.getLayer && mapRef.current.getLayer("route")) {
+        mapRef.current.removeLayer("route");
+        mapRef.current.removeSource("route");
+      }
+
+      if (mapRef.current.addSource) {
+        mapRef.current.addSource("route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: routeGeoJSON,
+          },
+        });
+
+        mapRef.current.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": "#2787f5", "line-width": 5 },
+        });
+      }
+
+      setRoute(routeGeoJSON);
+
+      // 🔥 NEW: подгонка карты под маршрут
+      if (routeGeoJSON.coordinates.length) {
+        const bounds = routeGeoJSON.coordinates.reduce(
+          (b, coord) => b.extend(coord),
+          new window.mapgl.LngLatBounds(
+            routeGeoJSON.coordinates[0],
+            routeGeoJSON.coordinates[0]
+          )
+        );
+        mapRef.current.fitBounds(bounds, { padding: 50 });
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error(e.message || "Ошибка построения маршрута");
+    }
+  };
+
   useEffect(() => {
     if (!city || !city.coords) return;
 
@@ -266,7 +344,7 @@ export default function MapViewMapGL({ city }) {
         center: [city.coords[1], city.coords[0]],
         zoom: 12,
         minZoom: 11,
-        zoomControl: false, // отключаем встроенные кнопки
+        zoomControl: false,
         restrictArea: [
           [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF],
           [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF],
@@ -275,23 +353,6 @@ export default function MapViewMapGL({ city }) {
 
       mapRef.current = mapInstance;
       mapInstance.on("click", handleMapClick);
-	  
-	  {/* Функция для подсветки кнопок + и - */}
-	  const updateZoomButtonColors = () => {
-        if (!mapRef.current) return;
-        const zoom = mapRef.current.getZoom();
-        const maxZoom = mapRef.current.getMaxZoom();
-        const minZoom = mapRef.current.getMinZoom();
-
-        if (zoom >= maxZoom) zoomInBtnRef.current.style.color = "rgba(128,128,128,0.6)";
-        else zoomInBtnRef.current.style.color = "white";
-
-        if (zoom <= minZoom) zoomOutBtnRef.current.style.color = "rgba(128,128,128,0.6)";
-        else zoomOutBtnRef.current.style.color = "white";
-      };
-
-      mapInstance.on("zoom", updateZoomButtonColors);
-      mapInstance.on("moveend", updateZoomButtonColors);
 
       mapInstance.on("move", () => {
         const center = mapInstance.getCenter();
@@ -325,6 +386,7 @@ export default function MapViewMapGL({ city }) {
         id="map-2gis"
         style={{ width: "100%", height: "100%", position: "relative" }}
       />
+
       {/* Кастомные кнопки */}
       <div
         style={{
@@ -356,27 +418,103 @@ export default function MapViewMapGL({ city }) {
         >
           -
         </button>
+
+        {/* 🔥 NEW: кнопка открытия панели маршрута */}
+        <button
+          onClick={() => setShowRoutePanel((prev) => !prev)}
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: "50%",
+            background: "rgba(0,0,0,0.3)",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 20,
+          }}
+        >
+          🧭
+        </button>
       </div>
+
+      {/* 🔥 NEW: панель маршрута */}
+      {showRoutePanel && (
+        <div
+          style={{
+            position: "absolute",
+            top: 60,
+            right: 10,
+            width: 300,
+            padding: 16,
+            background: "rgba(0,0,0,0.7)",
+            borderRadius: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            zIndex: 10001,
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Откуда"
+            value={fromAddress}
+            onChange={(e) => setFromAddress(e.target.value)}
+            style={{
+              padding: 8,
+              borderRadius: 8,
+              border: "1px solid #2787f5",
+              background: "#0a1f33",
+              color: "#fff",
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Куда"
+            value={toAddress}
+            onChange={(e) => setToAddress(e.target.value)}
+            style={{
+              padding: 8,
+              borderRadius: 8,
+              border: "1px solid #2787f5",
+              background: "#0a1f33",
+              color: "#fff",
+            }}
+          />
+          <button
+            onClick={buildRoute}
+            style={{
+              padding: 10,
+              borderRadius: 8,
+              border: "none",
+              background: "#2787f5",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            Построить маршрут
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-  const zoomButtonStyle = {
-    width: "36px",
-    height: "36px",
-    boxSizing: "border-box",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 0,
-    lineHeight: 1,
-    borderRadius: "50%",
-    background: "rgba(64, 64, 64, 0.15)",
-    border: "3px solid rgba(0, 0, 0, 0.5)",
-    boxShadow: "none",
-    cursor: "pointer",
-    fontSize: "20px",
-    fontWeight: "bold",
-    color: "white",
-    transition: "all 0.2s ease",
-  };
+const zoomButtonStyle = {
+  width: "36px",
+  height: "36px",
+  boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  lineHeight: 1,
+  borderRadius: "50%",
+  background: "rgba(64, 64, 64, 0.15)",
+  border: "3px solid rgba(0, 0, 0, 0.5)",
+  boxShadow: "none",
+  cursor: "pointer",
+  fontSize: "20px",
+  fontWeight: "bold",
+  color: "white",
+  transition: "all 0.2s ease",
+};
