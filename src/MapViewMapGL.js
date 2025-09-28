@@ -287,15 +287,15 @@ const buildRoute = async () => {
     if (!coords || !Array.isArray(coords) || !coords.length)
       throw new Error("Не удалось построить маршрут: пустые координаты");
 
-    // удаляем старый маршрут
+    // 🔹 удаляем старый маршрут
     if (routeRef.current) {
       routeRef.current.destroy();
       routeRef.current = null;
     }
 
-    // создаем новый маршрут как Polyline (в MapGL используется path)
+    // 🔹 создаем новый маршрут как Polyline (правильно: coordinates)
     routeRef.current = new window.mapgl.Polyline(mapRef.current, {
-      path: coords.map(([lng, lat]) => ({ lng, lat })), // 🔹 path, а не coordinates
+      coordinates: coords.map(([lng, lat]) => ({ lng, lat })), // ✅ используем coordinates
       strokeWidth: 5,
       strokeColor: "#2787f5",
     });
