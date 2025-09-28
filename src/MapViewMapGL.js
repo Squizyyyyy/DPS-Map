@@ -41,7 +41,6 @@ export default function MapViewMapGL({ city }) {
             size: [30, 30],
             anchor: [0.5, 1],
           });
-
           marker.on("click", () => openPopup(m, marker));
           markersRef.current[m.id] = marker;
         } else {
@@ -53,7 +52,6 @@ export default function MapViewMapGL({ city }) {
       const currentIds = data.map((m) => m.id);
       Object.keys(markersRef.current).forEach((id) => {
         if (!currentIds.includes(Number(id))) {
-          // Закрытие попапа, если открыт для удаляемой метки
           if (
             popupRef.current &&
             popupRef.current.getCoordinates().toString() ===
@@ -98,20 +96,26 @@ export default function MapViewMapGL({ city }) {
 
     html.innerHTML = `
       <button class="popup-close" style="position:absolute;top:2px;right:2px;border:none;background:transparent;font-size:16px;cursor:pointer;color:black;">×</button>
-      <p style="margin: 0px 0 14px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
+      <p class="popup-status" style="margin: 0px 0 14px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
       <p style="margin:2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
       <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(
         m.timestamp
       ).toLocaleString()}</span></p>
-      ${m.comment ? `<p style="margin:2px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-      <p style="margin:2px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
+      ${
+        m.comment
+          ? `<p style="margin:2px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>`
+          : ""
+      }
+      <p style="margin:2px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${
+        m.confirmations || 0
+      }</span></p>
       <div style="display:flex;justify-content:space-between;gap:8px;margin-top:14px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
-	`;
+    `;
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
       coordinates: [m.lng, m.lat],
@@ -138,17 +142,15 @@ export default function MapViewMapGL({ city }) {
         // Обновляем локально
         m.confirmations = (m.confirmations || 0) + 1;
         m.timestamp = Date.now();
-        if (m.status === "unconfirmed") m.status = "confirmed";
+        m.status = "confirmed";
 
         // Обновляем попап
         content.querySelector(".popup-confirmations").textContent = m.confirmations;
-        content.querySelector(".popup-time").textContent = new Date(
-          m.timestamp
-        ).toLocaleString();
-        content.querySelector("p").innerHTML =
+        content.querySelector(".popup-time").textContent = new Date(m.timestamp).toLocaleString();
+        content.querySelector(".popup-status").textContent =
           m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь";
 
-        // Обновляем иконку метки на карте
+        // Обновляем иконку метки на карте сразу
         const iconUrl =
           m.status === "unconfirmed"
             ? "/icons/marker-gray.png"
@@ -190,7 +192,6 @@ export default function MapViewMapGL({ city }) {
       if (res.ok) {
         lastDeleteTime = Date.now();
 
-        // Закрытие попапа, если он открыт для этой метки
         if (
           popupRef.current &&
           popupRef.current.getCoordinates().toString() ===
@@ -205,7 +206,7 @@ export default function MapViewMapGL({ city }) {
           delete markersRef.current[id];
         }
         toast.success("Метка удалена");
-      } else toast.error("Ошибка при удалении");
+      } else toast.warn("Удалять метки можно раз в 5 минут");
     } catch {
       toast.warn("Удалять метки можно раз в 5 минут");
     }
@@ -263,7 +264,6 @@ export default function MapViewMapGL({ city }) {
       mapRef.current = mapInstance;
       mapInstance.on("click", handleMapClick);
 
-      // Ограничение движения карты внутри bounds
       mapInstance.on("move", () => {
         const center = mapInstance.getCenter();
         let [lng, lat] = center;
