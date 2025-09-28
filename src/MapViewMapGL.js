@@ -79,46 +79,24 @@ export default function MapViewMapGL({ city }) {
     html.style.fontSize = "14px";
     html.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif";
     html.style.color = "black";
-    html.style.transform = "translate(-45%, -101%)"; // немного выше метки
+    html.style.transform = "translate(-45%, -101%)";
     html.style.zIndex = "1000";
     html.style.overflow = "visible";
-	html.style.position = "relative";
-    html.style.paddingBottom = "12px";
 
     html.innerHTML = `
       <button class="popup-close" style="position:absolute;top:2px;right:2px;border:none;background:transparent;font-size:16px;cursor:pointer;color:black;">×</button>
-      <p style="margin: 0px 0 13px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
+      <p style="margin: 0px 0 14px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
       <p style="margin:2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
       <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
       ${m.comment ? `<p style="margin:1.7px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
       <p style="margin:2px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
-      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:14px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
 	`;
-      
-	  // Добавляем стиль для псевдоэлемента треугольника
-      const style = document.createElement("style");
-      style.innerHTML = `
-        .popup::after {
-          content: "";
-          position: absolute;
-          bottom: -8px; /* немного ниже блока */
-          left: 50%;
-          transform: translateX(-50%);
-          width: 16px;
-          height: 8px;
-          background: inherit; /* наследуем фон и прозрачность */
-          backdrop-filter: inherit; /* наследуем блюр */
-          border-left: 1px solid rgba(255,255,255,0.3);
-          border-right: 1px solid rgba(255,255,255,0.3);
-          clip-path: polygon(50% 100%, 0 0, 100% 0); /* формируем треугольник */
-        }
-      `;
-      document.head.appendChild(style);
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
       coordinates: [m.lng, m.lat],
@@ -129,13 +107,11 @@ export default function MapViewMapGL({ city }) {
     popupRef.current = popup;
     const content = popup.getContent();
 
-    // Закрытие попапа
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
       popupRef.current = null;
     });
 
-    // Подтверждение метки
     content.querySelector(".confirm-btn").addEventListener("click", async () => {
       try {
         const res = await fetch(
@@ -144,13 +120,9 @@ export default function MapViewMapGL({ city }) {
         );
         if (!res.ok) throw new Error("Ошибка подтверждения");
 
-        // Локально увеличиваем подтверждения
         m.confirmations = (m.confirmations || 0) + 1;
-
-        // Обновляем текст
         content.querySelector(".popup-confirmations").textContent = m.confirmations;
 
-        // Переставляем метку на карте с обновленным цветом
         const { lat, lng, status } = m;
         markersRef.current[m.id]?.destroy();
         delete markersRef.current[m.id];
@@ -174,7 +146,6 @@ export default function MapViewMapGL({ city }) {
       }
     });
 
-    // Удаление метки
     content.querySelector(".delete-btn").addEventListener("click", () => {
       if (window.confirm("Вы уверены, что хотите удалить метку?"))
         handleDelete(m.id);
@@ -267,6 +238,23 @@ export default function MapViewMapGL({ city }) {
       mapRef.current = mapInstance;
 
       mapInstance.on("click", handleMapClick);
+
+      // Ограничение движения карты внутри bounds
+      mapInstance.on("move", () => {
+        const center = mapInstance.getCenter();
+        let [lng, lat] = center;
+        const minLng = city.coords[1] - BOUND_LNG_DIFF;
+        const maxLng = city.coords[1] + BOUND_LNG_DIFF;
+        const minLat = city.coords[0] - BOUND_LAT_DIFF;
+        const maxLat = city.coords[0] + BOUND_LAT_DIFF;
+
+        if (lng < minLng) lng = minLng;
+        if (lng > maxLng) lng = maxLng;
+        if (lat < minLat) lat = minLat;
+        if (lat > maxLat) lat = maxLat;
+
+        mapInstance.setCenter([lng, lat]);
+      });
 
       fetchMarkers();
       const interval = setInterval(fetchMarkers, 30000);
