@@ -297,12 +297,15 @@ const buildRoute = async () => {
       routeRef.current = null;
     }
 
-    // создаем новый маршрут как Polyline
+    // создаем новый маршрут как Polyline и сразу задаем coordinates
     routeRef.current = new window.mapgl.Polyline(mapRef.current, {
-      coordinates: coords.map(([lng, lat]) => ({ lng, lat })), // 🔹 важно использовать coordinates
+      coordinates: coords.map(([lng, lat]) => ({ lng, lat })), // важно!
       strokeWidth: 5,
       strokeColor: "#2787f5",
     });
+
+    // 🔹 обязательно вызов setCoordinates, чтобы Polyline обновился на карте
+    routeRef.current.setCoordinates(coords.map(([lng, lat]) => ({ lng, lat })));
 
     // вычисляем границы маршрута
     let minLng = coords[0][0],
