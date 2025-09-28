@@ -647,27 +647,26 @@ if (!isAuthorized) {
             right: 12,
             width: 42,
             height: 42,
-            borderRadius: "50%",
-            border: "none",
-            background: "rgba(255, 255, 255, 0.2)",
-            backdropFilter: "blur(10px)",
+            boxSizing: "border-box",
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
+            justifyContent: "center",
+            padding: 0,
+            lineHeight: 1,
+            borderRadius: "50%",
+            background: "rgba(0, 0, 0, 0.15)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(0, 0, 0, 0.25)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
             cursor: "pointer",
             fontSize: 20,
             fontWeight: "bold",
+            color: "white",
             transition: "all 0.2s ease",
             zIndex: 10000,
-            color: "white",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(0, 0, 0, 0.5)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)")
-          }
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0, 0, 0, 0.15)")}
         >
           ←
         </button>
