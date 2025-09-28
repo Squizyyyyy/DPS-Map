@@ -269,9 +269,7 @@ const buildRoute = async () => {
   try {
     const geocode = async (addr) => {
       const resp = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          addr
-        )}`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`
       );
       const data = await resp.json();
       if (!data.length) throw new Error(`Не найден адрес: ${addr}`);
@@ -281,9 +279,7 @@ const buildRoute = async () => {
     const fromCoords = await geocode(fromAddress);
     const toCoords = await geocode(toAddress);
 
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(
-      ","
-    )};${toCoords.join(",")}?overview=full&geometries=geojson`;
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(",")};${toCoords.join(",")}?overview=full&geometries=geojson`;
     const res = await fetch(osrmUrl);
     const data = await res.json();
 
@@ -297,32 +293,24 @@ const buildRoute = async () => {
       routeRef.current = null;
     }
 
-    // создаем новый маршрут как Polyline и сразу задаем coordinates
+    // создаем новый маршрут как Polyline (в MapGL используется path)
     routeRef.current = new window.mapgl.Polyline(mapRef.current, {
-      coordinates: coords.map(([lng, lat]) => ({ lng, lat })), // важно!
+      path: coords.map(([lng, lat]) => ({ lng, lat })), // 🔹 path, а не coordinates
       strokeWidth: 5,
       strokeColor: "#2787f5",
     });
 
-    // 🔹 обязательно вызов setCoordinates, чтобы Polyline обновился на карте
-    routeRef.current.setCoordinates(coords.map(([lng, lat]) => ({ lng, lat })));
+    // центрируем карту на маршруте
+    const lons = coords.map(([lng]) => lng);
+    const lats = coords.map(([, lat]) => lat);
+    const minLng = Math.min(...lons);
+    const maxLng = Math.max(...lons);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
 
-    // вычисляем границы маршрута
-    let minLng = coords[0][0],
-      maxLng = coords[0][0],
-      minLat = coords[0][1],
-      maxLat = coords[0][1];
+    mapRef.current.setCenter([(minLng + maxLng) / 2, (minLat + maxLat) / 2]);
 
-    coords.forEach(([lng, lat]) => {
-      if (lng < minLng) minLng = lng;
-      if (lng > maxLng) maxLng = lng;
-      if (lat < minLat) minLat = lat;
-      if (lat > maxLat) maxLat = lat;
-    });
-
-    const center = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
-    mapRef.current.setCenter(center);
-
+    // простой подбор зума
     const lngDiff = maxLng - minLng;
     const latDiff = maxLat - minLat;
     const maxDiff = Math.max(lngDiff, latDiff);
