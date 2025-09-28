@@ -233,7 +233,7 @@ export default function MapViewMapGL({ city }) {
         await fetchMarkers();
         toast.success("Метка добавлена");
       })
-      .catch(() => toast.error("Добавлять метки можно раз в 5 минут"));
+      .catch(() => toast.warn("Добавлять метки можно раз в 5 минут"));
   };
 
   useEffect(() => {
