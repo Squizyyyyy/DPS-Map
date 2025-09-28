@@ -259,77 +259,101 @@ export default function MapViewMapGL({ city }) {
 
   // 🔥 NEW: функция построения маршрута через Nominatim + OSRM
   const buildRoute = async () => {
-    if (!fromAddress || !toAddress) {
-      toast.error("Введите оба адреса!");
-      return;
+  if (!fromAddress || !toAddress) {
+    toast.error("Введите оба адреса!");
+    return;
+  }
+
+  try {
+    // 🔹 геокодинг через Nominatim
+    const geocode = async (addr) => {
+      const resp = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          addr
+        )}`
+      );
+      const data = await resp.json();
+      if (!data.length) throw new Error(`Не найден адрес: ${addr}`);
+      return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+    };
+
+    const fromCoords = await geocode(fromAddress);
+    const toCoords = await geocode(toAddress);
+
+    // 🔹 построение маршрута через OSRM
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(
+      ","
+    )};${toCoords.join(",")}?overview=full&geometries=geojson`;
+    const res = await fetch(osrmUrl);
+    const data = await res.json();
+    if (!data.routes || !data.routes.length)
+      throw new Error("Не удалось построить маршрут");
+
+    const routeGeoJSON = data.routes[0].geometry;
+
+    // 🔹 удаляем старый слой маршрута, если есть
+    if (mapRef.current.removeLayer && mapRef.current.getLayer("route")) {
+      mapRef.current.removeLayer("route");
+      mapRef.current.removeSource("route");
     }
 
-    try {
-      const geocode = async (addr) => {
-        const resp = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-            addr
-          )}`
-        );
-        const data = await resp.json();
-        if (!data.length) throw new Error(`Не найден адрес: ${addr}`);
-        return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-      };
+    // 🔹 добавляем новый маршрут
+    if (mapRef.current.addSource) {
+      mapRef.current.addSource("route", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: routeGeoJSON,
+        },
+      });
 
-      const fromCoords = await geocode(fromAddress);
-      const toCoords = await geocode(toAddress);
-
-      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(
-        ","
-      )};${toCoords.join(",")}?overview=full&geometries=geojson`;
-      const res = await fetch(osrmUrl);
-      const data = await res.json();
-      if (!data.routes || !data.routes.length)
-        throw new Error("Не удалось построить маршрут");
-
-      const routeGeoJSON = data.routes[0].geometry;
-
-      if (mapRef.current.getLayer && mapRef.current.getLayer("route")) {
-        mapRef.current.removeLayer("route");
-        mapRef.current.removeSource("route");
-      }
-
-      if (mapRef.current.addSource) {
-        mapRef.current.addSource("route", {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            geometry: routeGeoJSON,
-          },
-        });
-
-        mapRef.current.addLayer({
-          id: "route",
-          type: "line",
-          source: "route",
-          layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": "#2787f5", "line-width": 5 },
-        });
-      }
-
-      setRoute(routeGeoJSON);
-
-      // 🔥 NEW: подгонка карты под маршрут
-      if (routeGeoJSON.coordinates.length) {
-        const bounds = routeGeoJSON.coordinates.reduce(
-          (b, coord) => b.extend(coord),
-          new window.mapgl.LngLatBounds(
-            routeGeoJSON.coordinates[0],
-            routeGeoJSON.coordinates[0]
-          )
-        );
-        mapRef.current.fitBounds(bounds, { padding: 50 });
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error(e.message || "Ошибка построения маршрута");
+      mapRef.current.addLayer({
+        id: "route",
+        type: "line",
+        source: "route",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#2787f5", "line-width": 5 },
+      });
     }
-  };
+
+    setRoute(routeGeoJSON);
+
+    // 🔹 FIXED: вычисляем bounding box вручную и центр/масштаб карты
+    if (routeGeoJSON.coordinates.length) {
+      let minLng = routeGeoJSON.coordinates[0][0];
+      let maxLng = routeGeoJSON.coordinates[0][0];
+      let minLat = routeGeoJSON.coordinates[0][1];
+      let maxLat = routeGeoJSON.coordinates[0][1];
+
+      routeGeoJSON.coordinates.forEach(([lng, lat]) => {
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      });
+
+      const center = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+      mapRef.current.setCenter(center);
+
+      const lngDiff = maxLng - minLng;
+      const latDiff = maxLat - minLat;
+      const maxDiff = Math.max(lngDiff, latDiff);
+
+      // 🔹 простая подгонка зума по размеру маршрута
+      let zoom = 12;
+      if (maxDiff > 0.5) zoom = 10;
+      else if (maxDiff > 0.25) zoom = 11;
+      else if (maxDiff > 0.1) zoom = 12;
+      else if (maxDiff > 0.05) zoom = 13;
+      else zoom = 14;
+
+      mapRef.current.setZoom(zoom);
+    }
+  } catch (e) {
+    console.error(e);
+    toast.error(e.message || "Ошибка построения маршрута");
+  }
+};
 
   useEffect(() => {
     if (!city || !city.coords) return;
