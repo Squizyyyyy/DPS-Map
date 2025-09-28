@@ -9,6 +9,8 @@ export default function MapViewMapGL({ city }) {
   const mapRef = useRef(null);
   const markersRef = useRef({});
   const popupRef = useRef(null);
+  const zoomInBtnRef = useRef(null);
+  const zoomOutBtnRef = useRef(null);
 
   const loadMapGL = () =>
     new Promise((resolve, reject) => {
@@ -273,6 +275,23 @@ export default function MapViewMapGL({ city }) {
 
       mapRef.current = mapInstance;
       mapInstance.on("click", handleMapClick);
+	  
+	  {/* Функция для подсветки кнопок + и - */}
+	  const updateZoomButtonColors = () => {
+        if (!mapRef.current) return;
+        const zoom = mapRef.current.getZoom();
+        const maxZoom = mapRef.current.getMaxZoom();
+        const minZoom = mapRef.current.getMinZoom();
+
+        if (zoom >= maxZoom) zoomInBtnRef.current.style.color = "rgba(128,128,128,0.6)";
+        else zoomInBtnRef.current.style.color = "white";
+
+        if (zoom <= minZoom) zoomOutBtnRef.current.style.color = "rgba(128,128,128,0.6)";
+        else zoomOutBtnRef.current.style.color = "white";
+      };
+
+      mapInstance.on("zoom", updateZoomButtonColors);
+      mapInstance.on("moveend", updateZoomButtonColors);
 
       mapInstance.on("move", () => {
         const center = mapInstance.getCenter();
