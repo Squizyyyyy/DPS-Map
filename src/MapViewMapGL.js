@@ -264,6 +264,7 @@ export default function MapViewMapGL({ city }) {
         center: [city.coords[1], city.coords[0]],
         zoom: 12,
         minZoom: 11,
+        zoomControl: false, // отключаем встроенные кнопки
         restrictArea: [
           [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF],
           [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF],
@@ -299,46 +300,59 @@ export default function MapViewMapGL({ city }) {
     };
   }, [city]);
 
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.innerHTML = `
-      .mapgl-zoom {
-        position: absolute !important;
-        top: 50% !important;
-        right: 15px !important;
-        transform: translateY(-50%);
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        z-index: 1000;
-      }
-      .mapgl-zoom button {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.35);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        cursor: pointer;
-        font-size: 20px;
-        font-weight: bold;
-        color: white;
-        transition: all 0.2s ease;
-      }
-      .mapgl-zoom button:hover {
-        background: rgba(0, 0, 0, 0.5);
-        transform: scale(1.07);
-      }
-    `;
-    document.head.appendChild(style);
-    return () => style.remove();
-  }, []);
-
   return (
-    <div
-      id="map-2gis"
-      style={{ width: "100%", height: "100%", position: "relative" }}
-    />
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <div
+        id="map-2gis"
+        style={{ width: "100%", height: "100%", position: "relative" }}
+      />
+      {/* Кастомные кнопки */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          right: "15px",
+          transform: "translateY(-50%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          zIndex: 1000,
+        }}
+      >
+        <button
+          onClick={() =>
+            mapRef.current &&
+            mapRef.current.setZoom(mapRef.current.getZoom() + 1)
+          }
+          style={zoomButtonStyle}
+        >
+          +
+        </button>
+        <button
+          onClick={() =>
+            mapRef.current &&
+            mapRef.current.setZoom(mapRef.current.getZoom() - 1)
+          }
+          style={zoomButtonStyle}
+        >
+          −
+        </button>
+      </div>
+    </div>
   );
 }
+
+const zoomButtonStyle = {
+  width: "42px",
+  height: "42px",
+  borderRadius: "50%",
+  background: "rgba(0, 0, 0, 0.35)",
+  backdropFilter: "blur(8px)",
+  border: "1px solid rgba(255, 255, 255, 0.3)",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+  cursor: "pointer",
+  fontSize: "20px",
+  fontWeight: "bold",
+  color: "white",
+  transition: "all 0.2s ease",
+};
