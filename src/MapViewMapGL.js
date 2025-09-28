@@ -287,28 +287,24 @@ const buildRoute = async () => {
     const res = await fetch(osrmUrl);
     const data = await res.json();
 
-    // 🔹 проверка наличия маршрута и координат
     const coords = data.routes?.[0]?.geometry?.coordinates;
-    if (!coords || !Array.isArray(coords) || !coords.length) {
+    if (!coords || !Array.isArray(coords) || !coords.length)
       throw new Error("Не удалось построить маршрут: пустые координаты");
-    }
 
-    // 🔹 удаляем старый маршрут
+    // удаляем старый маршрут
     if (routeRef.current) {
       routeRef.current.destroy();
       routeRef.current = null;
     }
 
-    // 🔹 создаем новый маршрут как Polyline
-    const polyline = new window.mapgl.Polyline(mapRef.current, {
-      path: coords.map(([lng, lat]) => ({ lng, lat })),
+    // создаем новый маршрут как Polyline
+    routeRef.current = new window.mapgl.Polyline(mapRef.current, {
+      coordinates: coords.map(([lng, lat]) => ({ lng, lat })), // 🔹 важно использовать coordinates
       strokeWidth: 5,
       strokeColor: "#2787f5",
     });
 
-    routeRef.current = polyline;
-
-    // 🔹 вычисляем границы маршрута
+    // вычисляем границы маршрута
     let minLng = coords[0][0],
       maxLng = coords[0][0],
       minLat = coords[0][1],
