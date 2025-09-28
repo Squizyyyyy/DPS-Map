@@ -257,15 +257,16 @@ export default function MapViewMapGL({ city }) {
       .catch(() => toast.warn("Добавлять метки можно раз в 5 минут"));
   };
 
-  // 🔥 NEW: функция построения маршрута через Nominatim + OSRM
-  const buildRoute = async () => {
+  // 🔥 FIXED: buildRoute для 2GIS MapGL без getLayer/removeLayer
+const routeRef = useRef(null);
+
+const buildRoute = async () => {
   if (!fromAddress || !toAddress) {
     toast.error("Введите оба адреса!");
     return;
   }
 
   try {
-    // 🔹 геокодинг через Nominatim
     const geocode = async (addr) => {
       const resp = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
@@ -280,7 +281,6 @@ export default function MapViewMapGL({ city }) {
     const fromCoords = await geocode(fromAddress);
     const toCoords = await geocode(toAddress);
 
-    // 🔹 построение маршрута через OSRM
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(
       ","
     )};${toCoords.join(",")}?overview=full&geometries=geojson`;
@@ -289,66 +289,51 @@ export default function MapViewMapGL({ city }) {
     if (!data.routes || !data.routes.length)
       throw new Error("Не удалось построить маршрут");
 
-    const routeGeoJSON = data.routes[0].geometry;
+    const coords = data.routes[0].geometry.coordinates;
 
-    // 🔹 удаляем старый слой маршрута, если есть
-    if (mapRef.current.removeLayer && mapRef.current.getLayer("route")) {
-      mapRef.current.removeLayer("route");
-      mapRef.current.removeSource("route");
+    // 🔹 удаляем старый маршрут
+    if (routeRef.current) {
+      routeRef.current.destroy();
+      routeRef.current = null;
     }
 
-    // 🔹 добавляем новый маршрут
-    if (mapRef.current.addSource) {
-      mapRef.current.addSource("route", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          geometry: routeGeoJSON,
-        },
-      });
+    // 🔹 создаем новый маршрут как Polyline
+    const polyline = new window.mapgl.Polyline(mapRef.current, {
+      path: coords.map(([lng, lat]) => ({ lng, lat })),
+      strokeWidth: 5,
+      strokeColor: "#2787f5",
+    });
 
-      mapRef.current.addLayer({
-        id: "route",
-        type: "line",
-        source: "route",
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "#2787f5", "line-width": 5 },
-      });
-    }
+    routeRef.current = polyline;
 
-    setRoute(routeGeoJSON);
+    // 🔹 вычисляем границы маршрута
+    let minLng = coords[0][0],
+      maxLng = coords[0][0],
+      minLat = coords[0][1],
+      maxLat = coords[0][1];
 
-    // 🔹 FIXED: вычисляем bounding box вручную и центр/масштаб карты
-    if (routeGeoJSON.coordinates.length) {
-      let minLng = routeGeoJSON.coordinates[0][0];
-      let maxLng = routeGeoJSON.coordinates[0][0];
-      let minLat = routeGeoJSON.coordinates[0][1];
-      let maxLat = routeGeoJSON.coordinates[0][1];
+    coords.forEach(([lng, lat]) => {
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    });
 
-      routeGeoJSON.coordinates.forEach(([lng, lat]) => {
-        if (lng < minLng) minLng = lng;
-        if (lng > maxLng) maxLng = lng;
-        if (lat < minLat) minLat = lat;
-        if (lat > maxLat) maxLat = lat;
-      });
+    const center = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+    mapRef.current.setCenter(center);
 
-      const center = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
-      mapRef.current.setCenter(center);
+    const lngDiff = maxLng - minLng;
+    const latDiff = maxLat - minLat;
+    const maxDiff = Math.max(lngDiff, latDiff);
 
-      const lngDiff = maxLng - minLng;
-      const latDiff = maxLat - minLat;
-      const maxDiff = Math.max(lngDiff, latDiff);
+    let zoom = 12;
+    if (maxDiff > 0.5) zoom = 10;
+    else if (maxDiff > 0.25) zoom = 11;
+    else if (maxDiff > 0.1) zoom = 12;
+    else if (maxDiff > 0.05) zoom = 13;
+    else zoom = 14;
 
-      // 🔹 простая подгонка зума по размеру маршрута
-      let zoom = 12;
-      if (maxDiff > 0.5) zoom = 10;
-      else if (maxDiff > 0.25) zoom = 11;
-      else if (maxDiff > 0.1) zoom = 12;
-      else if (maxDiff > 0.05) zoom = 13;
-      else zoom = 14;
-
-      mapRef.current.setZoom(zoom);
-    }
+    mapRef.current.setZoom(zoom);
   } catch (e) {
     console.error(e);
     toast.error(e.message || "Ошибка построения маршрута");
