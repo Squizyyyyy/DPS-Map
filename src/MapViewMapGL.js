@@ -257,7 +257,7 @@ export default function MapViewMapGL({ city }) {
       .catch(() => toast.warn("Добавлять метки можно раз в 5 минут"));
   };
 
-  // 🔥 FIXED: buildRoute для 2GIS MapGL без getLayer/removeLayer
+  // 🔥 FIXED & SAFE: buildRoute для 2GIS MapGL без getLayer/removeLayer
 const routeRef = useRef(null);
 
 const buildRoute = async () => {
@@ -286,10 +286,12 @@ const buildRoute = async () => {
     )};${toCoords.join(",")}?overview=full&geometries=geojson`;
     const res = await fetch(osrmUrl);
     const data = await res.json();
-    if (!data.routes || !data.routes.length)
-      throw new Error("Не удалось построить маршрут");
 
-    const coords = data.routes[0].geometry.coordinates;
+    // 🔹 проверка наличия маршрута и координат
+    const coords = data.routes?.[0]?.geometry?.coordinates;
+    if (!coords || !Array.isArray(coords) || !coords.length) {
+      throw new Error("Не удалось построить маршрут: пустые координаты");
+    }
 
     // 🔹 удаляем старый маршрут
     if (routeRef.current) {
