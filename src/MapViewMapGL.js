@@ -85,31 +85,29 @@ export default function MapViewMapGL({ city }) {
 
     html.innerHTML = `
       <button class="popup-close" style="position:absolute;top:2px;right:2px;border:none;background:transparent;font-size:16px;cursor:pointer;color:black;">×</button>
-      <p style="margin: 0px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
+      <p style="margin: 0px 0 12px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
-      <p style="margin:1.7px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-      <p style="margin:1.7px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
+      <p style="margin:2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
+      <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
       ${m.comment ? `<p style="margin:1.7px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
-      <p style="margin:1.7px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
-      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:9px;">
+      <p style="margin:2px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:11px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
       <div class="popup-tip" style="
-        width: 16px;
-        height: 16px;
-        background: rgba(255,255,255,0.2);
+        width:0;
+        height:0;
+        border-left:8px solid transparent;
+        border-right:8px solid transparent;
+        border-top:8px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.3);
-        transform: rotate(45deg);
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        margin-left: -8px;
-        z-index: 999;
+        position:absolute;
+        bottom:-8px;
+        left:50%;
+        transform:translateX(-50%);
       "></div>
-    `;
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
       coordinates: [m.lng, m.lat],
