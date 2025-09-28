@@ -108,6 +108,7 @@ export default function MapViewMapGL({ city }) {
         left:50%;
         transform:translateX(-50%);
       "></div>
+	`;
 
     const popup = new window.mapgl.HtmlMarker(mapRef.current, {
       coordinates: [m.lng, m.lat],
