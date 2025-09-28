@@ -261,73 +261,83 @@ export default function MapViewMapGL({ city }) {
 const routeRef = useRef(null);
 
 const buildRoute = async () => {
-  if (!fromAddress || !toAddress) {
-    toast.error("Введите оба адреса!");
-    return;
-  }
-
-  try {
-    const geocode = async (addr) => {
-      const resp = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`
-      );
-      const data = await resp.json();
-      if (!data.length) throw new Error(`Не найден адрес: ${addr}`);
-      return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-    };
-
-    const fromCoords = await geocode(fromAddress);
-    const toCoords = await geocode(toAddress);
-
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(",")};${toCoords.join(",")}?overview=full&geometries=geojson`;
-    const res = await fetch(osrmUrl);
-    const data = await res.json();
-
-    const coords = data.routes?.[0]?.geometry?.coordinates;
-    if (!coords || !Array.isArray(coords) || !coords.length)
-      throw new Error("Не удалось построить маршрут: пустые координаты");
-
-    // 🔹 удаляем старый маршрут
-    if (routeRef.current) {
-      routeRef.current.destroy();
-      routeRef.current = null;
+    if (!fromAddress || !toAddress) {
+      toast.error("Введите оба адреса!");
+      return;
     }
 
-    // 🔹 создаем новый маршрут как Polyline (правильно: coordinates)
-    routeRef.current = new window.mapgl.Polyline(mapRef.current, {
-      coordinates: coords.map(([lng, lat]) => ({ lng, lat })), // ✅ используем coordinates
-      strokeWidth: 5,
-      strokeColor: "#2787f5",
-    });
+    if (!mapRef.current) {
+      toast.error("Карта еще не готова!");
+      return;
+    }
 
-    // центрируем карту на маршруте
-    const lons = coords.map(([lng]) => lng);
-    const lats = coords.map(([, lat]) => lat);
-    const minLng = Math.min(...lons);
-    const maxLng = Math.max(...lons);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
+    try {
+      const geocode = async (addr) => {
+        const resp = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            addr
+          )}`
+        );
+        const data = await resp.json();
+        if (!data.length) throw new Error(`Не найден адрес: ${addr}`);
+        return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+      };
 
-    mapRef.current.setCenter([(minLng + maxLng) / 2, (minLat + maxLat) / 2]);
+      const fromCoords = await geocode(fromAddress);
+      const toCoords = await geocode(toAddress);
 
-    // простой подбор зума
-    const lngDiff = maxLng - minLng;
-    const latDiff = maxLat - minLat;
-    const maxDiff = Math.max(lngDiff, latDiff);
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.join(
+        ","
+      )};${toCoords.join(",")}?overview=full&geometries=geojson`;
+      const res = await fetch(osrmUrl);
+      const data = await res.json();
 
-    let zoom = 12;
-    if (maxDiff > 0.5) zoom = 10;
-    else if (maxDiff > 0.25) zoom = 11;
-    else if (maxDiff > 0.1) zoom = 12;
-    else if (maxDiff > 0.05) zoom = 13;
-    else zoom = 14;
+      const coords = data.routes?.[0]?.geometry?.coordinates;
+      if (!coords || !Array.isArray(coords) || !coords.length)
+        throw new Error("Не удалось построить маршрут: пустые координаты");
 
-    mapRef.current.setZoom(zoom);
-  } catch (e) {
-    console.error(e);
-    toast.error(e.message || "Ошибка построения маршрута");
-  }
-};
+      // удаляем старый маршрут
+      if (routeRef.current) {
+        try {
+          routeRef.current.destroy();
+        } catch {}
+        routeRef.current = null;
+      }
+
+      // создаем новый маршрут
+      routeRef.current = new window.mapgl.Polyline(mapRef.current, {
+        coordinates: coords.map(([lng, lat]) => ({ lng, lat })), // только coordinates
+        strokeWidth: 5,
+        strokeColor: "#2787f5",
+      });
+
+      // центрируем карту и подбираем зум
+      const lons = coords.map(([lng]) => lng);
+      const lats = coords.map(([, lat]) => lat);
+      const minLng = Math.min(...lons);
+      const maxLng = Math.max(...lons);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+
+      mapRef.current.setCenter([(minLng + maxLng) / 2, (minLat + maxLat) / 2]);
+
+      const lngDiff = maxLng - minLng;
+      const latDiff = maxLat - minLat;
+      const maxDiff = Math.max(lngDiff, latDiff);
+
+      let zoom = 12;
+      if (maxDiff > 0.5) zoom = 10;
+      else if (maxDiff > 0.25) zoom = 11;
+      else if (maxDiff > 0.1) zoom = 12;
+      else if (maxDiff > 0.05) zoom = 13;
+      else zoom = 14;
+
+      mapRef.current.setZoom(zoom);
+    } catch (e) {
+      console.error(e);
+      toast.error(e.message || "Ошибка построения маршрута");
+    }
+  };
 
   useEffect(() => {
     if (!city || !city.coords) return;
