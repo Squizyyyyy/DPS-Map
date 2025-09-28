@@ -29,12 +29,12 @@ export default function MapViewMapGL({ city }) {
       const data = await res.json();
 
       data.forEach((m) => {
-        if (!markersRef.current[m.id]) {
-          const iconUrl =
-            m.status === "unconfirmed"
-              ? "/icons/marker-gray.png"
-              : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
+        const iconUrl =
+          m.status === "unconfirmed"
+            ? "/icons/marker-gray.png"
+            : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
 
+        if (!markersRef.current[m.id]) {
           const marker = new window.mapgl.Marker(mapRef.current, {
             coordinates: [m.lng, m.lat],
             icon: iconUrl,
@@ -44,12 +44,24 @@ export default function MapViewMapGL({ city }) {
 
           marker.on("click", () => openPopup(m, marker));
           markersRef.current[m.id] = marker;
+        } else {
+          // Обновляем иконку существующей метки
+          markersRef.current[m.id].setIcon(iconUrl);
         }
       });
 
       const currentIds = data.map((m) => m.id);
       Object.keys(markersRef.current).forEach((id) => {
         if (!currentIds.includes(Number(id))) {
+          // Закрытие попапа, если открыт для удаляемой метки
+          if (
+            popupRef.current &&
+            popupRef.current.getCoordinates().toString() ===
+              markersRef.current[id].getCoordinates().toString()
+          ) {
+            popupRef.current.getContent().style.display = "none";
+            popupRef.current = null;
+          }
           markersRef.current[id].destroy();
           delete markersRef.current[id];
         }
@@ -77,7 +89,8 @@ export default function MapViewMapGL({ city }) {
     html.style.borderRadius = "10px";
     html.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
     html.style.fontSize = "14px";
-    html.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif";
+    html.style.fontFamily =
+      "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif";
     html.style.color = "black";
     html.style.transform = "translate(-45%, -101%)";
     html.style.zIndex = "1000";
@@ -89,8 +102,10 @@ export default function MapViewMapGL({ city }) {
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
       <p style="margin:2px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
-      <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(m.timestamp).toLocaleString()}</span></p>
-      ${m.comment ? `<p style="margin:1.7px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
+      <p style="margin:2px 0;"><b>⏱️ Поставлена:</b> <span class="popup-time">${new Date(
+        m.timestamp
+      ).toLocaleString()}</span></p>
+      ${m.comment ? `<p style="margin:2px 0; word-wrap: break-word;"><b>💬 Комментарий:</b> ${m.comment}</p>` : ""}
       <p style="margin:2px 0 10px 0;"><b>✅ Подтверждений:</b> <span class="popup-confirmations">${m.confirmations || 0}</span></p>
       <div style="display:flex;justify-content:space-between;gap:8px;margin-top:14px;">
         <button class="confirm-btn" style="flex:1;padding:5px;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">✅ Подтвердить</button>
@@ -120,25 +135,25 @@ export default function MapViewMapGL({ city }) {
         );
         if (!res.ok) throw new Error("Ошибка подтверждения");
 
+        // Обновляем локально
         m.confirmations = (m.confirmations || 0) + 1;
+        m.timestamp = Date.now();
+        if (m.status === "unconfirmed") m.status = "confirmed";
+
+        // Обновляем попап
         content.querySelector(".popup-confirmations").textContent = m.confirmations;
+        content.querySelector(".popup-time").textContent = new Date(
+          m.timestamp
+        ).toLocaleString();
+        content.querySelector("p").innerHTML =
+          m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь";
 
-        const { lat, lng, status } = m;
-        markersRef.current[m.id]?.destroy();
-        delete markersRef.current[m.id];
-
-        const iconUrl = status === "unconfirmed"
-          ? "/icons/marker-gray.png"
-          : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
-
-        const newMarker = new window.mapgl.Marker(mapRef.current, {
-          coordinates: [lng, lat],
-          icon: iconUrl,
-          size: [30, 30],
-          anchor: [0.5, 1],
-        });
-        newMarker.on("click", () => openPopup(m, newMarker));
-        markersRef.current[m.id] = newMarker;
+        // Обновляем иконку метки на карте
+        const iconUrl =
+          m.status === "unconfirmed"
+            ? "/icons/marker-gray.png"
+            : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
+        markersRef.current[m.id].setIcon(iconUrl);
 
         toast.success("Метка подтверждена");
       } catch {
@@ -147,8 +162,7 @@ export default function MapViewMapGL({ city }) {
     });
 
     content.querySelector(".delete-btn").addEventListener("click", () => {
-      if (window.confirm("Вы уверены, что хотите удалить метку?"))
-        handleDelete(m.id);
+      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
     });
 
     const mapClickHandler = (ev) => {
@@ -175,6 +189,17 @@ export default function MapViewMapGL({ city }) {
       );
       if (res.ok) {
         lastDeleteTime = Date.now();
+
+        // Закрытие попапа, если он открыт для этой метки
+        if (
+          popupRef.current &&
+          popupRef.current.getCoordinates().toString() ===
+            markersRef.current[id].getCoordinates().toString()
+        ) {
+          popupRef.current.getContent().style.display = "none";
+          popupRef.current = null;
+        }
+
         if (markersRef.current[id]) {
           markersRef.current[id].destroy();
           delete markersRef.current[id];
@@ -182,7 +207,7 @@ export default function MapViewMapGL({ city }) {
         toast.success("Метка удалена");
       } else toast.error("Ошибка при удалении");
     } catch {
-      toast.error("Ошибка при удалении");
+      toast.warn("Удалять метки можно раз в 5 минут");
     }
   };
 
@@ -236,7 +261,6 @@ export default function MapViewMapGL({ city }) {
       });
 
       mapRef.current = mapInstance;
-
       mapInstance.on("click", handleMapClick);
 
       // Ограничение движения карты внутри bounds
