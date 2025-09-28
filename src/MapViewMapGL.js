@@ -44,7 +44,6 @@ export default function MapViewMapGL({ city }) {
           marker.on("click", () => openPopup(m, marker));
           markersRef.current[m.id] = marker;
         } else {
-          // Обновляем иконку существующей метки
           markersRef.current[m.id].setIcon(iconUrl);
         }
       });
@@ -139,23 +138,31 @@ export default function MapViewMapGL({ city }) {
         );
         if (!res.ok) throw new Error("Ошибка подтверждения");
 
-        // Обновляем локально
+        // Обновляем данные
         m.confirmations = (m.confirmations || 0) + 1;
         m.timestamp = Date.now();
         m.status = "confirmed";
 
+        // Удаляем старую метку
+        if (markersRef.current[m.id]) {
+          markersRef.current[m.id].destroy();
+          delete markersRef.current[m.id];
+        }
+
+        // Создаём новую метку с цветной иконкой
+        const newMarker = new window.mapgl.Marker(mapRef.current, {
+          coordinates: [m.lng, m.lat],
+          icon: "https://cdn-icons-png.flaticon.com/128/5959/5959568.png",
+          size: [30, 30],
+          anchor: [0.5, 1],
+        });
+        newMarker.on("click", () => openPopup(m, newMarker));
+        markersRef.current[m.id] = newMarker;
+
         // Обновляем попап
         content.querySelector(".popup-confirmations").textContent = m.confirmations;
         content.querySelector(".popup-time").textContent = new Date(m.timestamp).toLocaleString();
-        content.querySelector(".popup-status").textContent =
-          m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь";
-
-        // Обновляем иконку метки на карте сразу
-        const iconUrl =
-          m.status === "unconfirmed"
-            ? "/icons/marker-gray.png"
-            : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
-        markersRef.current[m.id].setIcon(iconUrl);
+        content.querySelector(".popup-status").textContent = "🚓 ДПС здесь";
 
         toast.success("Метка подтверждена");
       } catch {
