@@ -643,29 +643,30 @@ if (!isAuthorized) {
           onClick={() => setActiveTab("account")}
           style={{
             position: "absolute",
-            top: 9.5,
-            right: 10,
-            width: 40,
-            height: 40,
+            top: 12,
+            right: 12,
+            width: 42,
+            height: 42,
             borderRadius: "50%",
-			border: "5px solid #3d3d3d",
-			boxSizing: "border-box",
-            background: "#f8f8f8",
+            border: "none",
+            background: "rgba(0, 0, 0, 0.35)",
+            backdropFilter: "blur(8px)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             cursor: "pointer",
             fontSize: 20,
             fontWeight: "bold",
-            transition: "background-color 0.2s",
+            transition: "all 0.2s ease",
             zIndex: 10000,
-            color: "#7a7a7a",
+            color: "white",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
           }}
           onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#dcdcdc")
+            (e.currentTarget.style.background = "rgba(0, 0, 0, 0.5)")
           }
           onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#ececec")
+            (e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)")
           }
         >
           ←

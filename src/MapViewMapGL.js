@@ -138,18 +138,15 @@ export default function MapViewMapGL({ city }) {
         );
         if (!res.ok) throw new Error("Ошибка подтверждения");
 
-        // Обновляем данные
         m.confirmations = (m.confirmations || 0) + 1;
         m.timestamp = Date.now();
         m.status = "confirmed";
 
-        // Удаляем старую метку
         if (markersRef.current[m.id]) {
           markersRef.current[m.id].destroy();
           delete markersRef.current[m.id];
         }
 
-        // Создаём новую метку с цветной иконкой
         const newMarker = new window.mapgl.Marker(mapRef.current, {
           coordinates: [m.lng, m.lat],
           icon: "https://cdn-icons-png.flaticon.com/128/5959/5959568.png",
@@ -159,9 +156,11 @@ export default function MapViewMapGL({ city }) {
         newMarker.on("click", () => openPopup(m, newMarker));
         markersRef.current[m.id] = newMarker;
 
-        // Обновляем попап
-        content.querySelector(".popup-confirmations").textContent = m.confirmations;
-        content.querySelector(".popup-time").textContent = new Date(m.timestamp).toLocaleString();
+        content.querySelector(".popup-confirmations").textContent =
+          m.confirmations;
+        content.querySelector(".popup-time").textContent = new Date(
+          m.timestamp
+        ).toLocaleString();
         content.querySelector(".popup-status").textContent = "🚓 ДПС здесь";
 
         toast.success("Метка подтверждена");
@@ -171,7 +170,8 @@ export default function MapViewMapGL({ city }) {
     });
 
     content.querySelector(".delete-btn").addEventListener("click", () => {
-      if (window.confirm("Вы уверены, что хотите удалить метку?")) handleDelete(m.id);
+      if (window.confirm("Вы уверены, что хотите удалить метку?"))
+        handleDelete(m.id);
     });
 
     const mapClickHandler = (ev) => {
@@ -227,7 +227,9 @@ export default function MapViewMapGL({ city }) {
       return;
     }
 
-    const confirmAdd = window.confirm("Вы уверены, что хотите поставить метку здесь?");
+    const confirmAdd = window.confirm(
+      "Вы уверены, что хотите поставить метку здесь?"
+    );
     if (!confirmAdd) return;
 
     let comment = "";
@@ -297,5 +299,46 @@ export default function MapViewMapGL({ city }) {
     };
   }, [city]);
 
-  return <div id="map-2gis" style={{ width: "100%", height: "100%", position: "relative" }} />;
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      .mapgl-zoom {
+        position: absolute !important;
+        top: 50% !important;
+        right: 15px !important;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 1000;
+      }
+      .mapgl-zoom button {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: bold;
+        color: white;
+        transition: all 0.2s ease;
+      }
+      .mapgl-zoom button:hover {
+        background: rgba(0, 0, 0, 0.5);
+        transform: scale(1.07);
+      }
+    `;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
+
+  return (
+    <div
+      id="map-2gis"
+      style={{ width: "100%", height: "100%", position: "relative" }}
+    />
+  );
 }
