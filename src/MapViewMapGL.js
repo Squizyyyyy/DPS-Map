@@ -77,16 +77,15 @@ export default function MapViewMapGL({ city }) {
     html.style.borderRadius = "10px";
     html.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
     html.style.fontSize = "14px";
-	html.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif";
+    html.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif";
     html.style.color = "black";
-    html.style.fontFamily = "Arial, sans-serif";
-    html.style.transform = "translate(-45%, -105%)";
+    html.style.transform = "translate(-45%, -101%)"; // немного выше метки
     html.style.zIndex = "1000";
     html.style.overflow = "visible";
 
     html.innerHTML = `
       <button class="popup-close" style="position:absolute;top:2px;right:2px;border:none;background:transparent;font-size:16px;cursor:pointer;color:black;">×</button>
-      <p style="margin: 2px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
+      <p style="margin: 0px 0 10px 0; text-align: center; font-weight: bold; word-wrap: break-word;">
         ${m.status === "unconfirmed" ? "⚠️ Метка устарела (не подтверждена)" : "🚓 ДПС здесь"}
       </p>
       <p style="margin:1.7px 0; word-wrap: break-word;"><b>📍 Адрес:</b> ${m.address || "Адрес не определён"}</p>
@@ -98,15 +97,17 @@ export default function MapViewMapGL({ city }) {
         <button class="delete-btn" style="flex:1;padding:5px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">❌ Уехали</button>
       </div>
       <div class="popup-tip" style="
-        width:0; 
-        height:0; 
-        border-left:8px solid transparent; 
-        border-right:8px solid transparent; 
-        border-top:8px solid white; 
-        position:absolute; 
-        bottom:-8px; 
-        left:50%; 
-        transform:translateX(-50%);
+        width: 16px;
+        height: 16px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        transform: rotate(45deg);
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        margin-left: -8px;
+        z-index: 999;
       "></div>
     `;
 
@@ -119,11 +120,13 @@ export default function MapViewMapGL({ city }) {
     popupRef.current = popup;
     const content = popup.getContent();
 
+    // Закрытие попапа
     content.querySelector(".popup-close").addEventListener("click", () => {
       content.style.display = "none";
       popupRef.current = null;
     });
 
+    // Подтверждение метки
     content.querySelector(".confirm-btn").addEventListener("click", async () => {
       try {
         const res = await fetch(
@@ -131,19 +134,38 @@ export default function MapViewMapGL({ city }) {
           { method: "POST", credentials: "include" }
         );
         if (!res.ok) throw new Error("Ошибка подтверждения");
-        const updatedRes = await fetch(`https://dps-map-2.onrender.com/markers`);
-        const markers = await updatedRes.json();
-        const updatedMarker = markers.find((mk) => mk.id === m.id);
-        if (updatedMarker) {
-          content.querySelector(".popup-confirmations").textContent = updatedMarker.confirmations || 0;
-          content.querySelector(".popup-time").textContent = new Date(updatedMarker.timestamp).toLocaleString();
-        }
+
+        // Локально увеличиваем подтверждения
+        m.confirmations = (m.confirmations || 0) + 1;
+
+        // Обновляем текст
+        content.querySelector(".popup-confirmations").textContent = m.confirmations;
+
+        // Переставляем метку на карте с обновленным цветом
+        const { lat, lng, status } = m;
+        markersRef.current[m.id]?.destroy();
+        delete markersRef.current[m.id];
+
+        const iconUrl = status === "unconfirmed"
+          ? "/icons/marker-gray.png"
+          : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
+
+        const newMarker = new window.mapgl.Marker(mapRef.current, {
+          coordinates: [lng, lat],
+          icon: iconUrl,
+          size: [30, 30],
+          anchor: [0.5, 1],
+        });
+        newMarker.on("click", () => openPopup(m, newMarker));
+        markersRef.current[m.id] = newMarker;
+
         toast.success("Метка подтверждена");
       } catch {
         toast.error("Ошибка при подтверждении");
       }
     });
 
+    // Удаление метки
     content.querySelector(".delete-btn").addEventListener("click", () => {
       if (window.confirm("Вы уверены, что хотите удалить метку?"))
         handleDelete(m.id);
@@ -234,14 +256,7 @@ export default function MapViewMapGL({ city }) {
       });
 
       mapRef.current = mapInstance;
-	  
-	  // Подвинуть логотип 2GIS
-      const logo = document.querySelector(".maplibregl-ctrl-logo");
-      if (logo) {
-        logo.style.bottom = "10px"; // сместить выше
-        logo.style.right = "10px";  // сместить левее
-      }
-	  
+
       mapInstance.on("click", handleMapClick);
 
       fetchMarkers();
