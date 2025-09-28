@@ -359,6 +359,7 @@ export default function MapViewMapGL({ city }) {
         -
       </button>
     </div>
+  </div>
 
     {/* Стили кнопок */}
     <style>
@@ -389,5 +390,4 @@ export default function MapViewMapGL({ city }) {
       `}
     </style>
   </div>
- </div>
 );
