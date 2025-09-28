@@ -322,8 +322,11 @@ export default function MapViewMapGL({ city }) {
       <button
         onClick={() => {
           if (mapRef.current) {
-            mapRef.current.setBearing(0);
-            mapRef.current.setPitch(0);
+            mapRef.current.easeTo({
+              bearing: 0,
+              pitch: 0,
+              duration: 300,
+            });
           }
         }}
         className="map-btn"
@@ -334,6 +337,7 @@ export default function MapViewMapGL({ city }) {
           style={{ width: 22, height: 22 }} 
         />
       </button>
+
 
       <button
         onClick={() =>
@@ -385,4 +389,5 @@ export default function MapViewMapGL({ city }) {
       `}
     </style>
   </div>
+ </div>
 );
