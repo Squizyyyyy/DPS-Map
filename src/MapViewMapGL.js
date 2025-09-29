@@ -339,8 +339,8 @@ export default function MapViewMapGL({ city }) {
           cursor: "pointer",
           transition: "all 0.2s ease",
         }}
-        onMouseEnter={e => e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}
-        onMouseLeave={e => e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}}
       >
         <img 
           src="/icons/compass.png" 
@@ -367,8 +367,8 @@ export default function MapViewMapGL({ city }) {
           cursor: "pointer",
           transition: "all 0.2s ease",
         }}
-        onMouseEnter={e => e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}
-        onMouseLeave={e => e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}}
       >
         +
       </button>
@@ -391,11 +391,11 @@ export default function MapViewMapGL({ city }) {
           cursor: "pointer",
           transition: "all 0.2s ease",
         }}
-        onMouseEnter={e => e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}
-        onMouseLeave={e => e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}}
       >
         -
       </button>
     </div>
   </div>
-)
+);
