@@ -398,4 +398,4 @@ export default function MapViewMapGL({ city }) {
       </button>
     </div>
   </div>
-);
+)};
