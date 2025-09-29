@@ -302,8 +302,11 @@ export default function MapViewMapGL({ city }) {
 
   return (
   <div style={{ width: "100%", height: "100%", position: "relative" }}>
-    <div id="map-2gis" style={{ width: "100%", height: "100%", position: "relative" }} />
-
+    <div
+      id="map-2gis"
+      style={{ width: "100%", height: "100%", position: "relative" }}
+    />
+    
     {/* Кастомные кнопки */}
     <div
       style={{
@@ -317,85 +320,73 @@ export default function MapViewMapGL({ city }) {
         zIndex: 1000,
       }}
     >
-      {/* Кнопка "компас" */}
       <button
         onClick={() => {
           if (mapRef.current) {
-            mapRef.current.easeTo({ bearing: 0, pitch: 0, duration: 300 });
+            mapRef.current.easeTo({
+              bearing: 0,
+              pitch: 0,
+              duration: 300,
+            });
           }
         }}
-        style={{
-          width: "36px",
-          height: "36px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "50%",
-          background: "rgba(64, 64, 64, 0.15)",
-          border: "3px solid rgba(0, 0, 0, 0.5)",
-          color: "white",
-          fontSize: "20px",
-          fontWeight: "bold",
-          cursor: "pointer",
-          transition: "all 0.2s ease",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}}
+        className="map-btn"
       >
         <img 
           src="/icons/compass.png" 
           alt="Сброс ориентации" 
-          style={{ width: 22, height: 22, pointerEvents: "none" }} 
+          style={{ width: 22, height: 22 }} 
         />
       </button>
 
-      {/* Кнопка "+" */}
       <button
-        onClick={() => mapRef.current && mapRef.current.setZoom(mapRef.current.getZoom() + 1)}
-        style={{
-          width: "36px",
-          height: "36px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "50%",
-          background: "rgba(64, 64, 64, 0.15)",
-          border: "3px solid rgba(0, 0, 0, 0.5)",
-          color: "white",
-          fontSize: "20px",
-          fontWeight: "bold",
-          cursor: "pointer",
-          transition: "all 0.2s ease",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}}
+        onClick={() =>
+          mapRef.current &&
+          mapRef.current.setZoom(mapRef.current.getZoom() + 1)
+        }
+        className="map-btn" // 🔹 Кнопка +
       >
         +
       </button>
 
-      {/* Кнопка "-" */}
       <button
-        onClick={() => mapRef.current && mapRef.current.setZoom(mapRef.current.getZoom() - 1)}
-        style={{
-          width: "36px",
-          height: "36px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "50%",
-          background: "rgba(64, 64, 64, 0.15)",
-          border: "3px solid rgba(0, 0, 0, 0.5)",
-          color: "white",
-          fontSize: "20px",
-          fontWeight: "bold",
-          cursor: "pointer",
-          transition: "all 0.2s ease",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}}
+        onClick={() =>
+          mapRef.current &&
+          mapRef.current.setZoom(mapRef.current.getZoom() - 1)
+        }
+        className="map-btn" // 🔹 Кнопка -
       >
         -
       </button>
     </div>
+
+    {/* 🔹 Стили кнопок */}
+    <style>
+      {`
+        .map-btn {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: rgba(64, 64, 64, 0.15);
+          border: 3px solid rgba(0, 0, 0, 0.5);
+          color: white;
+          font-size: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .map-btn:hover {
+          background: rgba(0, 0, 0, 0.35);
+        }
+
+        .map-btn img {
+          pointer-events: none;
+        }
+      `}
+    </style>
   </div>
 )};
