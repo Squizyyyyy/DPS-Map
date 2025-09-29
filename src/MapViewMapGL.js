@@ -317,57 +317,85 @@ export default function MapViewMapGL({ city }) {
         zIndex: 1000,
       }}
     >
+      {/* Кнопка "компас" */}
       <button
         onClick={() => {
           if (mapRef.current) {
             mapRef.current.easeTo({ bearing: 0, pitch: 0, duration: 300 });
           }
         }}
-        className="map-btn"
+        style={{
+          width: "36px",
+          height: "36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "50%",
+          background: "rgba(64, 64, 64, 0.15)",
+          border: "3px solid rgba(0, 0, 0, 0.5)",
+          color: "white",
+          fontSize: "20px",
+          fontWeight: "bold",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}
+        onMouseLeave={e => e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}
       >
-        <img src="/icons/compass.png" alt="Сброс ориентации" style={{ width: 22, height: 22 }} />
+        <img 
+          src="/icons/compass.png" 
+          alt="Сброс ориентации" 
+          style={{ width: 22, height: 22, pointerEvents: "none" }} 
+        />
       </button>
 
+      {/* Кнопка "+" */}
       <button
         onClick={() => mapRef.current && mapRef.current.setZoom(mapRef.current.getZoom() + 1)}
-        className="map-btn"
+        style={{
+          width: "36px",
+          height: "36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "50%",
+          background: "rgba(64, 64, 64, 0.15)",
+          border: "3px solid rgba(0, 0, 0, 0.5)",
+          color: "white",
+          fontSize: "20px",
+          fontWeight: "bold",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}
+        onMouseLeave={e => e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}
       >
         +
       </button>
 
+      {/* Кнопка "-" */}
       <button
         onClick={() => mapRef.current && mapRef.current.setZoom(mapRef.current.getZoom() - 1)}
-        className="map-btn"
+        style={{
+          width: "36px",
+          height: "36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "50%",
+          background: "rgba(64, 64, 64, 0.15)",
+          border: "3px solid rgba(0, 0, 0, 0.5)",
+          color: "white",
+          fontSize: "20px",
+          fontWeight: "bold",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)"}
+        onMouseLeave={e => e.currentTarget.style.background = "rgba(64, 64, 64, 0.15)"}
       >
         -
       </button>
     </div>
-
-    {/* Стили кнопок */}
-    <style>{`
-      .map-btn {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background: rgba(64, 64, 64, 0.15);
-        border: 3px solid rgba(0, 0, 0, 0.5);
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .map-btn:hover {
-        background: rgba(0, 0, 0, 0.35);
-      }
-
-      .map-btn img {
-        pointer-events: none;
-      }
-    `}</style>
   </div>
 );
