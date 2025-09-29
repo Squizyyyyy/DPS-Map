@@ -321,23 +321,17 @@ export default function MapViewMapGL({ city }) {
       }}
     >
       <button
-        onClick={() => {
-          if (mapRef.current) {
-            mapRef.current.easeTo({
-              bearing: 0,
-              pitch: 0,
-              duration: 300,
-            });
-          }
-        }}
-        className="map-btn"
-      >
-        <img 
-          src="/icons/compass.png" 
-          alt="Сброс ориентации" 
-          style={{ width: 22, height: 22 }} 
-        />
-      </button>
+  onClick={() => {
+    if (mapRef.current) {
+      mapRef.current.setBearing(0);  // сброс поворота
+      mapRef.current.setPitch(0);    // сброс наклона
+    }
+  }}
+  style={compassButtonStyle}
+>
+  <img src="/icons/compass.png" alt="Сброс ориентации" style={{ width: 22, height: 22, pointerEvents: "none" }} />
+</button>
+
 
       <button
         onClick={() =>
