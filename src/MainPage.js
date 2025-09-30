@@ -929,9 +929,6 @@ if (!isAuthorized) {
   </div>
 </div>
 
-  </div>
-)}
-
 {/* Вкладка Гайд */}
   {activeTab === "guide" && (
     <div
@@ -996,7 +993,6 @@ if (!isAuthorized) {
       </div>
     </div>
   )}
-</main>
 
   {/* Подписка */}
   {activeTab === "subscription" && (
