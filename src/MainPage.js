@@ -996,6 +996,7 @@ if (!isAuthorized) {
       </div>
     </div>
   )}
+</main>
 
   {/* Подписка */}
   {activeTab === "subscription" && (
