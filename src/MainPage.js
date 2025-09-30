@@ -36,7 +36,7 @@ export default function MainPage() {
 
   const isMapActive = activeTab === "map";
   
-  // 🔹 Убираем стандартные отступы body/html
+  // Убираем стандартные отступы body/html
   useEffect(() => {
     document.body.style.margin = "0";
     document.body.style.padding = "0";
@@ -193,7 +193,7 @@ const handleLogin = async () => {
     setHasSubscription(false);
   };
   
-  // ---- Telegram JS-виджет ----
+  // Telegram JS-виджет
 const handleTelegramLogin = async (telegramData) => {
   setLoadingLogin(true);
   setError(null);
@@ -304,7 +304,7 @@ const handleTelegramLogin = async (telegramData) => {
     return () => clearInterval(interval);
   }, [isAuthorized, user]);
   
-  // ---- Подключение Telegram JS-виджета ----
+  // Подключение Telegram JS-виджета
   useEffect(() => {
 	window.handleTelegramAuth = (user) => handleTelegramLogin(user);
 	
@@ -349,12 +349,12 @@ if (!isAuthorized) {
           maxWidth: 360,
           background: "#0c274f",
           borderRadius: 24,
-          padding: "24px 16px", // сделали адаптивные горизонтальные отступы
+          padding: "24px 16px",
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          boxSizing: "border-box", // предотвращаем выход за границы
+          boxSizing: "border-box",
         }}
       >
         {/* Заголовок */}
@@ -390,7 +390,7 @@ if (!isAuthorized) {
 
         {/* Блок кнопок */}
         <div
-          id="auth-buttons-wrapper" //  добавил id для управления стилем
+          id="auth-buttons-wrapper"
           style={{
             display: "flex",
             flexDirection: "column",
@@ -401,8 +401,8 @@ if (!isAuthorized) {
             padding: "21px 26px",
             border: "1px solid rgba(255,255,255,0.1)",
             boxSizing: "border-box",
-            minWidth: 180,  //  ограничили минимальную ширину
-            maxWidth: "100%", //  не вылазит за главный блок
+            minWidth: 180,
+            maxWidth: "100%",
           }}
         >
           {/* VK кнопка */}
@@ -410,9 +410,9 @@ if (!isAuthorized) {
             onClick={handleLogin}
             disabled={!sdkReady || loadingLogin}
             style={{
-              width: "100%", //  растягиваем под ширину контейнера
+              width: "100%",
 			  height: 40,
-              padding: "10px 0", //  подогнали внутренние отступы
+              padding: "10px 0",
               background: sdkReady
                 ? `linear-gradient(90deg, #2787f5, #0a90ff)`
                 : "#6c757d",
@@ -444,7 +444,7 @@ if (!isAuthorized) {
             style={{
               display: "flex",
               justifyContent: "center",
-              width: "100%", // кнопка тг управляет шириной контейнера
+              width: "100%",
             }}
           />
         </div>
@@ -479,8 +479,8 @@ if (!isAuthorized) {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 240 240"
-              width="20"
-              height="20"
+              width="21"
+              height="21"
               fill="currentColor"
             >
               <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
@@ -500,8 +500,8 @@ if (!isAuthorized) {
               }}
             >
               <WhatsAppIcon
-                width={20}
-                height={20}
+                width={21}
+                height={21}
                 style={{
                 cursor: "pointer",
 				fill: "currentColor",
@@ -535,12 +535,12 @@ if (!isAuthorized) {
     width: "100%",
     display: "flex",
     justifyContent: "space-around",
-    backgroundColor: tabColors.background, // фон как у страницы
-    borderTop: "1px solid rgba(255, 255, 255, 0.1)", // тонкая разделительная линия
-    boxShadow: "none", // убрали тень
+    backgroundColor: tabColors.background,
+    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+    boxShadow: "none",
     zIndex: 1000,
-	paddingTop: 6.5,   // отступ иконок от верхней границы панели
-	paddingBottom: 35, // увеличили высоту панели
+	paddingTop: 6.5,
+	paddingBottom: 35,
   }}
 >
   {[
@@ -554,7 +554,7 @@ if (!isAuthorized) {
       style={{
         flex: 1,
         display: "flex",
-		flexDirection: "column", // иконка сверху, подпись снизу
+		flexDirection: "column",
         alignItems: "center",
         justifyContent: "flex-start",
         cursor: "pointer",
@@ -566,7 +566,7 @@ if (!isAuthorized) {
         style={{
           width: 26,
           height: 26,
-          color: activeTab === key ? "#2787f5" : "#fff", // активная → синяя, остальные белые
+          color: activeTab === key ? "#2787f5" : "#fff",
           transition: "color 0.15s ease",
         }}
 		strokeWidth={1.5}
@@ -727,7 +727,7 @@ if (!isAuthorized) {
   }}>
 
 
-    {/* ---- Профиль ---- */}
+    {/* Профиль */}
     <div style={{
       backgroundColor: "#0a1f33",
 	  borderRadius: 24,
@@ -743,7 +743,7 @@ if (!isAuthorized) {
       </p>
     </div>
 
-    {/* ---- Выбор города ---- */}
+    {/* Выбор города */}
     <div style={{
       backgroundColor: "#0a1f33",
 	  borderRadius: 24,
@@ -819,7 +819,7 @@ if (!isAuthorized) {
       </button>
     </div>
 
-    {/* ---- Выйти ---- */}
+    {/* Выйти */}
     <button
       onClick={handleLogout}
       style={{
@@ -842,57 +842,50 @@ if (!isAuthorized) {
       Выйти из профиля
     </button>
 
-	{/* О нас и Связь с нами (горизонтально) */}
-<div
-  style={{
-    marginTop: 24,
-    display: "flex",
-    flexDirection: "row",
-    gap: 12,
-    width: "100%",
-    maxWidth: 300,
-  }}
->
-  {/* Блок "О нас" */}
+	{/* О нас */}
   <div
+    onClick={() => setActiveTab("guide")}
     style={{
-      flex: 1,
       backgroundColor: "#0a1f33",
-      borderRadius: 16,
-      padding: 12,
+      borderRadius: 24,
+      padding: 16,
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      cursor: "pointer",
+      color: "#aaa",
+      fontSize: 14,
+      fontWeight: 500,
+      width: "100%",
+      maxWidth: 300,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      cursor: "pointer",
       textDecoration: "underline",
-      color: "#aaa",
-      fontSize: 14,
-      fontFamily:
-        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-      boxShadow: "inset 0 0 4px rgba(255,255,255,0.1)",
+      transition: "all 0.2s",
     }}
-    onClick={() => window.open("/guide", "_blank")}
+    onMouseEnter={(e) => (e.currentTarget.style.background = "#063353")}
+    onMouseLeave={(e) => (e.currentTarget.style.background = "#0a1f33")}
   >
     О нас
   </div>
 
-  {/* Блок "Связь с нами" */}
+  {/* Связь с нами */}
   <div
     style={{
-      flex: 1,
       backgroundColor: "#0a1f33",
-      borderRadius: 16,
-      padding: 12,
+      borderRadius: 24,
+      padding: 16,
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      color: "#aaa",
+      fontSize: 14,
+      fontWeight: 500,
+      width: "100%",
+      maxWidth: 300,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
+      whiteSpace: "nowrap",
       textDecoration: "underline",
-      color: "#aaa",
-      fontSize: 14,
-      fontFamily:
-        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-      boxShadow: "inset 0 0 4px rgba(255,255,255,0.1)",
     }}
   >
     <span>Связь с нами:</span>
@@ -912,19 +905,97 @@ if (!isAuthorized) {
         <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z" />
       </svg>
     </a>
+
     <a
       href="https://wa.me/+79958962951"
       target="_blank"
       rel="noopener noreferrer"
-      style={{ display: "flex", alignItems: "center", color: "inherit" }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        textDecoration: "none",
+        color: "inherit",
+      }}
     >
-      <WhatsAppIcon width={21} height={21} style={{ cursor: "pointer", fill: "currentColor" }} />
+      <WhatsAppIcon
+        width={21}
+        height={21}
+        style={{
+          cursor: "pointer",
+          fill: "currentColor",
+        }}
+      />
     </a>
   </div>
 </div>
 
   </div>
 )}
+
+{/* Вкладка Гайд */}
+  {activeTab === "guide" && (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        color: "#fff",
+        padding: 24,
+        backgroundColor: tabColors.background,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 360,
+          padding: 24,
+          borderRadius: 24,
+          border: "2px solid rgba(255, 255, 255, 0.3)",
+          backgroundColor: "#0a1f33",
+          boxSizing: "border-box",
+        }}
+      >
+        <h2
+          style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}
+        >
+          О нас
+        </h2>
+        <p style={{ fontSize: 16, color: "#ccc", margin: 0 }}>
+          Здесь будет гайд по пользованию.
+        </p>
+        <button
+          onClick={() => setActiveTab("account")}
+          style={{
+            marginTop: 24,
+            padding: "10px 0",
+            background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 16,
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: 14,
+            width: "100%",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background =
+              "linear-gradient(90deg, #1e6cd8, #0470ff)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background =
+              "linear-gradient(90deg, #2787f5, #0a90ff)")
+          }
+        >
+          Назад в профиль
+        </button>
+      </div>
+    </div>
+  )}
 
   {/* Подписка */}
   {activeTab === "subscription" && (
@@ -944,7 +1015,7 @@ if (!isAuthorized) {
         color: "#aaa",
       }}
     >
-    {/* Блок 1: Статус подписки */}
+    {/* Блок: Статус подписки */}
     <div
       style={{
         backgroundColor: "#0a1f33",
