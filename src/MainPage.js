@@ -928,6 +928,7 @@ if (!isAuthorized) {
     </a>
   </div>
 </div>
+)}
 
 {/* Вкладка Гайд */}
   {activeTab === "guide" && (
