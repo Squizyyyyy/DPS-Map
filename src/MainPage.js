@@ -842,53 +842,38 @@ if (!isAuthorized) {
       Выйти из профиля
     </button>
 
-	{/* О нас */}
-  <div
-    onClick={() => setActiveTab("guide")}
-    style={{
-      backgroundColor: "#0a1f33",
-      borderRadius: 24,
-      padding: 16,
-      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-      cursor: "pointer",
-      color: "#aaa",
-      fontSize: 14,
-      fontWeight: 500,
-      width: "100%",
-      maxWidth: 300,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      textDecoration: "underline",
-      transition: "all 0.2s",
-    }}
-    onMouseEnter={(e) => (e.currentTarget.style.background = "#063353")}
-    onMouseLeave={(e) => (e.currentTarget.style.background = "#0a1f33")}
-  >
-    О нас
-  </div>
-
-  {/* Связь с нами */}
+  {/* О нас и Связь с нами */}
   <div
     style={{
-      backgroundColor: "#0a1f33",
-      borderRadius: 24,
-      padding: 16,
-      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-      color: "#aaa",
-      fontSize: 14,
-      fontWeight: 500,
-      width: "100%",
-      maxWidth: 300,
+      marginTop: 24,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
-      whiteSpace: "nowrap",
-      textDecoration: "underline",
+      color: "#aaa",
+      fontSize: 14,
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     }}
   >
-    <span>Связь с нами:</span>
+    {/* О нас */}
+    <span
+      onClick={() => setActiveTab("guide")}
+      style={{
+        cursor: "pointer",
+        textDecoration: "underline",
+      }}
+    >
+      О нас
+    </span>
+
+    {/* Разделитель */}
+    <span>|</span>
+
+    {/* Связь с нами */}
+    <span style={{ textDecoration: "underline" }}>Связь с нами:</span>
+
+    {/* Telegram */}
     <a
       href="https://t.me/dps_map_support"
       target="_blank"
@@ -902,28 +887,21 @@ if (!isAuthorized) {
         height="21"
         fill="currentColor"
       >
-        <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z" />
+        <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
       </svg>
     </a>
 
+    {/* WhatsApp */}
     <a
       href="https://wa.me/+79958962951"
       target="_blank"
       rel="noopener noreferrer"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        textDecoration: "none",
-        color: "inherit",
-      }}
+      style={{ display: "flex", alignItems: "center", color: "inherit" }}
     >
       <WhatsAppIcon
         width={21}
         height={21}
-        style={{
-          cursor: "pointer",
-          fill: "currentColor",
-        }}
+        style={{ cursor: "pointer", fill: "currentColor" }}
       />
     </a>
   </div>
