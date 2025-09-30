@@ -842,56 +842,60 @@ if (!isAuthorized) {
       Выйти из профиля
     </button>
 
-	{/* ---- О нас и Связь с нами ---- */}
+	{/* О нас и Связь с нами (горизонтально) */}
 <div
   style={{
     marginTop: 24,
     display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 8,
-    color: "#aaa",
-    fontSize: 14,
-    fontFamily:
-      "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+    maxWidth: 300,
   }}
 >
-  {/* О нас */}
+  {/* Блок "О нас" */}
   <div
     style={{
-      paddingLeft: 12,
-      textDecoration: "underline",
-    }}
-  >
-    <a
-      href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        window.open("/guide", "_blank");
-      }}
-      style={{
-        color: "inherit",
-        textDecoration: "none",
-        cursor: "pointer",
-      }}
-    >
-      О нас
-    </a>
-  </div>
-
-  {/* Связь с нами */}
-  <div
-    style={{
-      paddingLeft: 24,
+      flex: 1,
+      backgroundColor: "#0a1f33",
+      borderRadius: 16,
+      padding: 12,
       display: "flex",
       alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      textDecoration: "underline",
+      color: "#aaa",
+      fontSize: 14,
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+      boxShadow: "inset 0 0 4px rgba(255,255,255,0.1)",
+    }}
+    onClick={() => window.open("/guide", "_blank")}
+  >
+    О нас
+  </div>
+
+  {/* Блок "Связь с нами" */}
+  <div
+    style={{
+      flex: 1,
+      backgroundColor: "#0a1f33",
+      borderRadius: 16,
+      padding: 12,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       gap: 8,
       textDecoration: "underline",
+      color: "#aaa",
+      fontSize: 14,
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+      boxShadow: "inset 0 0 4px rgba(255,255,255,0.1)",
     }}
   >
     <span>Связь с нами:</span>
-    
-    {/* Telegram */}
     <a
       href="https://t.me/dps_map_support"
       target="_blank"
@@ -905,30 +909,16 @@ if (!isAuthorized) {
         height="21"
         fill="currentColor"
       >
-        <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
+        <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z" />
       </svg>
     </a>
-    
-    {/* WhatsApp */}
     <a
       href="https://wa.me/+79958962951"
       target="_blank"
       rel="noopener noreferrer"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        textDecoration: "none",
-        color: "inherit",
-      }}
+      style={{ display: "flex", alignItems: "center", color: "inherit" }}
     >
-      <WhatsAppIcon
-        width={21}
-        height={21}
-        style={{
-          cursor: "pointer",
-          fill: "currentColor",
-        }}
-      />
+      <WhatsAppIcon width={21} height={21} style={{ cursor: "pointer", fill: "currentColor" }} />
     </a>
   </div>
 </div>
