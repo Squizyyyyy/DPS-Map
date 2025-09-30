@@ -843,19 +843,20 @@ if (!isAuthorized) {
     </button>
 
 	{/* О нас и Связь с нами */}
-<div
-  style={{
-    marginTop: 24,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 8,
-    color: "#aaa",
-    fontSize: 14,
-    fontFamily:
-      "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
-  }}
->
+  <div
+    style={{
+      marginTop: 24,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: 8,
+      color: "#aaa",
+      fontSize: 14,
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+    }}
+  >
+  
   {/* О нас */}
   <div
     style={{
@@ -932,7 +933,6 @@ if (!isAuthorized) {
     </a>
   </div>
 </div>
-)}
 
   {/* Подписка */}
   {activeTab === "subscription" && (
