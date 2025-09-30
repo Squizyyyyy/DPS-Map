@@ -30,6 +30,8 @@ export default function App() {
             font-size: 14px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border: 1px solid rgba(255,255,255,0.3);
+			margin: 0 auto;
+			max-width: 500px;
           }
           .ios-toast:hover {
             opacity: 0.95;
