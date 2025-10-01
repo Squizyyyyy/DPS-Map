@@ -15,7 +15,7 @@ export default function App() {
         closeOnClick
         draggable
         pauseOnHover
-        style={{ marginTop: "20px", zIndex: 9999 }}
+        style={{ marginTop: "20px", zIndex: 9999, padding: "0 16px", boxSizing: "border-box", }}
         toastClassName="ios-toast"
       />
       <style>
@@ -31,7 +31,9 @@ export default function App() {
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border: 1px solid rgba(255,255,255,0.3);
 			margin: 0 auto;
-			max-width: 300px;
+			max-width: 400px;
+			width: 100%;
+			box-sizing: border-box;
           }
           .ios-toast:hover {
             opacity: 0.95;

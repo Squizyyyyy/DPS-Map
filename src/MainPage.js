@@ -909,69 +909,104 @@ if (!isAuthorized) {
 )}
 
 {/* Вкладка Гайд */}
-  {activeTab === "guide" && (
-    <div
+{activeTab === "guide" && (
+  <div style={{ 
+    position: "relative",
+    padding: "16px",
+    paddingTop: "60px",
+    maxWidth: 500,
+    margin: "0 auto",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+    color: "#fff"
+  }}>
+    
+    {/* Кнопка назад */}
+    <button
+      onClick={() => setActiveTab("account")}
       style={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
+        position: "fixed",
+        top: 16,
+        left: 16,
+        background: "rgba(255,255,255,0.15)",
+        border: "none",
+        borderRadius: 12,
+        padding: "8px 12px",
         color: "#fff",
-        padding: 24,
-        backgroundColor: tabColors.background,
-        textAlign: "center",
+        fontWeight: 700,
+        fontSize: 14,
+        cursor: "pointer",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        zIndex: 1000
       }}
     >
-      <div
+      ← Вернуться назад
+    </button>
+
+    <h2 style={{ textAlign: "center", marginBottom: 24 }}>Гайд по приложению</h2>
+
+    {/* Аккордеоны */}
+    {[
+      {
+        title: "Карта",
+        content: "В данном приложении используется детализированная 3D карта от 2GIS, чтобы пользование было максимально приятным. Пользователь может увеличивать масштаб карты, уменьшать масштаб карты, а также менять угол наклона путём одновременного проведения двумя пальцами по экрану вверх и вниз."
+      },
+      {
+        title: "Клик по карте",
+        content: "Нажав на любую область карты, пользователь на экране увидит окошко с подтверждением действия, чтобы избежать случайного нажатия при изменении масштаба карты."
+      },
+      {
+        title: "Маркер",
+        content: "Маркер (или же метка) имеет 2 состояния: цветное и чёрнобелое. Цветное - метка актуальна. Чёрнобелое - метка устарела. У каждой метки есть время жизни: 1 час 30 минут. Спустя 1 час она становится чёрнобелой, а ещё через 30 минут исчезает, если не подтвердить."
+      },
+      {
+        title: "Попап",
+        content: "Попап (или блок с информацией о метке) содержит: адрес, время постановки, комментарий, количество подтверждений, кнопки 'Подтвердить' и 'Уехали'."
+      },
+      {
+        title: "Комментарий",
+        content: "Пользователь может добавить комментарий к своей метке. Это необязательно."
+      },
+      {
+        title: "Подтверждение",
+        content: "Кнопка 'Подтвердить' обновляет время жизни метки, делает её снова цветной и увеличивает количество подтверждений."
+      },
+      {
+        title: "Удаление",
+        content: "Кнопка 'Уехали' позволяет удалить метку досрочно."
+      },
+      {
+        title: "Ограничения",
+        content: "Чтобы избежать спама: ставить метку можно 1 раз в 5 минут, удалять — 1 раз в 15 минут."
+      },
+      {
+        title: "Доступ к карте",
+        content: "Чтобы открыть карту, активируйте подписку и выберите город во вкладке 'Профиль'."
+      }
+    ].map((item, index) => (
+      <details
+        key={index}
         style={{
-          width: "100%",
-          maxWidth: 360,
-          padding: 24,
-          borderRadius: 24,
-          border: "2px solid rgba(255, 255, 255, 0.3)",
-          backgroundColor: "#0a1f33",
-          boxSizing: "border-box",
+          background: "#0a1f33",
+          borderRadius: 16,
+          padding: "12px 16px",
+          marginBottom: 12,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          cursor: "pointer"
         }}
       >
-        <h2
-          style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}
-        >
-          О нас
-        </h2>
-        <p style={{ fontSize: 16, color: "#ccc", margin: 0 }}>
-          Здесь будет гайд по пользованию.
+        <summary style={{ fontWeight: 700, fontSize: 16, cursor: "pointer" }}>
+          {item.title}
+        </summary>
+        <p style={{ marginTop: 8, fontSize: 14, color: "#ddd", lineHeight: "1.5" }}>
+          {item.content}
         </p>
-        <button
-          onClick={() => setActiveTab("account")}
-          style={{
-            marginTop: 24,
-            padding: "10px 0",
-            background: "linear-gradient(90deg, #2787f5, #0a90ff)",
-            color: "#fff",
-            border: "none",
-            borderRadius: 16,
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: 14,
-            width: "100%",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background =
-              "linear-gradient(90deg, #1e6cd8, #0470ff)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background =
-              "linear-gradient(90deg, #2787f5, #0a90ff)")
-          }
-        >
-          Назад в профиль
-        </button>
-      </div>
-    </div>
-  )}
+      </details>
+    ))}
+  </div>
+)}
 
   {/* Подписка */}
   {activeTab === "subscription" && (
