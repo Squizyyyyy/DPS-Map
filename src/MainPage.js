@@ -915,7 +915,7 @@ if (!isAuthorized) {
   <div style={{ 
     position: "relative",
     padding: 16,
-    paddingTop: "73px",
+    paddingTop: "76px",
     maxWidth: 500,
 	margin: "0 auto",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
@@ -1045,14 +1045,33 @@ if (!isAuthorized) {
           padding: "12px 16px",
           marginBottom: 12,
           cursor: "pointer",
+		  overflow: "hidden",
+		  transition: "background 0.2s"
         }}
       >
         <summary style={{ fontWeight: 600, fontSize: 16, cursor: "pointer", color: "#fff", paddingLeft: 12, listStyle: "none", }}>
           {item.title}
         </summary>
-        <div style={{ marginTop: 8, fontSize: 14, color: "#ccc", lineHeight: "1.5" }}>
+        <div
+          style={{
+            maxHeight: 0,
+            overflow: "hidden",
+            transition: "max-height 0.3s ease",
+            marginTop: 8,
+            fontSize: 14,
+            color: "#ccc",
+            lineHeight: "1.5"
+          }}
+        >
           {item.content}
         </div>
+		<style>
+          {`
+            details[open] div {
+              max-height: 500px;
+            }
+          `}
+        </style>
       </details>
     ))}
   </div>
@@ -1132,12 +1151,12 @@ if (!isAuthorized) {
 	{/* Кнопка отмены автопродления */}
     <button
       style={{
-        marginTop: 7,
+        marginTop: 6,
         padding: "8px 0",
         background: "linear-gradient(90deg, #2787f5, #7a5cff)",
         color: "#fff",
         border: "none",
-        borderRadius: 16,
+        borderRadius: 10,
         cursor: "pointer",
         fontWeight: 600,
         fontSize: 13,
