@@ -914,9 +914,9 @@ if (!isAuthorized) {
 {activeTab === "guide" && (
   <div style={{ 
     position: "relative",
-    padding: "16px",
-    paddingTop: "60px",
-    maxWidth: 500,
+    padding: 16,
+    paddingTop: "70px",
+    maxWidth: 300,
     margin: "0 auto",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     color: "#fff"
