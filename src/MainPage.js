@@ -1047,14 +1047,26 @@ if (!isAuthorized) {
           cursor: "pointer",
         }}
       >
-        <summary style={{ fontWeight: 600, fontSize: 16, cursor: "pointer", color: "#fff" }}>
+        <summary style={{ fontWeight: 600, fontSize: 16, gap: 12, cursor: "pointer", color: "#fff" }}>
           {item.title}
+		  <span style={{ display: "inline-block", transition: "transform 0.2s ease-in-out" }}>
+            ⌄
+          </span>
         </summary>
         <div style={{ marginTop: 8, fontSize: 14, color: "#ccc", lineHeight: "1.5" }}>
           {item.content}
         </div>
       </details>
     ))}
+	
+	{/* CSS для анимации стрелки */}
+    <style>
+      {`
+        details[open] summary span {
+          transform: rotate(180deg);
+        }
+      `}
+    </style>
   </div>
 )}
 
@@ -1131,7 +1143,6 @@ if (!isAuthorized) {
 	
 	{/* Кнопка отмены автопродления */}
     <button
-      onClick={handleCancelAutoRenewal}
       style={{
         marginTop: 8, // небольшой отступ от кнопки выше
         padding: "10px 0", // чуть меньше по высоте
