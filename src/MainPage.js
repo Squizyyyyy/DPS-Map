@@ -1047,26 +1047,14 @@ if (!isAuthorized) {
           cursor: "pointer",
         }}
       >
-        <summary style={{ fontWeight: 600, fontSize: 16, gap: 12, cursor: "pointer", color: "#fff" }}>
+        <summary style={{ fontWeight: 600, fontSize: 16, gap: 30, cursor: "pointer", color: "#fff" }}>
           {item.title}
-		  <span style={{ display: "inline-block", transition: "transform 0.2s ease-in-out" }}>
-            ⌄
-          </span>
         </summary>
         <div style={{ marginTop: 8, fontSize: 14, color: "#ccc", lineHeight: "1.5" }}>
           {item.content}
         </div>
       </details>
     ))}
-	
-	{/* CSS для анимации стрелки */}
-    <style>
-      {`
-        details[open] summary span {
-          transform: rotate(180deg);
-        }
-      `}
-    </style>
   </div>
 )}
 
@@ -1144,10 +1132,10 @@ if (!isAuthorized) {
 	{/* Кнопка отмены автопродления */}
     <button
       style={{
-        marginTop: 8, // небольшой отступ от кнопки выше
-        padding: "10px 0", // чуть меньше по высоте
-        background: "linear-gradient(90deg, #f8d6d6, #fffaf0)",
-        color: "#900",
+        marginTop: 8,
+        padding: "9px 0",
+        background: "linear-gradient(90deg, rgba(255,100,100,0.3), rgba(255,240,240,0.3))",
+        color: "#fff",
         border: "none",
         borderRadius: 16,
         cursor: "pointer",
