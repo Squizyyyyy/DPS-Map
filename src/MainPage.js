@@ -915,9 +915,9 @@ if (!isAuthorized) {
   <div style={{ 
     position: "relative",
     padding: 16,
+	width: "100%",
     paddingTop: "70px",
     maxWidth: 300,
-    margin: "0 auto",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     color: "#fff"
   }}>
@@ -929,7 +929,7 @@ if (!isAuthorized) {
         position: "fixed",
         top: 16,
         left: 16,
-        background: "rgba(255,255,255,0.15)",
+        background: "rgba(20,40,60,0.4)",
         border: "none",
         borderRadius: 12,
         padding: "8px 12px",
@@ -1156,97 +1156,79 @@ if (!isAuthorized) {
         {
           q: "Как активировать/продлить подписку?",
           a: (
-		    <div style={{ color: "#888", fontSize: 15 }}>
+            <div>
               <p style={{ margin: "0 0 6px 0" }}>
                 Чтобы активировать/продлить подписку:
               </p>
-              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 15 }}>
+              <ul style={{ paddingLeft: 16, margin: 0 }}>
                 <li>Кликните по кнопке выше;</li>
                 <li>Вы будете перенаправлены на страницу оплаты;</li>
-                <li>Выберите удобный для Вас способ оплаты и нажмите «Оплатить».</li>
+                <li>
+                  Выберите удобный для Вас способ оплаты и нажмите «Оплатить».
+                </li>
               </ul>
-			</div>
+            </div>
           ),
         },
         {
           q: "Какие способы оплаты есть?",
           a: (
-		    <div style={{ color: "#888", fontSize: 15 }}>
+            <div>
               <p style={{ margin: "0 0 6px 0" }}>
                 Мы предлагаем самые распространённые и удобные способы оплаты:
               </p>
-              <ul style={{ paddingLeft: 16, margin: 0, color: "#888", fontSize: 15 }}>
-			    <li>Онлайн по карте</li>
+              <ul style={{ paddingLeft: 16, margin: 0 }}>
+                <li>Онлайн по карте</li>
                 <li>Через СБП</li>
                 <li>Через T-Pay или Sber-Pay</li>
               </ul>
-			</div>
+            </div>
           ),
         },
-		{
+        {
           q: "Какая стоимость подписки?",
-          a: (
-		    <div style={{ color: "#888", fontSize: 15 }}>
-              <p style={{ margin: "0 0 6px 0" }}>
-                Стоимость подписки составляет 99₽/мес.
-              </p>
-			</div>
-		  ),
+          a: <p style={{ margin: 0 }}>Стоимость подписки составляет 99₽/мес.</p>,
         },
         {
           q: "Можно ли подключить автоплатёж?",
           a: (
-            <p style={{ margin: 0, fontSize: 15, color: "#888" }}>
-              Да. На странице оплаты Вы можете подключить автоплатёж и не оплачивать вручную каждый месяц.
+            <div>
+              <p style={{ margin: 0 }}>
+                Да. На странице оплаты Вы можете подключить автоплатёж и не
+                оплачивать вручную каждый месяц.
+              </p>
               <i>
-			    <p>
-			       * Автоплатёж можно отключить в любой момент.
-				</p>
-			  </i>
-            </p>
+                <p style={{ margin: "6px 0 0 0", fontSize: 13, color: "#bbb" }}>
+                  * Автоплатёж можно отключить в любой момент.
+                </p>
+              </i>
+            </div>
           ),
         },
       ].map((item, idx) => (
         <details
           key={idx}
           style={{
-            background: "transparent",
-            border: "none",
-            color: "#aaa",
+            background: "rgba(255,255,255,0.05)",
+            borderRadius: 16,
+            padding: "12px 16px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
             cursor: "pointer",
           }}
         >
           <summary
             style={{
               listStyle: "none",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              fontWeight: 700,
+              fontSize: 15,
               cursor: "pointer",
-              fontSize: 16,
-              padding: "6px 0",
             }}
           >
             {item.q}
-            <span
-              style={{
-                display: "inline-block",
-                transition: "transform 0.3s ease",
-              }}
-            >
-              ⌄
-            </span>
           </summary>
-          <div style={{ marginTop: 6 }}>{item.a}</div>
-
-          {/* анимация стрелки */}
-          <style>
-            {`
-              details[open] summary span {
-                transform: rotate(180deg);
-              }
-            `}
-          </style>
+          <div style={{ marginTop: 8, fontSize: 14, color: "#ddd" }}>
+            {item.a}
+          </div>
         </details>
       ))}
     </div>
