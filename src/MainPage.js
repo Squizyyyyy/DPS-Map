@@ -1040,13 +1040,12 @@ if (!isAuthorized) {
       <details
         key={index}
         style={{
-          background: "rgba(255,255,255,0.05)",
+          background: "rgba(255,255,255,0.02)",
           borderRadius: 14,
           padding: "12px 16px",
           marginBottom: 12,
-          boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
           cursor: "pointer",
-          border: "1px solid rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.05)",
         }}
       >
         <summary style={{ fontWeight: 600, fontSize: 16, cursor: "pointer", color: "#fff" }}>
