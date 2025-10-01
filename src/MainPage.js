@@ -1045,7 +1045,6 @@ if (!isAuthorized) {
           padding: "12px 16px",
           marginBottom: 12,
           cursor: "pointer",
-          border: "1px solid rgba(255,255,255,0.05)",
         }}
       >
         <summary style={{ fontWeight: 600, fontSize: 16, cursor: "pointer", color: "#fff" }}>
@@ -1129,6 +1128,33 @@ if (!isAuthorized) {
     >
       {loadingSubscription ? "Активируем..." : "Активировать подписку"}
     </button>
+	
+	{/* Кнопка отмены автопродления */}
+    <button
+      onClick={handleCancelAutoRenewal}
+      style={{
+        marginTop: 8, // небольшой отступ от кнопки выше
+        padding: "10px 0", // чуть меньше по высоте
+        background: "linear-gradient(90deg, #f8d6d6, #fffaf0)",
+        color: "#900",
+        border: "none",
+        borderRadius: 16,
+        cursor: "pointer",
+        fontWeight: 600,
+        fontSize: 14,
+        width: "100%",
+        maxWidth: 300,
+        transition: "all 0.2s",
+      }}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.background = "linear-gradient(90deg, #f5bebe, #fff5e6)")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.background = "linear-gradient(90deg, #f8d6d6, #fffaf0)")
+      }
+    >
+      Отменить автопродление
+    </button>
 
     {/* Разделительная линия */}
     <div
@@ -1142,16 +1168,16 @@ if (!isAuthorized) {
       }}
     />
 
-    {/* Вопросы (аккордеон) */}
-<div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
-    width: "100%",
-    maxWidth: 300,
-  }}
->
+  {/* Вопросы (аккордеон) */}
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      width: "100%",
+      maxWidth: 300,
+    }}
+  >
   {[
     {
       q: "Как активировать/продлить подписку?",
@@ -1196,7 +1222,7 @@ if (!isAuthorized) {
           </p>
           <i>
             <p style={{ margin: "6px 0 0 0", fontSize: 13, color: "#bbb" }}>
-              * Автоплатёж можно отключить в любой момент.
+              * Автоплатёж можно отключить в любой момент по кнопке выше.
             </p>
           </i>
         </div>
@@ -1206,12 +1232,11 @@ if (!isAuthorized) {
     <details
       key={idx}
       style={{
-        background: "rgba(255,255,255,0.05)", // такой же фон как в "О нас"
+        background: "rgba(255,255,255,0.02)",
         borderRadius: 16,
         padding: "14px 18px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
         cursor: "pointer",
-        color: "#ddd", // текст как в "О нас"
+        color: "#ddd",
       }}
     >
       <summary
