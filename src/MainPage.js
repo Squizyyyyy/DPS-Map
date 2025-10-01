@@ -1065,15 +1065,15 @@ if (!isAuthorized) {
         >
           {item.content}
         </div>
-		<style>
-          {`
-            details[open] div {
-              max-height: 500px;
-            }
-          `}
-        </style>
       </details>
     ))}
+	<style>
+    {`
+      details[open] div {
+        max-height: 500px;
+      }
+    `}
+    </style>
   </div>
 )}
 
@@ -1151,25 +1151,14 @@ if (!isAuthorized) {
 	{/* Кнопка отмены автопродления */}
     <button
       style={{
-        marginTop: 6,
-        padding: "8px 0",
-        background: "linear-gradient(90deg, #2787f5, #7a5cff)",
-        color: "#fff",
+        background: "none",
         border: "none",
-        borderRadius: 10,
+        color: "#fff",
+        fontWeight: 700,
+        fontSize: 14,
         cursor: "pointer",
-        fontWeight: 600,
-        fontSize: 13,
-        width: "100%",
-        maxWidth: 300,
-        transition: "all 0.2s",
+        marginTop: 6
       }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.background = "linear-gradient(90deg, #f5bebe, #fff5e6)")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.background = "linear-gradient(90deg, #f8d6d6, #fffaf0)")
-      }
     >
       Отменить автопродление
     </button>
