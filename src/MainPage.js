@@ -1047,7 +1047,7 @@ if (!isAuthorized) {
           cursor: "pointer",
         }}
       >
-        <summary style={{ fontWeight: 600, fontSize: 16, gap: 30, cursor: "pointer", color: "#fff" }}>
+        <summary style={{ fontWeight: 600, fontSize: 16, cursor: "pointer", color: "#fff", paddingLeft: 12, listStyle: "none", }}>
           {item.title}
         </summary>
         <div style={{ marginTop: 8, fontSize: 14, color: "#ccc", lineHeight: "1.5" }}>
@@ -1132,15 +1132,15 @@ if (!isAuthorized) {
 	{/* Кнопка отмены автопродления */}
     <button
       style={{
-        marginTop: 8,
-        padding: "9px 0",
-        background: "linear-gradient(90deg, rgba(255,100,100,0.3), rgba(255,240,240,0.3))",
+        marginTop: 7,
+        padding: "8px 0",
+        background: "linear-gradient(90deg, #2787f5, #7a5cff)",
         color: "#fff",
         border: "none",
         borderRadius: 16,
         cursor: "pointer",
         fontWeight: 600,
-        fontSize: 14,
+        fontSize: 13,
         width: "100%",
         maxWidth: 300,
         transition: "all 0.2s",
@@ -1160,8 +1160,8 @@ if (!isAuthorized) {
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
-        marginTop: 26,
-		marginBottom: 16,
+        marginTop: 22,
+		marginBottom: 22,
         width: "100%",
         maxWidth: 300,
       }}
