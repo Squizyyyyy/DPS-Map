@@ -527,6 +527,7 @@ if (!isAuthorized) {
     >
 
 {/* Нижняя панель вкладок */}
+{activeTab !== "guide" && (
 <nav
   style={{
     position: "fixed",
@@ -585,6 +586,7 @@ if (!isAuthorized) {
     </div>
   ))}
 </nav>
+)}
 
 {isMapActive ? (
   hasSubscription ? (
@@ -945,7 +947,23 @@ if (!isAuthorized) {
       ← Вернуться назад
     </button>
 
-    <h2 style={{ textAlign: "center", marginBottom: 24 }}>Гайд по приложению</h2>
+    {/* Заголовок в рамке */}
+    <div
+      style={{
+        border: "1px solid rgba(255,255,255,0.2)",
+        borderRadius: 12,
+        padding: "12px 16px",
+        marginBottom: 24,
+        background: "rgba(255,255,255,0.05)",
+        textAlign: "center",
+        fontSize: 18,
+        fontWeight: 600,
+        color: "#fff",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+      }}
+    >
+      Гайд по приложению
+    </div>
 
     {/* Аккордеоны */}
     {[
