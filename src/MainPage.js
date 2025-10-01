@@ -915,9 +915,9 @@ if (!isAuthorized) {
   <div style={{ 
     position: "relative",
     padding: 16,
-	width: "100%",
-    paddingTop: "70px",
-    maxWidth: 300,
+    paddingTop: "73px",
+    maxWidth: 500,
+	margin: "0 auto",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     color: "#fff"
   }}>
@@ -1143,96 +1143,94 @@ if (!isAuthorized) {
     />
 
     {/* Вопросы (аккордеон) */}
-    <div
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    width: "100%",
+    maxWidth: 300,
+  }}
+>
+  {[
+    {
+      q: "Как активировать/продлить подписку?",
+      a: (
+        <div>
+          <p style={{ margin: "0 0 6px 0" }}>
+            Чтобы активировать/продлить подписку:
+          </p>
+          <ul style={{ paddingLeft: 16, margin: 0 }}>
+            <li>Кликните по кнопке выше;</li>
+            <li>Вы будете перенаправлены на страницу оплаты;</li>
+            <li>Выберите удобный способ оплаты и нажмите «Оплатить».</li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      q: "Какие способы оплаты есть?",
+      a: (
+        <div>
+          <p style={{ margin: "0 0 6px 0" }}>
+            Мы предлагаем самые распространённые и удобные способы оплаты:
+          </p>
+          <ul style={{ paddingLeft: 16, margin: 0 }}>
+            <li>Онлайн по карте</li>
+            <li>Через СБП</li>
+            <li>Через T-Pay или Sber-Pay</li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      q: "Какая стоимость подписки?",
+      a: <p style={{ margin: 0 }}>Стоимость подписки составляет 99₽/мес.</p>,
+    },
+    {
+      q: "Можно ли подключить автоплатёж?",
+      a: (
+        <div>
+          <p style={{ margin: 0 }}>
+            Да. На странице оплаты можно подключить автоплатёж и не оплачивать вручную каждый месяц.
+          </p>
+          <i>
+            <p style={{ margin: "6px 0 0 0", fontSize: 13, color: "#bbb" }}>
+              * Автоплатёж можно отключить в любой момент.
+            </p>
+          </i>
+        </div>
+      ),
+    },
+  ].map((item, idx) => (
+    <details
+      key={idx}
       style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        width: "100%",
-        maxWidth: 300,
+        background: "rgba(255,255,255,0.05)", // такой же фон как в "О нас"
+        borderRadius: 16,
+        padding: "14px 18px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+        cursor: "pointer",
+        color: "#ddd", // текст как в "О нас"
       }}
     >
-      {[
-        {
-          q: "Как активировать/продлить подписку?",
-          a: (
-            <div>
-              <p style={{ margin: "0 0 6px 0" }}>
-                Чтобы активировать/продлить подписку:
-              </p>
-              <ul style={{ paddingLeft: 16, margin: 0 }}>
-                <li>Кликните по кнопке выше;</li>
-                <li>Вы будете перенаправлены на страницу оплаты;</li>
-                <li>
-                  Выберите удобный для Вас способ оплаты и нажмите «Оплатить».
-                </li>
-              </ul>
-            </div>
-          ),
-        },
-        {
-          q: "Какие способы оплаты есть?",
-          a: (
-            <div>
-              <p style={{ margin: "0 0 6px 0" }}>
-                Мы предлагаем самые распространённые и удобные способы оплаты:
-              </p>
-              <ul style={{ paddingLeft: 16, margin: 0 }}>
-                <li>Онлайн по карте</li>
-                <li>Через СБП</li>
-                <li>Через T-Pay или Sber-Pay</li>
-              </ul>
-            </div>
-          ),
-        },
-        {
-          q: "Какая стоимость подписки?",
-          a: <p style={{ margin: 0 }}>Стоимость подписки составляет 99₽/мес.</p>,
-        },
-        {
-          q: "Можно ли подключить автоплатёж?",
-          a: (
-            <div>
-              <p style={{ margin: 0 }}>
-                Да. На странице оплаты Вы можете подключить автоплатёж и не
-                оплачивать вручную каждый месяц.
-              </p>
-              <i>
-                <p style={{ margin: "6px 0 0 0", fontSize: 13, color: "#bbb" }}>
-                  * Автоплатёж можно отключить в любой момент.
-                </p>
-              </i>
-            </div>
-          ),
-        },
-      ].map((item, idx) => (
-        <details
-          key={idx}
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            borderRadius: 16,
-            padding: "12px 16px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-            cursor: "pointer",
-          }}
-        >
-          <summary
-            style={{
-              listStyle: "none",
-              fontWeight: 700,
-              fontSize: 15,
-              cursor: "pointer",
-            }}
-          >
-            {item.q}
-          </summary>
-          <div style={{ marginTop: 8, fontSize: 14, color: "#ddd" }}>
-            {item.a}
-          </div>
-        </details>
-      ))}
-    </div>
+      <summary
+        style={{
+          listStyle: "none",
+          fontWeight: 600,
+          fontSize: 15,
+          cursor: "pointer",
+        }}
+      >
+        {item.q}
+      </summary>
+      <div style={{ marginTop: 8, fontSize: 14, lineHeight: "1.4" }}>
+        {item.a}
+      </div>
+    </details>
+  ))}
   </div>
+ </div>
 )}
         </main>
       )}
