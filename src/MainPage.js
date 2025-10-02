@@ -1110,7 +1110,7 @@ if (!isAuthorized) {
       display: "flex",
       flexDirection: "column",
 	  justifyContent: "center",
-      gap: 30,
+      gap: 23,
     }}>
 
     {/* Кнопка подписки */}
