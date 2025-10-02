@@ -1052,28 +1052,31 @@ if (!isAuthorized) {
         <summary style={{ fontWeight: 600, fontSize: 16, cursor: "pointer", color: "#fff", paddingLeft: 12, listStyle: "none", }}>
           {item.title}
         </summary>
-        <div
-          style={{
-            maxHeight: 0,
-            overflow: "hidden",
-            transition: "max-height 0.3s ease",
-            marginTop: 8,
-            fontSize: 14,
-            color: "#ccc",
-            lineHeight: "1.5"
-          }}
-        >
-          {item.content}
-        </div>
-      </details>
+    {/* Контейнер для анимации */}
+    <div
+      className="accordion-content"
+      style={{
+        maxHeight: 0,
+        overflow: "hidden",
+        transition: "max-height 0.3s ease",
+        marginTop: 8,
+        fontSize: 14,
+        color: "#ccc",
+        lineHeight: "1.5",
+      }}
+    >
+      {item.content}
+    </div>
+	  {/* Стили */}
+      <style>
+        {`
+          details[open] .accordion-content {
+            max-height: 500px;
+          }
+        `}
+      </style>
+    </details>
     ))}
-	<style>
-    {`
-      details[open] div {
-        max-height: 500px;
-      }
-    `}
-    </style>
   </div>
 )}
 
@@ -1153,9 +1156,9 @@ if (!isAuthorized) {
       style={{
         background: "none",
         border: "none",
-        color: "#fff",
-        fontWeight: 700,
-        fontSize: 14,
+        color: "#ffc7c7",
+        fontWeight: 750,
+        fontSize: 16,
         cursor: "pointer",
         marginTop: 6
       }}
