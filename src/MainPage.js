@@ -1066,7 +1066,6 @@ if (!isAuthorized) {
         flexDirection: "column",
 		alignItems: "center",
         gap: 16,
-		width: "100%",
         maxWidth: 500,
 		padding: "0 30px",
 		margin: "0 auto",
