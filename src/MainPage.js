@@ -1160,24 +1160,13 @@ if (!isAuthorized) {
     </button>
 	</div>
 
-    {/* Разделительная линия */}
-    <div
-      style={{
-        height: 1,
-        background: "rgba(255,255,255,0.1)",
-        marginTop: 27,
-		marginBottom: 16,
-		maxWidth: 300,
-        width: "100%",
-      }}
-    />
-
   {/* Вопросы (аккордеон) */}
   <div
     style={{
       display: "flex",
       flexDirection: "column",
 	  alignItems: "center",
+	  marginTop: 35,
 	  padding: 16,
       gap: 12,
 	  maxWidth: 300,
