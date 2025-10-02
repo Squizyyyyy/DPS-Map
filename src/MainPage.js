@@ -1067,6 +1067,7 @@ if (!isAuthorized) {
 		alignItems: "center",
         gap: 16,
         maxWidth: 500,
+		width: "100%",
 		padding: "0 30px",
 		margin: "0 auto",
         marginTop: "30px",
