@@ -1166,7 +1166,7 @@ if (!isAuthorized) {
       display: "flex",
       flexDirection: "column",
 	  alignItems: "center",
-	  marginTop: 28,
+	  marginTop: 23,
 	  padding: 16,
       gap: 12,
 	  maxWidth: 300,
@@ -1183,7 +1183,7 @@ if (!isAuthorized) {
           </p>
           <ul style={{ paddingLeft: 16, margin: 0 }}>
             <li>Кликните по кнопке выше;</li>
-            <li>Вы будете перенаправлены на страницу оплаты;</li>
+            <li>Произойдёт перенаправление на страницу оплаты;</li>
             <li>Выберите удобный способ оплаты и нажмите «Оплатить».</li>
           </ul>
         </div>
