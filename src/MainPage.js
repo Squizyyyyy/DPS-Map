@@ -1108,9 +1108,11 @@ if (!isAuthorized) {
       maxWidth: 300,
       textAlign: "center",
       boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+	  alignItems: "center",
       display: "flex",
       flexDirection: "column",
-      gap: 12
+	  justifyContent: "center",
+      gap: 13,
     }}>
 
     {/* Кнопка подписки */}
@@ -1118,7 +1120,7 @@ if (!isAuthorized) {
       onClick={handleBuySubscription}
       disabled={loadingSubscription}
       style={{
-        marginTop: 16,
+        marginTop: 8,
         padding: "14px 0",
         background: "linear-gradient(90deg, #2787f5, #7a5cff)",
         color: "#fff",
@@ -1149,10 +1151,11 @@ if (!isAuthorized) {
         background: "none",
         border: "none",
         color: "#ffc7c7",
-        fontWeight: 750,
+        fontWeight: 600,
         fontSize: 16,
         cursor: "pointer",
-        marginTop: 6
+        marginTop: 6,
+		marginBottom: 8,
       }}
     >
       Отменить автопродление
