@@ -1066,8 +1066,8 @@ if (!isAuthorized) {
         flexDirection: "column",
         alignItems: "center",
         gap: 16,
-        padding: "0 30px",
-        maxWidth: 500,
+        padding: 0,
+        maxWidth: 300,
         margin: "0 auto",
         marginTop: "30px",
         fontFamily:
@@ -1083,7 +1083,6 @@ if (!isAuthorized) {
         borderRadius: 24,
         padding: 16,
         width: "100%",
-        maxWidth: 300,
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         color: "#fff",
@@ -1105,14 +1104,13 @@ if (!isAuthorized) {
       borderRadius: 24,
       padding: 16,
       width: "100%",
-      maxWidth: 300,
       textAlign: "center",
       boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
 	  alignItems: "center",
       display: "flex",
       flexDirection: "column",
 	  justifyContent: "center",
-      gap: 13,
+      gap: 15,
     }}>
 
     {/* Кнопка подписки */}
@@ -1130,7 +1128,6 @@ if (!isAuthorized) {
         fontWeight: 600,
         fontSize: 16,
         width: "100%",
-        maxWidth: 300,
         transition: "all 0.2s",
       }}
       onMouseEnter={(e) =>
@@ -1154,6 +1151,7 @@ if (!isAuthorized) {
         fontWeight: 600,
         fontSize: 16,
         cursor: "pointer",
+		width: "100%",
         marginTop: 6,
 		marginBottom: 8,
       }}
@@ -1170,7 +1168,6 @@ if (!isAuthorized) {
         marginTop: 22,
 		marginBottom: 22,
         width: "100%",
-        maxWidth: 300,
       }}
     />
 
@@ -1181,7 +1178,6 @@ if (!isAuthorized) {
       flexDirection: "column",
       gap: 12,
       width: "100%",
-      maxWidth: 300,
     }}
   >
   {[
@@ -1243,6 +1239,7 @@ if (!isAuthorized) {
         padding: "14px 18px",
         cursor: "pointer",
         color: "#ddd",
+		width: "100%",
       }}
     >
       <summary
