@@ -1064,10 +1064,12 @@ if (!isAuthorized) {
       style={{
         display: "flex",
         flexDirection: "column",
+		alignItems: "center",
         gap: 16,
 		width: "100%",
-        maxWidth: 300,
-		padding: "0 16px",
+        maxWidth: 500,
+		padding: "0 30px",
+		margin: "0 auto",
         marginTop: "30px",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -1079,7 +1081,6 @@ if (!isAuthorized) {
     <div
       style={{
         backgroundColor: "#0a1f33",
-		alignItems: "center",
         borderRadius: 24,
         padding: 16,
 		maxWidth: 300,
@@ -1102,14 +1103,12 @@ if (!isAuthorized) {
 	{/* Блок с кнопками подписки */}
     <div style={{
       backgroundColor: "#0a1f33",
-	  alignItems: "center",
       borderRadius: 24,
       padding: 16,
 	  maxWidth: 300,
       width: "100%",
       textAlign: "center",
       boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-	  alignItems: "center",
       display: "flex",
       flexDirection: "column",
 	  justifyContent: "center",
@@ -1168,7 +1167,7 @@ if (!isAuthorized) {
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
-		alignItems: "center",
+		padding: 16,
         marginTop: 22,
 		marginBottom: 22,
 		maxWidth: 300,
@@ -1182,6 +1181,7 @@ if (!isAuthorized) {
       display: "flex",
       flexDirection: "column",
 	  alignItems: "center",
+	  padding: 16,
       gap: 12,
 	  maxWidth: 300,
       width: "100%",
