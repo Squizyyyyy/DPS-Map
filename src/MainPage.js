@@ -1065,7 +1065,7 @@ if (!isAuthorized) {
         display: "flex",
         flexDirection: "column",
         gap: 16,
-		width: "100%"
+		width: "100%",
         maxWidth: 300,
         margin: "0 auto",
         marginTop: "30px",
