@@ -1064,9 +1064,8 @@ if (!isAuthorized) {
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         gap: 16,
-        padding: 0,
+		width: "100%"
         maxWidth: 300,
         margin: "0 auto",
         marginTop: "30px",
