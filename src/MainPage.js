@@ -1067,7 +1067,6 @@ if (!isAuthorized) {
 		alignItems: "center",
         gap: 16,
         maxWidth: 500,
-		width: "100%",
 		padding: "0 30px",
 		margin: "0 auto",
         marginTop: "30px",
@@ -1111,7 +1110,6 @@ if (!isAuthorized) {
       boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
       display: "flex",
       flexDirection: "column",
-	  justifyContent: "center",
       gap: 23,
     }}>
 
