@@ -1060,17 +1060,15 @@ if (!isAuthorized) {
 
   {/* Подписка */}
   {activeTab === "subscription" && (
-  <div style={{ width: "100%", padding: "0 16px" }}>
     <div
       style={{
         display: "flex",
         flexDirection: "column",
 		alignItems: "center",
-		padding: "0 16px",
         gap: 16,
 		width: "100%",
         maxWidth: 300,
-        margin: "0 auto",
+        margin: "0 16px",
         marginTop: "30px",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -1261,7 +1259,6 @@ if (!isAuthorized) {
     </details>
   ))}
   </div>
- </div>
  </div>
 )}
         </main>
