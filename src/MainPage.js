@@ -1084,6 +1084,7 @@ if (!isAuthorized) {
         backgroundColor: "#0a1f33",
         borderRadius: 24,
         padding: 16,
+		maxWidth: 300,
         width: "100%",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
@@ -1105,6 +1106,7 @@ if (!isAuthorized) {
       backgroundColor: "#0a1f33",
       borderRadius: 24,
       padding: 16,
+	  maxWidth: 300,
       width: "100%",
       textAlign: "center",
       boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
@@ -1169,6 +1171,7 @@ if (!isAuthorized) {
         background: "rgba(255,255,255,0.1)",
         marginTop: 22,
 		marginBottom: 22,
+		maxWidth: 300,
         width: "100%",
       }}
     />
@@ -1180,6 +1183,7 @@ if (!isAuthorized) {
       flexDirection: "column",
 	  alignItems: "center",
       gap: 12,
+	  maxWidth: 300,
       width: "100%",
     }}
   >
