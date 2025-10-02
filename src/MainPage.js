@@ -1165,7 +1165,6 @@ if (!isAuthorized) {
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
-		padding: 16,
         marginTop: 22,
 		marginBottom: 22,
 		maxWidth: 300,
