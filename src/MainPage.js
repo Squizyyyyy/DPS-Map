@@ -1064,7 +1064,6 @@ if (!isAuthorized) {
       style={{
         display: "flex",
         flexDirection: "column",
-		alignItems: "center",
         gap: 16,
 		width: "100%",
         maxWidth: 300,
@@ -1080,6 +1079,7 @@ if (!isAuthorized) {
     <div
       style={{
         backgroundColor: "#0a1f33",
+		alignItems: "center",
         borderRadius: 24,
         padding: 16,
 		maxWidth: 300,
@@ -1102,6 +1102,7 @@ if (!isAuthorized) {
 	{/* Блок с кнопками подписки */}
     <div style={{
       backgroundColor: "#0a1f33",
+	  alignItems: "center",
       borderRadius: 24,
       padding: 16,
 	  maxWidth: 300,
@@ -1167,6 +1168,7 @@ if (!isAuthorized) {
       style={{
         height: 1,
         background: "rgba(255,255,255,0.1)",
+		alignItems: "center",
         marginTop: 22,
 		marginBottom: 22,
 		maxWidth: 300,
