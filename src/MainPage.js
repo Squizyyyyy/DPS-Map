@@ -1045,37 +1045,15 @@ if (!isAuthorized) {
           padding: "12px 16px",
           marginBottom: 12,
           cursor: "pointer",
-		  overflow: "hidden",
-		  transition: "background 0.2s"
         }}
       >
         <summary style={{ fontWeight: 600, fontSize: 16, cursor: "pointer", color: "#fff", paddingLeft: 12, listStyle: "none", }}>
           {item.title}
         </summary>
-    {/* Контейнер для анимации */}
-    <div
-      className="accordion-content"
-      style={{
-        maxHeight: 0,
-        overflow: "hidden",
-        transition: "max-height 0.3s ease",
-        marginTop: 8,
-        fontSize: 14,
-        color: "#ccc",
-        lineHeight: "1.5",
-      }}
-    >
-      {item.content}
-    </div>
-	  {/* Стили */}
-      <style>
-        {`
-          details[open] .accordion-content {
-            max-height: 500px;
-          }
-        `}
-      </style>
-    </details>
+        <div style={{ marginTop: 8, fontSize: 14, color: "#ccc", lineHeight: "1.5" }}>
+          {item.content}
+        </div>
+      </details>
     ))}
   </div>
 )}
@@ -1120,6 +1098,20 @@ if (!isAuthorized) {
         <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
       )}
     </div>
+	
+	{/* Блок с кнопками подписки */}
+    <div style={{
+      backgroundColor: "#0a1f33",
+      borderRadius: 24,
+      padding: 16,
+      width: "100%",
+      maxWidth: 300,
+      textAlign: "center",
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }}>
 
     {/* Кнопка подписки */}
     <button
@@ -1165,6 +1157,7 @@ if (!isAuthorized) {
     >
       Отменить автопродление
     </button>
+	</div>
 
     {/* Разделительная линия */}
     <div
