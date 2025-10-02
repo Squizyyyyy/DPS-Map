@@ -1068,9 +1068,7 @@ if (!isAuthorized) {
         gap: 16,
 		width: "100%",
         maxWidth: 300,
-        margin: "0 auto",
 		padding: "0 16px",
-		boxSizing: "border-box",
         marginTop: "30px",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
