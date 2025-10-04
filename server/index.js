@@ -90,7 +90,7 @@ async function getAddress(lat, lng) {
 
 async function checkRateLimit(ip, action) {
   const now = Date.now();
-  const limitMs = 5 * 60 * 1000;
+  const limitMs = 15 * 60 * 1000;
   const record = await actionsCollection.findOne({ ip, action });
   if (record && now - record.timestamp < limitMs) return false;
   await actionsCollection.updateOne(

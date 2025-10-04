@@ -186,8 +186,8 @@ export default function MapViewMapGL({ city }) {
 
   const handleDelete = async (id) => {
     const now = Date.now();
-    if (now - lastDeleteTime < 5 * 60 * 1000) {
-      toast.warn("Удалять метки можно раз в 5 минут");
+    if (now - lastDeleteTime < 15 * 60 * 1000) {
+      toast.warn("Удалять метки можно раз в 15 минут");
       return;
     }
 
@@ -213,9 +213,9 @@ export default function MapViewMapGL({ city }) {
           delete markersRef.current[id];
         }
         toast.success("Метка удалена");
-      } else toast.warn("Удалять метки можно раз в 5 минут");
+      } else toast.warn("Удалять метки можно раз в 15 минут");
     } catch {
-      toast.warn("Удалять метки можно раз в 5 минут");
+      toast.warn("Удалять метки можно раз в 15 минут");
     }
   };
 
