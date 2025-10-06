@@ -1114,10 +1114,12 @@ if (!isAuthorized) {
     }}>
 
     {/* Кнопка подписки */}
-    <button
-      onClick={handleBuySubscription}
-      disabled={loadingSubscription}
+    <a
+      href="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1D7TL2TQ1LD.251006&"
+      target="_blank"
+      rel="noopener noreferrer"
       style={{
+        display: "block",
         marginTop: 8,
         padding: "14px 0",
         background: "linear-gradient(90deg, #2787f5, #7a5cff)",
@@ -1128,6 +1130,8 @@ if (!isAuthorized) {
         fontWeight: 600,
         fontSize: 16,
         width: "100%",
+        textAlign: "center",
+        textDecoration: "none",
         transition: "all 0.2s",
       }}
       onMouseEnter={(e) =>
@@ -1139,8 +1143,8 @@ if (!isAuthorized) {
           "linear-gradient(90deg, #2787f5, #7a5cff)")
       }
     >
-      {loadingSubscription ? "Активируем..." : "Активировать подписку"}
-    </button>
+      Активировать подписку
+    </a>
 	
 	{/* Кнопка отмены автопродления */}
     <button
