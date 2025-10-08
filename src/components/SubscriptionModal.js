@@ -71,7 +71,7 @@ const handleNext = () => {
         onClick={onClose}
         style={{
           position: "absolute",
-          top: 10,
+          top: 8,
           right: 10,
           background: "transparent",
           border: "none",
@@ -87,12 +87,12 @@ const handleNext = () => {
       </button>
 
 
-        <h2 style={{ margin: "0 0 25px 0", textAlign: "center", fontSize: 18, }}>
+        <h2 style={{ margin: "0 0 27px 0", textAlign: "center", fontSize: 18, }}>
           Выберите период и способ оплаты
         </h2>
 
         {/* Период подписки */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 25 }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 25, fontWeight: 500, }}>
           {[
             { label: "1 месяц - 99₽", value: "1m" },
             { label: "3 месяца - 289₽", value: "3m" },
@@ -123,12 +123,13 @@ const handleNext = () => {
             height: "1px",
             backgroundColor: "rgba(255, 255, 255, 0.2)",
 			width: "calc(100% - 32px)",
-            margin: "10px 0 10px 0",
+            margin: "0 0 25px 0",
+			alignSelf: "center",
           }}
         ></div>
 
         {/* Способы оплаты */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 27, fontWeight: 500, }}>
           {[
             { label: "Картой онлайн", value: "card" },
             { label: "Перевод через СБП", value: "sbp" },
@@ -218,7 +219,7 @@ const handleNext = () => {
     <div style={{ textAlign: "center", marginBottom: 8 }}>
       Для перевода через СБП, перейдите в свой мобильный банк и совершите перевод по реквизитам, указанным ниже.
     </div>
-	<div style={{ textAlign: "center", marginBottom: 10, fontStyle: "italic" }}>
+	<div style={{ textAlign: "center", marginBottom: 12, fontStyle: "italic" }}>
       * Перевод необходимо совершить до окончания таймера.
     </div>
 
@@ -233,7 +234,7 @@ const handleNext = () => {
 	{/* Иконка копирования */}
       <div
         onClick={() => {
-          navigator.clipboard.writeText("+79958962951");
+          navigator.clipboard.writeText("9958962951");
           const icon = document.getElementById("copy-icon");
           if (icon) {
             icon.style.transform = "scale(1.1)";
@@ -250,6 +251,9 @@ const handleNext = () => {
           width: 14,
           height: 14,
           cursor: "pointer",
+		  display: "inline-block",
+		  verticalAlign: "middle",
+		  marginLeft: 4,
         }}
       >
         <div
@@ -289,7 +293,7 @@ const handleNext = () => {
     <div
       onClick={() => setShowSbpInfo(false)}
       style={{
-        marginTop: 10,
+        marginTop: 12,
         cursor: "pointer",
         color: "#2787f5",
         textAlign: "center",
