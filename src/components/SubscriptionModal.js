@@ -3,6 +3,7 @@ import React, { useState } from "react";
 export default function SubscriptionModal({ onClose }) {
   const [selectedPeriod, setSelectedPeriod] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [showSbpInfo, setShowSbpInfo] = useState(false);
 
   return (
     <div
@@ -16,7 +17,7 @@ export default function SubscriptionModal({ onClose }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        padding: "16px", // минимальный отступ от краёв
+        padding: "32px",
         boxSizing: "border-box",
         zIndex: 10000,
       }}
@@ -25,7 +26,7 @@ export default function SubscriptionModal({ onClose }) {
         style={{
           backgroundColor: "#0a1f33",
           borderRadius: 24,
-          padding: "24px 16px 32px 16px",
+          padding: "30px 20px 30px 20px",
           maxWidth: 400,
           width: "100%",
           position: "relative",
@@ -33,23 +34,28 @@ export default function SubscriptionModal({ onClose }) {
           color: "#fff",
         }}
       >
-        {/* Крестик в верхнем правом углу */}
-        <div
-          onClick={onClose}
-          style={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            fontSize: 20,
-            fontWeight: "bold",
-            cursor: "pointer",
-            color: "#fff",
-          }}
-        >
-          ×
-        </div>
+      {/* Крестик */}
+      <button
+        onClick={onClose}
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          background: "transparent",
+          border: "none",
+          color: "#fff",
+          fontSize: 20,
+          cursor: "pointer",
+          padding: 0,
+          lineHeight: 1,
+        }}
+        aria-label="Закрыть"
+      >
+        ✕
+      </button>
 
-        <h2 style={{ margin: "0 0 20px 0", textAlign: "center" }}>
+
+        <h2 style={{ margin: "0 0 20px 0", textAlign: "center", fontSize: 18, }}>
           Выберите период и способ оплаты
         </h2>
 
@@ -66,10 +72,11 @@ export default function SubscriptionModal({ onClose }) {
                 padding: "10px 14px",
                 borderRadius: 12,
                 border: selectedPeriod === period.value ? "2px solid #2787f5" : "2px solid transparent",
-                backgroundColor: selectedPeriod === period.value ? "#1e2b45" : "#0a1f33",
+                backgroundColor: "#1e2b45",
                 color: "#fff",
                 cursor: "pointer",
                 flex: 1,
+                textAlign: "center",
                 transition: "all 0.2s",
               }}
             >
@@ -86,15 +93,18 @@ export default function SubscriptionModal({ onClose }) {
           ].map((payment) => (
             <button
               key={payment.value}
-              onClick={() => setSelectedPayment(payment.value)}
+              onClick={() => {
+                setSelectedPayment(payment.value);
+                setShowSbpInfo(false);
+              }}
               style={{
                 padding: "10px 14px",
                 borderRadius: 12,
                 border: selectedPayment === payment.value ? "2px solid #2787f5" : "2px solid transparent",
-                backgroundColor: selectedPayment === payment.value ? "#1e2b45" : "#0a1f33",
+                backgroundColor: "#1e2b45",
                 color: "#fff",
                 cursor: "pointer",
-				minWidth: 120,
+                minWidth: 120,
                 textAlign: "center",
                 transition: "all 0.2s",
               }}
@@ -108,11 +118,7 @@ export default function SubscriptionModal({ onClose }) {
         <button
           onClick={() => {
             if (selectedPayment === "sbp") {
-              alert(
-                "Для перевода через СБП, перейдите в свой мобильный банк и совершите перевод:\n\n" +
-                "Номер для перевода: +79958962951" +
-                "Банк получателя: Юмани (ЮMoney)"
-              );
+              setShowSbpInfo(true);
             }
           }}
           style={{
@@ -127,13 +133,57 @@ export default function SubscriptionModal({ onClose }) {
             fontWeight: 600,
             fontSize: 16,
             transition: "all 0.2s",
-			width: "calc(100% - 64px)",
+            width: "calc(100% - 64px)",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "#1e6cd8")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "#2787f5")}
         >
           Далее
         </button>
+
+{/* Инструкция по СБП */}
+{showSbpInfo && (
+  <div
+    style={{
+      position: "absolute",
+      bottom: 16,
+      left: "50%",
+      transform: "translateX(-50%)",
+      backgroundColor: "#1a2738",
+      borderRadius: 12,
+      padding: "12px 16px",
+      fontSize: 13,
+      width: "calc(100% - 32px)",
+      boxSizing: "border-box",
+      textAlign: "left",
+      zIndex: 10,
+    }}
+  >
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <span>Номер для перевода: +7(995) 896-29-51</span>
+      <span>Банк получателя: Юмани (ЮMoney)</span>
+    </div>
+{/* Стрелка вверх */}
+        <div
+          onClick={() => setShowSbpInfo(false)}
+          style={{
+            marginTop: 8,
+            cursor: "pointer",
+            color: "#2787f5",
+            textAlign: "center",
+            lineHeight: 0.8,
+            fontSize: 16,
+            fontWeight: "bold",
+            userSelect: "none",
+          }}
+        >
+          <div>^</div>
+          <div>^</div>
+    </div>
+  </div>
+)}
+
+		
       </div>
     </div>
   );
