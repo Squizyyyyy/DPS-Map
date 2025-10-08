@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 
 export default function SubscriptionModal({ onClose }) {
-  const [paymentPeriod, setPaymentPeriod] = useState("1");
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [showSbpInstructions, setShowSbpInstructions] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
   return (
     <div
@@ -17,138 +16,123 @@ export default function SubscriptionModal({ onClose }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        zIndex: 2000,
+        padding: "16px", // минимальный отступ от краёв
+        boxSizing: "border-box",
+        zIndex: 10000,
       }}
     >
       <div
         style={{
           backgroundColor: "#0a1f33",
-          padding: 24,
-          borderRadius: 16,
+          borderRadius: 24,
+          padding: "24px 16px 32px 16px",
           maxWidth: 400,
-          width: "90%",
+          width: "100%",
+          position: "relative",
+          boxSizing: "border-box",
           color: "#fff",
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
         }}
       >
-        <h3 style={{ margin: 0, textAlign: "center" }}>
-          Выберите период и способ оплаты
-        </h3>
-
-        {/* Период подписки */}
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <label style={{ flex: 1, textAlign: "center" }}>
-            <input
-              type="radio"
-              name="period"
-              value="1"
-              checked={paymentPeriod === "1"}
-              onChange={() => setPaymentPeriod("1")}
-            />
-            1 месяц (99₽)
-          </label>
-          <label style={{ flex: 1, textAlign: "center" }}>
-            <input
-              type="radio"
-              name="period"
-              value="3"
-              checked={paymentPeriod === "3"}
-              onChange={() => setPaymentPeriod("3")}
-            />
-            3 месяца (289₽)
-          </label>
+        {/* Крестик в верхнем правом углу */}
+        <div
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            fontSize: 20,
+            fontWeight: "bold",
+            cursor: "pointer",
+            color: "#fff",
+          }}
+        >
+          ×
         </div>
 
-        {/* Способ оплаты */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <label>
-            <input
-              type="radio"
-              name="method"
-              value="card"
-              checked={paymentMethod === "card"}
-              onChange={() => setPaymentMethod("card")}
-            />
-            Картой онлайн
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="method"
-              value="sbp"
-              checked={paymentMethod === "sbp"}
-              onChange={() => setPaymentMethod("sbp")}
-            />
-            Перевод через СБП
-          </label>
+        <h2 style={{ margin: "0 0 20px 0", textAlign: "center" }}>
+          Выберите период и способ оплаты
+        </h2>
+
+        {/* Период подписки */}
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 20 }}>
+          {[
+            { label: "1 месяц (99р)", value: "1m" },
+            { label: "3 месяца (289р)", value: "3m" },
+          ].map((period) => (
+            <button
+              key={period.value}
+              onClick={() => setSelectedPeriod(period.value)}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 12,
+                border: selectedPeriod === period.value ? "2px solid #2787f5" : "2px solid transparent",
+                backgroundColor: selectedPeriod === period.value ? "#1e2b45" : "#0a1f33",
+                color: "#fff",
+                cursor: "pointer",
+                flex: 1,
+                transition: "all 0.2s",
+              }}
+            >
+              {period.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Способы оплаты */}
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 24 }}>
+          {[
+            { label: "Картой онлайн", value: "card" },
+            { label: "Перевод через СБП", value: "sbp" },
+          ].map((payment) => (
+            <button
+              key={payment.value}
+              onClick={() => setSelectedPayment(payment.value)}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 12,
+                border: selectedPayment === payment.value ? "2px solid #2787f5" : "2px solid transparent",
+                backgroundColor: selectedPayment === payment.value ? "#1e2b45" : "#0a1f33",
+                color: "#fff",
+                cursor: "pointer",
+				minWidth: 120,
+                textAlign: "center",
+                transition: "all 0.2s",
+              }}
+            >
+              {payment.label}
+            </button>
+          ))}
         </div>
 
         {/* Кнопка Далее */}
         <button
-          style={{
-            padding: "10px 0",
-            background: "#2787f5",
-            border: "none",
-            borderRadius: 12,
-            fontWeight: 600,
-            cursor: "pointer",
-            color: "#fff",
-          }}
           onClick={() => {
-            if (paymentMethod === "card") {
-              alert("Онлайн-карта пока не реализована");
-            } else if (paymentMethod === "sbp") {
-              setShowSbpInstructions(true);
+            if (selectedPayment === "sbp") {
+              alert(
+                "Для перевода через СБП, перейдите в свой мобильный банк и совершите перевод:\n\n" +
+                "Номер для перевода: +79958962951" +
+                "Банк получателя: Юмани (ЮMoney)"
+              );
             }
           }}
-        >
-          Далее
-        </button>
-
-        {/* Инструкция СБП */}
-        {showSbpInstructions && (
-          <div
-            style={{
-              marginTop: 16,
-              padding: 16,
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 12,
-              textAlign: "center",
-              lineHeight: "1.5",
-            }}
-          >
-            <p>
-              Для перевода через СБП, вам необходимо перейти в свой мобильный
-              банк и совершить перевод через СБП по указанному ниже номеру на
-              указанный ниже банк.
-            </p>
-            <p style={{ marginTop: 8 }}>
-              Номер для перевода: <b>+7 (995) 896-29-51</b>
-            </p>
-            <p>
-              Банк получателя: <b>ЮMoney</b>
-            </p>
-          </div>
-        )}
-
-        {/* Кнопка закрыть модалку */}
-        <button
           style={{
-            marginTop: 12,
-            padding: "6px 0",
-            background: "none",
-            border: "1px solid #fff",
+            display: "block",
+            margin: "0 32px",
+            padding: "10px 0px",
+            background: "#2787f5",
+            color: "#fff",
+            border: "none",
             borderRadius: 12,
             cursor: "pointer",
-            color: "#fff",
+            fontWeight: 600,
+            fontSize: 16,
+            transition: "all 0.2s",
+			width: "calc(100% - 64px)",
           }}
-          onClick={() => {
-            onClose();
-          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#1e6cd8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#2787f5")}
         >
-          Закрыть
+          Далее
         </button>
       </div>
     </div>
