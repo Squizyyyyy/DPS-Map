@@ -71,11 +71,11 @@ const handleNext = () => {
         onClick={onClose}
         style={{
           position: "absolute",
-          top: 20,
+          top: 10,
           right: 10,
           background: "transparent",
           border: "none",
-          color: "#fff",
+          color: "#888",
           fontSize: 20,
           cursor: "pointer",
           padding: 0,
@@ -87,15 +87,15 @@ const handleNext = () => {
       </button>
 
 
-        <h2 style={{ margin: "0 0 20px 0", textAlign: "center", fontSize: 18, }}>
+        <h2 style={{ margin: "0 0 25px 0", textAlign: "center", fontSize: 18, }}>
           Выберите период и способ оплаты
         </h2>
 
         {/* Период подписки */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 25 }}>
           {[
-            { label: "1 месяц (99р)", value: "1m" },
-            { label: "3 месяца (289р)", value: "3m" },
+            { label: "1 месяц - 99₽", value: "1m" },
+            { label: "3 месяца - 289₽", value: "3m" },
           ].map((period) => (
             <button
               key={period.value}
@@ -116,6 +116,15 @@ const handleNext = () => {
             </button>
           ))}
         </div>
+		
+		{/* Разделительная линия */}
+        <div
+          style={{
+            height: "1px",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            margin: "10px 0 10px 0",
+          }}
+        ></div>
 
         {/* Способы оплаты */}
         <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 24 }}>
@@ -154,7 +163,7 @@ const handleNext = () => {
             margin: "0 32px",
             padding: "8px 0",
             background: "#2787f5",
-            borderRadius: 12,
+            borderRadius: 16,
             color: "#fff",
             fontWeight: 600,
             fontSize: 16,
@@ -175,7 +184,7 @@ const handleNext = () => {
             borderRadius: 12,
             cursor: "pointer",
             fontWeight: 600,
-            fontSize: 16,
+            fontSize: 15,
             transition: "all 0.2s",
             width: "calc(100% - 64px)",
           }}
