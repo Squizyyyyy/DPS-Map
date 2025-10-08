@@ -5,6 +5,7 @@ export default function SubscriptionModal({ onClose }) {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showSbpInfo, setShowSbpInfo] = useState(false);
   const [timer, setTimer] = useState(null);
+  const [copied, setCopied] = useState(false);
   
   useEffect(() => {
   let interval;
@@ -35,6 +36,12 @@ const handleNext = () => {
       .padStart(2, "0");
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
+  };
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText("+79958962951");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -306,7 +313,30 @@ const handleNext = () => {
       <div>Понятно</div>
     </div>
   </div>
-)}		
+)}
+
+{/* Всплывашка "Номер скопирован!" */}
+    {copied && (
+      <div
+        style={{
+          position: "fixed",
+          bottom: "12.5%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: "#2787f5",
+          color: "#fff",
+          padding: "6px 12px",
+          borderRadius: 16,
+          fontSize: 13,
+          zIndex: 20000,
+		  boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+		  textAlign: "center",
+        }}
+      >
+        Номер скопирован!
+      </div>
+    )}
+		
       </div>
     </div>
   );
