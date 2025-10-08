@@ -6,6 +6,7 @@ import { ReactComponent as AccountIcon } from "./assets/icons/account.svg";
 import { ReactComponent as SubscriptionIcon } from "./assets/icons/sub.svg";
 import { ReactComponent as MapIcon } from "./assets/icons/map.svg";
 import { ReactComponent as WhatsAppIcon } from './assets/icons/wa.svg';
+import SubscriptionModal from "./components/SubscriptionModal";
 
 const tabColors = {
   background: "#001c39",
@@ -33,6 +34,7 @@ export default function MainPage() {
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [selectedCity, setSelectedCity] = useState(cities[0]);
+  const [showSbpModal, setShowSbpModal] = useState(false);
 
   const isMapActive = activeTab === "map";
   
@@ -1115,9 +1117,11 @@ if (!isAuthorized) {
 
     {/* Кнопка подписки */}
     <a
-      href="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1D7TL2TQ1LD.251006&"
-      target="_blank"
-      rel="noopener noreferrer"
+      href="#"
+      onClick={(e) => {
+        e.preventDefault();
+        setShowSbpModal(true);
+      }}
       style={{
         display: "block",
         marginTop: 8,
@@ -1254,6 +1258,11 @@ if (!isAuthorized) {
     </details>
   ))}
   </div>
+  
+  {/* Модалка СБП */}
+    {showSbpModal && (
+      <SubscriptionModal onClose={() => setShowSbpModal(false)} />
+    )}
  </div>
 )}
         </main>
