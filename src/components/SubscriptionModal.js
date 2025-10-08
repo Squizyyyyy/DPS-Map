@@ -122,6 +122,7 @@ const handleNext = () => {
           style={{
             height: "1px",
             backgroundColor: "rgba(255, 255, 255, 0.2)",
+			width: "calc(100% - 32px)",
             margin: "10px 0 10px 0",
           }}
         ></div>
@@ -166,7 +167,7 @@ const handleNext = () => {
             borderRadius: 16,
             color: "#fff",
             fontWeight: 600,
-            fontSize: 16,
+            fontSize: 15,
           }}
         >
           {formatTime(timer)}
@@ -181,7 +182,7 @@ const handleNext = () => {
             background: "#2787f5",
             color: "#fff",
             border: "none",
-            borderRadius: 12,
+            borderRadius: 16,
             cursor: "pointer",
             fontWeight: 600,
             fontSize: 15,
@@ -217,27 +218,84 @@ const handleNext = () => {
     <div style={{ textAlign: "center", marginBottom: 8 }}>
       Для перевода через СБП, перейдите в свой мобильный банк и совершите перевод по реквизитам, указанным ниже.
     </div>
-	<div style={{ textAlign: "center", marginBottom: 8, fontStyle: "italic" }}>
-      Перевод необходимо совершить до окончания таймера
+	<div style={{ textAlign: "center", marginBottom: 10, fontStyle: "italic" }}>
+      * Перевод необходимо совершить до окончания таймера.
     </div>
 
     {/* Основные реквизиты */}
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span>Номер для перевода: <b>+7(995) 896-29-51</b></span>
-      <span>Банк получателя: <b>Юмани (ЮMoney)</b></span>
+	  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <span>
+        Номер:{" "}
+        <b style={{ fontSize: 14 }}>+7(995) 896-29-51</b>
+      </span>
+	  
+	{/* Иконка копирования */}
+      <div
+        onClick={() => {
+          navigator.clipboard.writeText("+79958962951");
+          const icon = document.getElementById("copy-icon");
+          if (icon) {
+            icon.style.transform = "scale(1.1)";
+            icon.style.filter = "brightness(1.5)";
+            setTimeout(() => {
+              icon.style.transform = "scale(1)";
+              icon.style.filter = "brightness(1)";
+            }, 400);
+          }
+        }}
+        title="Скопировать номер"
+        style={{
+          position: "relative",
+          width: 14,
+          height: 14,
+          cursor: "pointer",
+        }}
+      >
+        <div
+          id="copy-icon"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            border: "1.6px solid #2787f5",
+            borderRadius: 2,
+            transition: "all 0.3s ease",
+          }}
+        ></div>
+        <div
+          style={{
+            position: "absolute",
+            top: 3,
+            left: 3,
+            width: "100%",
+            height: "100%",
+            border: "1.6px solid #2787f5",
+            borderRadius: 2,
+            opacity: 0.6,
+          }}
+        ></div>
+      </div>
+    </div>
+      <span>
+        Банк получателя:{" "}
+        <b style={{ fontSize: 14 }}>Юмани (ЮMoney)</b>
+      </span>
     </div>
 
     {/* Кнопка "Понятно" */}
     <div
       onClick={() => setShowSbpInfo(false)}
       style={{
-        marginTop: 8,
+        marginTop: 10,
         cursor: "pointer",
         color: "#2787f5",
         textAlign: "center",
         lineHeight: 0.8,
-        fontSize: 16,
-        fontWeight: "bold",
+        fontSize: 15,
+        fontWeight: 500,
         userSelect: "none",
       }}
     >
