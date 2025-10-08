@@ -99,7 +99,7 @@ const handleNext = () => {
         </h2>
 
         {/* Период подписки */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 16, fontWeight: 500, }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 16, fontWeight: 600, }}>
           {[
             { label: "1 месяц - 99₽", value: "1m" },
             { label: "3 месяца - 289₽", value: "3m" },
@@ -135,7 +135,7 @@ const handleNext = () => {
         ></div>
 
         {/* Способы оплаты */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 27, fontWeight: 500, }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 27, fontWeight: 600, }}>
           {[
             { label: "Картой онлайн", value: "card" },
             { label: "Перевод через СБП", value: "sbp" },
@@ -223,7 +223,10 @@ const handleNext = () => {
   >
     {/* Верхний текст, по центру */}
     <div style={{ textAlign: "center", marginBottom: 8 }}>
-      Для перевода через СБП, перейдите в свой мобильный банк и совершите перевод по реквизитам, указанным ниже.
+      Перейдите в свой мобильный банк и совершите перевод через СБП по реквизитам, указанным ниже.
+    </div>
+	<div style={{ textAlign: "center", marginBottom: 8 }}>
+      Переводите ровно выбранную сумму!
     </div>
 	<div style={{ textAlign: "center", marginBottom: 13, fontStyle: "italic" }}>
       * Перевод необходимо совершить до окончания таймера.
@@ -246,7 +249,7 @@ const handleNext = () => {
           height: 14,
           cursor: "pointer",
           marginLeft: 4,
-          marginTop: -2,
+          marginTop: -4,
         }}
       >
         <div
