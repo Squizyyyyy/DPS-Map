@@ -29,6 +29,12 @@ const handleNext = () => {
       setTimer(15 * 60);
     }
   };
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText("9958962951");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
@@ -36,12 +42,6 @@ const handleNext = () => {
       .padStart(2, "0");
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
-  };
-  
-  const handleCopy = () => {
-    navigator.clipboard.writeText("+79958962951");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -78,7 +78,7 @@ const handleNext = () => {
         onClick={onClose}
         style={{
           position: "absolute",
-          top: 8,
+          top: 7,
           right: 10,
           background: "transparent",
           border: "none",
@@ -99,7 +99,7 @@ const handleNext = () => {
         </h2>
 
         {/* Период подписки */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 25, fontWeight: 500, }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 16, fontWeight: 500, }}>
           {[
             { label: "1 месяц - 99₽", value: "1m" },
             { label: "3 месяца - 289₽", value: "3m" },
@@ -130,8 +130,7 @@ const handleNext = () => {
             height: "1px",
             backgroundColor: "rgba(255, 255, 255, 0.2)",
 			width: "calc(100% - 32px)",
-            margin: "0 0 25px 0",
-			alignSelf: "center",
+            margin: "0 auto 16px auto",
           }}
         ></div>
 
@@ -226,41 +225,28 @@ const handleNext = () => {
     <div style={{ textAlign: "center", marginBottom: 8 }}>
       Для перевода через СБП, перейдите в свой мобильный банк и совершите перевод по реквизитам, указанным ниже.
     </div>
-	<div style={{ textAlign: "center", marginBottom: 12, fontStyle: "italic" }}>
+	<div style={{ textAlign: "center", marginBottom: 13, fontStyle: "italic" }}>
       * Перевод необходимо совершить до окончания таймера.
     </div>
 
     {/* Основные реквизиты */}
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-	  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-      <span>
-        Номер:{" "}
-        <b style={{ fontSize: 14 }}>+7(995) 896-29-51</b>
-      </span>
-	  
-	{/* Иконка копирования */}
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <span>
+          Номер: <b style={{ fontSize: 14 }}>+7(995) 896-29-51</b>
+        </span>
+
+      {/* Иконка копирования */}
       <div
-        onClick={() => {
-          navigator.clipboard.writeText("9958962951");
-          const icon = document.getElementById("copy-icon");
-          if (icon) {
-            icon.style.transform = "scale(1.1)";
-            icon.style.filter = "brightness(1.5)";
-            setTimeout(() => {
-              icon.style.transform = "scale(1)";
-              icon.style.filter = "brightness(1)";
-            }, 400);
-          }
-        }}
+        onClick={handleCopy}
         title="Скопировать номер"
         style={{
           position: "relative",
           width: 14,
           height: 14,
           cursor: "pointer",
-		  display: "inline-block",
-		  verticalAlign: "middle",
-		  marginLeft: 4,
+          marginLeft: 4,
+          marginTop: -2,
         }}
       >
         <div
@@ -300,7 +286,7 @@ const handleNext = () => {
     <div
       onClick={() => setShowSbpInfo(false)}
       style={{
-        marginTop: 12,
+        marginTop: 14,
         cursor: "pointer",
         color: "#2787f5",
         textAlign: "center",
