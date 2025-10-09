@@ -371,47 +371,97 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
 });
 
 // ---------------------- SBP PAYMENT LOGIC ----------------------
-const YOOMONEY_TOKEN = process.env.YOOMONEY_TOKEN; // OAuth токен
+const YOOMONEY_TOKEN = process.env.YOOMONEY_TOKEN; // OAuth токен из .env
+
 async function checkSbpPayments() {
   const now = Date.now();
+  console.log("🔍 Проверка ожидающих платежей...");
+
+  // ищем все активные (ожидающие) платежи
   const pendingPayments = await sbpPaymentsCollection.find({
     status: "pending",
     expiresAt: { $gt: now },
   }).toArray();
 
-  if (!pendingPayments.length) return;
+  if (!pendingPayments.length) {
+    return;
+  }
 
-  for (const payment of pendingPayments) {
-    try {
-      const response = await fetch(`https://yoomoney.ru/api/account-history?records=50&type=deposition`, {
-        headers: { Authorization: `Bearer ${YOOMONEY_TOKEN}`, "Content-Type": "application/json" },
-      });
-      const data = await response.json();
-      const items = data?.operations || [];
+  console.log(`🧾 Найдено ${pendingPayments.length} ожидающих платежей`);
 
-      for (const item of items) {
-        const sum = Math.round(item.amount.value * 100); // сумма в копейках
-        if (sum === payment.amount * 100 && item.phone && item.phone.endsWith(payment.last4Digits)) {
-          // платеж успешный
-          await sbpPaymentsCollection.updateOne({ _id: payment._id }, { $set: { status: "success", processedAt: Date.now() } });
+  try {
+    // Запрашиваем последние входящие операции
+    const response = await fetch("https://yoomoney.ru/api/operation-history", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${YOOMONEY_TOKEN}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        type: "deposition", // входящие платежи
+        records: 30,
+      }),
+    });
 
-          // выдаём подписку
-          const user = await usersCollection.findOne({ id: payment.userId });
-          if (!user) continue;
+    const data = await response.json();
 
-          const now = Date.now();
-          let newExpires = now + 30 * 24 * 60 * 60 * 1000;
-          if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
-            newExpires = user.subscription.expiresAt + 30 * 24 * 60 * 60 * 1000;
-          }
-          const plan = payment.amount === 99 ? "1m" : "3m";
-          const subscription = { active: true, plan, expiresAt: newExpires };
-          await usersCollection.updateOne({ id: user.id }, { $set: { subscription } });
-        }
-      }
-    } catch (err) {
-      console.error("Ошибка проверки ЮMoney:", err);
+    if (data.error) {
+      console.error("❌ Ошибка при запросе истории ЮMoney:", data);
+      return;
     }
+
+    const operations = data.operations || [];
+    console.log(`📦 Получено ${operations.length} операций от ЮMoney`);
+
+    for (const payment of pendingPayments) {
+      console.log(`➡ Проверяем платеж ${payment.userId} на сумму ${payment.amount}₽, последние цифры ${payment.last4Digits}`);
+
+      const matched = operations.find((op) => {
+        const amount = op.amount;
+        const details = op.details || "";
+
+        return (
+          Number(amount) === Number(payment.amount) &&
+          details.includes(payment.last4Digits)
+        );
+      });
+
+      if (matched) {
+        console.log(`💰 Найден совпадающий перевод! Пользователь: ${payment.userId}`);
+
+        await sbpPaymentsCollection.updateOne(
+          { _id: payment._id },
+          { $set: { status: "success", processedAt: Date.now() } }
+        );
+
+        // Выдаём подписку пользователю
+        const user = await usersCollection.findOne({ id: payment.userId });
+        if (!user) {
+          console.warn(`⚠️ Пользователь ${payment.userId} не найден`);
+          continue;
+        }
+
+        const now = Date.now();
+        const days = payment.amount === 289 ? 90 : 30; // 3 месяца или 1 месяц
+        let newExpiresAt = now + days * 24 * 60 * 60 * 1000;
+
+        if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
+          newExpiresAt = user.subscription.expiresAt + days * 24 * 60 * 60 * 1000;
+        }
+
+        const subscription = {
+          active: true,
+          plan: payment.amount === 289 ? "3m" : "1m",
+          expiresAt: newExpiresAt,
+        };
+
+        await usersCollection.updateOne({ id: user.id }, { $set: { subscription } });
+
+        console.log(`✅ Подписка выдана пользователю ${user.id}: ${subscription.plan}, до ${new Date(newExpiresAt).toLocaleString()}`);
+      }
+    }
+  } catch (err) {
+    console.error("🚨 Ошибка проверки платежей ЮMoney:", err);
   }
 }
 
