@@ -544,6 +544,50 @@ async function updateMarkersStatus() {
   }
 }
 
+// ---------------------- ЮMONEY: Проверка истории ----------------------
+app.get("/api/yoomoney/history", async (req, res) => {
+  try {
+    const token = process.env.YOOMONEY_ACCESS_TOKEN;
+    if (!token) {
+      return res.status(500).json({ success: false, error: "Нет токена ЮMoney" });
+    }
+
+    //  Запрашиваем последние 10 операций
+    const response = await fetch("https://yoomoney.ru/api/operation-history", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        "records": "10", // можно больше (до 100)
+        "type": "deposition", // только входящие платежи
+      }),
+    });
+
+    const text = await response.text();
+    console.log("📦 Ответ от ЮMoney (raw):", text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Ошибка парсинга JSON от ЮMoney:", e);
+      return res.status(500).json({ success: false, error: "Некорректный ответ ЮMoney" });
+    }
+
+    if (!data.operations) {
+      return res.status(400).json({ success: false, error: "Операции не найдены", data });
+    }
+
+    console.log(`✅ Получено ${data.operations.length} операций`);
+    res.json({ success: true, operations: data.operations });
+  } catch (err) {
+    console.error("Ошибка запроса к ЮMoney:", err);
+    res.status(500).json({ success: false, error: "Ошибка запроса к ЮMoney" });
+  }
+});
+
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, "../build")));
 app.get(/^\/(?!markers|auth|subscription).*/, (req, res) => {
