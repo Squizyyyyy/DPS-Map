@@ -24,6 +24,7 @@ const client = new MongoClient(MONGO_URI);
 let markersCollection;
 let actionsCollection;
 let usersCollection;
+let sbpPaymentsCollection; // 🔹 SBP PAYMENT LOGIC
 
 // ---------------------- Middlewares ----------------------
 app.set("trust proxy", 1);
@@ -32,11 +33,11 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "supersecret",
+    secret: process.env.YOOMONEY_SESSION_SECRET || "supersecret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
+      maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: "lax",
     },
@@ -51,14 +52,19 @@ async function startServer() {
     markersCollection = db.collection("markers");
     actionsCollection = db.collection("actions");
     usersCollection = db.collection("users");
+    sbpPaymentsCollection = db.collection("sbpPayments"); // 🔹 SBP PAYMENT LOGIC
 
     await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
     await usersCollection.createIndex({ id: 1 }, { unique: true });
+    await sbpPaymentsCollection.createIndex({ userId: 1, status: 1 }); // 🔹 SBP PAYMENT LOGIC
 
     console.log("✅ Подключено к MongoDB");
 
     // Запускаем проверку статусов меток каждые 5 минут
     setInterval(updateMarkersStatus, 5 * 60 * 1000);
+
+    // 🔹 SBP PAYMENT LOGIC: проверка поступлений каждые 5 секунд
+    setInterval(checkSbpPayments, 5000);
 
     app.listen(PORT, () => {
       console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
@@ -214,7 +220,7 @@ app.post("/auth/vkid", async (req, res) => {
       };
     }
 
-    // 🔹 Сохраняем старые данные (город, подписка), если пользователь уже есть
+    // Сохраняем старые данные (город, подписка), если пользователь уже есть
     const existingUser = await usersCollection.findOne({ id: userObj.id });
     if (existingUser) {
       userObj.city = existingUser.city || userObj.city;
@@ -265,7 +271,7 @@ app.post("/auth/telegram", async (req, res) => {
       telegram: { id, username, auth_date },
     };
 
-    // 🔹 Сохраняем старые данные (город, подписка), если пользователь уже есть
+    //  Сохраняем старые данные (город, подписка), если пользователь уже есть
     const existingUser = await usersCollection.findOne({ id: userObj.id });
     if (existingUser) {
       userObj.city = existingUser.city || userObj.city;
@@ -338,7 +344,9 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
     const now = Date.now();
     const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
 	
-	let newExpiresAt = now + thirtyDaysMs;
+	const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    let newExpiresAt = now + thirtyDaysMs;
+
     if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
       newExpiresAt = user.subscription.expiresAt + thirtyDaysMs;
     }
@@ -359,6 +367,75 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
   } catch (e) {
     console.error("Ошибка при покупке подписки/продлении подписки:", e);
     res.status(500).json({ success: false, error: "Серверная ошибка при покупке подписки" });
+  }
+});
+
+// ---------------------- SBP PAYMENT LOGIC ----------------------
+const YOOMONEY_TOKEN = process.env.YOOMONEY_TOKEN; // OAuth токен
+async function checkSbpPayments() {
+  const now = Date.now();
+  const pendingPayments = await sbpPaymentsCollection.find({
+    status: "pending",
+    expiresAt: { $gt: now },
+  }).toArray();
+
+  if (!pendingPayments.length) return;
+
+  for (const payment of pendingPayments) {
+    try {
+      const response = await fetch(`https://yoomoney.ru/api/account-history?records=50&type=deposition`, {
+        headers: { Authorization: `Bearer ${YOOMONEY_TOKEN}`, "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      const items = data?.operations || [];
+
+      for (const item of items) {
+        const sum = Math.round(item.amount.value * 100); // сумма в копейках
+        if (sum === payment.amount * 100 && item.phone && item.phone.endsWith(payment.last4Digits)) {
+          // платеж успешный
+          await sbpPaymentsCollection.updateOne({ _id: payment._id }, { $set: { status: "success", processedAt: Date.now() } });
+
+          // выдаём подписку
+          const user = await usersCollection.findOne({ id: payment.userId });
+          if (!user) continue;
+
+          const now = Date.now();
+          let newExpires = now + 30 * 24 * 60 * 60 * 1000;
+          if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
+            newExpires = user.subscription.expiresAt + 30 * 24 * 60 * 60 * 1000;
+          }
+          const plan = payment.amount === 99 ? "1m" : "3m";
+          const subscription = { active: true, plan, expiresAt: newExpires };
+          await usersCollection.updateOne({ id: user.id }, { $set: { subscription } });
+        }
+      }
+    } catch (err) {
+      console.error("Ошибка проверки ЮMoney:", err);
+    }
+  }
+}
+
+// Роут для инициализации СБП платежа
+app.post("/subscription/sbp-init", checkAuth, async (req, res) => {
+  try {
+    const { last4Digits, amount } = req.body;
+    if (!last4Digits || !amount) return res.status(400).json({ success: false });
+
+    const user = req.session.user;
+    const paymentDoc = {
+      userId: user.id,
+      last4Digits,
+      amount,
+      status: "pending",
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 15 * 60 * 1000,
+    };
+
+    await sbpPaymentsCollection.insertOne(paymentDoc);
+    res.json({ success: true, paymentId: paymentDoc._id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 });
 
