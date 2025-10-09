@@ -398,9 +398,20 @@ async function checkSbpPayments() {
         },
       }
     );
-    const data = await response.json();
+
+    const text = await response.text(); // Получаем сырой ответ
+    console.log("📦 Ответ от ЮMoney (raw):", text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.error("❌ Ошибка парсинга JSON от ЮMoney:", parseErr);
+      return; // Выходим, если JSON некорректный
+    }
+
     const items = data?.operations || [];
-    console.log(`📦 Получено ${items.length} операций от ЮMoney`);
+    console.log(`📄 Получено ${items.length} операций от ЮMoney`);
     console.log("📄 Список операций:", JSON.stringify(items, null, 2));
 
     for (const payment of pendingPayments) {
