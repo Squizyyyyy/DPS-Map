@@ -343,11 +343,6 @@ if (!isAuthorized) {
 		boxSizing: "border-box",
       }}
     >
-	
-	<a href="https://freekassa.net" target="_blank" rel="noopener noreferrer">
-    <img src="https://cdn.freekassa.net/banners/small-dark-2.png" title="Прием платежей на сайте для физических лиц и т.д."/>
-    </a>
-	
       {/* Центральный блок */}
       <div
         style={{
@@ -515,6 +510,10 @@ if (!isAuthorized) {
               />
             </a>
           </div>
+		
+		<a href="https://freekassa.net" target="_blank" rel="noopener noreferrer">
+        <img src="https://cdn.freekassa.net/banners/small-dark-2.png" title="Прием платежей на сайте для физических лиц и т.д."/>
+        </a>
 		
       </div>
     </div>
