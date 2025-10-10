@@ -345,7 +345,7 @@ if (!isAuthorized) {
     >
 	
 	<a href="https://freekassa.net" target="_blank" rel="noopener noreferrer">
-    <img src="https://cdn.freekassa.net/banners/small-dark-2.png" title="Прием платежей на сайте для физических лиц и т.д.">
+    <img src="https://cdn.freekassa.net/banners/small-dark-2.png" title="Прием платежей на сайте для физических лиц и т.д."/>
     </a>
 	
       {/* Центральный блок */}
