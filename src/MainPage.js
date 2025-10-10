@@ -6,7 +6,6 @@ import { ReactComponent as AccountIcon } from "./assets/icons/account.svg";
 import { ReactComponent as SubscriptionIcon } from "./assets/icons/sub.svg";
 import { ReactComponent as MapIcon } from "./assets/icons/map.svg";
 import { ReactComponent as WhatsAppIcon } from './assets/icons/wa.svg';
-import SubscriptionModal from "./components/SubscriptionModal";
 
 const tabColors = {
   background: "#001c39",
@@ -1252,13 +1251,6 @@ if (!isAuthorized) {
     </details>
   ))}
   </div>
-  
-  {/* Модалка СБП */}
-    {showSbpModal && (
-      <SubscriptionModal onClose={() => setShowSbpModal(false)} />
-    )}
- </div>
-)}
         </main>
       )}
     </div>

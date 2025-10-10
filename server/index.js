@@ -24,7 +24,6 @@ const client = new MongoClient(MONGO_URI);
 let markersCollection;
 let actionsCollection;
 let usersCollection;
-let sbpPaymentsCollection; // 🔹 SBP PAYMENT LOGIC
 
 // ---------------------- Middlewares ----------------------
 app.set("trust proxy", 1);
@@ -33,11 +32,11 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   session({
-    secret: process.env.YOOMONEY_SESSION_SECRET || "supersecret",
+    secret: process.env.SESSION_SECRET || "supersecret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
       httpOnly: true,
       sameSite: "lax",
     },
@@ -52,19 +51,14 @@ async function startServer() {
     markersCollection = db.collection("markers");
     actionsCollection = db.collection("actions");
     usersCollection = db.collection("users");
-    sbpPaymentsCollection = db.collection("sbpPayments"); // 🔹 SBP PAYMENT LOGIC
 
     await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
     await usersCollection.createIndex({ id: 1 }, { unique: true });
-    await sbpPaymentsCollection.createIndex({ userId: 1, status: 1 }); // 🔹 SBP PAYMENT LOGIC
 
     console.log("✅ Подключено к MongoDB");
 
     // Запускаем проверку статусов меток каждые 5 минут
     setInterval(updateMarkersStatus, 5 * 60 * 1000);
-
-    // 🔹 SBP PAYMENT LOGIC: проверка поступлений каждые 5 секунд
-    setInterval(checkSbpPayments, 5000);
 
     app.listen(PORT, () => {
       console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
@@ -220,7 +214,7 @@ app.post("/auth/vkid", async (req, res) => {
       };
     }
 
-    // Сохраняем старые данные (город, подписка), если пользователь уже есть
+    //  Сохраняем старые данные (город, подписка), если пользователь уже есть
     const existingUser = await usersCollection.findOne({ id: userObj.id });
     if (existingUser) {
       userObj.city = existingUser.city || userObj.city;
@@ -344,9 +338,7 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
     const now = Date.now();
     const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
 	
-	const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-    let newExpiresAt = now + thirtyDaysMs;
-
+	let newExpiresAt = now + thirtyDaysMs;
     if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
       newExpiresAt = user.subscription.expiresAt + thirtyDaysMs;
     }
@@ -367,116 +359,6 @@ app.post("/subscription/buy", checkAuth, async (req, res) => {
   } catch (e) {
     console.error("Ошибка при покупке подписки/продлении подписки:", e);
     res.status(500).json({ success: false, error: "Серверная ошибка при покупке подписки" });
-  }
-});
-
-// ---------------------- SBP PAYMENT LOGIC ----------------------
-const YOOMONEY_TOKEN = process.env.YOOMONEY_TOKEN; // OAuth токен из .env
-
-async function checkSbpPayments() {
-  console.log("🔍 Проверка ожидающих платежей...");
-  const now = Date.now();
-  const pendingPayments = await sbpPaymentsCollection.find({
-    status: "pending",
-    expiresAt: { $gt: now },
-  }).toArray();
-
-  if (!pendingPayments.length) {
-    console.log("🧾 Нет ожидающих платежей");
-    return;
-  }
-
-  console.log(`🧾 Найдено ${pendingPayments.length} ожидающих платежей`);
-
-  try {
-    const response = await fetch(
-      `https://yoomoney.ru/api/account-history?records=50&type=deposition`,
-      {
-        headers: {
-          Authorization: `Bearer ${YOOMONEY_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const text = await response.text(); // Получаем сырой ответ
-    console.log("📦 Ответ от ЮMoney (raw):", text);
-
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (parseErr) {
-      console.error("❌ Ошибка парсинга JSON от ЮMoney:", parseErr);
-      return; // Выходим, если JSON некорректный
-    }
-
-    const items = data?.operations || [];
-    console.log(`📄 Получено ${items.length} операций от ЮMoney`);
-    console.log("📄 Список операций:", JSON.stringify(items, null, 2));
-
-    for (const payment of pendingPayments) {
-      console.log(
-        `➡ Проверяем платеж ${payment._id} на сумму ${payment.amount}₽, последние цифры ${payment.last4Digits}`
-      );
-
-      const match = items.find((item) => {
-        const itemAmount = Math.round(item.amount.value * 100); // сумма в копейках
-        const itemPhone = (item.phone || "").replace(/\D/g, ""); // убираем все нецифры
-        const last4 = payment.last4Digits.replace(/\D/g, "");
-        return itemAmount === payment.amount * 100 && itemPhone.endsWith(last4);
-      });
-
-      if (match) {
-        console.log(`✅ Платёж найден: ${payment._id}, выдаём подписку`);
-        await sbpPaymentsCollection.updateOne(
-          { _id: payment._id },
-          { $set: { status: "success", processedAt: Date.now() } }
-        );
-
-        // выдаём подписку
-        const user = await usersCollection.findOne({ id: payment.userId });
-        if (!user) continue;
-
-        let newExpires = now + 30 * 24 * 60 * 60 * 1000;
-        if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
-          newExpires = user.subscription.expiresAt + 30 * 24 * 60 * 60 * 1000;
-        }
-        const plan = payment.amount === 99 ? "1m" : "3m";
-        const subscription = { active: true, plan, expiresAt: newExpires };
-        await usersCollection.updateOne(
-          { id: user.id },
-          { $set: { subscription } }
-        );
-      } else {
-        console.log(`❌ Платёж ${payment._id} ещё не найден в операциях`);
-      }
-    }
-  } catch (err) {
-    console.error("Ошибка проверки ЮMoney:", err);
-  }
-}
-
-// Роут для инициализации СБП платежа
-app.post("/subscription/sbp-init", checkAuth, async (req, res) => {
-  try {
-    const { last4Digits, amount } = req.body;
-    if (!last4Digits || !amount) return res.status(400).json({ success: false });
-
-    const user = req.session.user;
-    const paymentDoc = {
-      userId: user.id,
-      last4Digits,
-      amount,
-      status: "pending",
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 15 * 60 * 1000,
-    };
-
-    await sbpPaymentsCollection.insertOne(paymentDoc);
-    res.json({ success: true, paymentId: paymentDoc._id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
   }
 });
 
@@ -554,50 +436,6 @@ async function updateMarkersStatus() {
     console.error("Ошибка обновления статусов меток:", err);
   }
 }
-
-// ---------------------- ЮMONEY: Проверка истории ----------------------
-app.get("/api/yoomoney/history", async (req, res) => {
-  try {
-    const token = process.env.YOOMONEY_ACCESS_TOKEN;
-    if (!token) {
-      return res.status(500).json({ success: false, error: "Нет токена ЮMoney" });
-    }
-
-    //  Запрашиваем последние 10 операций
-    const response = await fetch("https://yoomoney.ru/api/operation-history", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        "records": "10", // можно больше (до 100)
-        "type": "deposition", // только входящие платежи
-      }),
-    });
-
-    const text = await response.text();
-    console.log("📦 Ответ от ЮMoney (raw):", text);
-
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("Ошибка парсинга JSON от ЮMoney:", e);
-      return res.status(500).json({ success: false, error: "Некорректный ответ ЮMoney" });
-    }
-
-    if (!data.operations) {
-      return res.status(400).json({ success: false, error: "Операции не найдены", data });
-    }
-
-    console.log(`✅ Получено ${data.operations.length} операций`);
-    res.json({ success: true, operations: data.operations });
-  } catch (err) {
-    console.error("Ошибка запроса к ЮMoney:", err);
-    res.status(500).json({ success: false, error: "Ошибка запроса к ЮMoney" });
-  }
-});
 
 // ---------------------- Serve frontend ----------------------
 app.use(express.static(path.join(__dirname, "../build")));
