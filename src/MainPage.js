@@ -1251,6 +1251,8 @@ if (!isAuthorized) {
     </details>
   ))}
   </div>
+ </div>
+)}
         </main>
       )}
     </div>
