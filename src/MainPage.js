@@ -1055,15 +1055,14 @@ if (!isAuthorized) {
         display: "flex",
         flexDirection: "column",
 		alignItems: "center",
-        gap: 16,
-        maxWidth: 500,
+        justifyContent: "center",
+        height: "calc(100vh - 85px)",
 		padding: "0 30px",
-		margin: "0 auto",
-        marginTop: "30px",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
         fontSize: 16,
         color: "#aaa",
+		textAlign: "center",
       }}
     >
     {/* Блок: Статус подписки */}
@@ -1155,98 +1154,7 @@ if (!isAuthorized) {
       Отменить автопродление
     </button>
 	</div>
-
-  {/* Вопросы (аккордеон) */}
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-	  alignItems: "center",
-	  marginTop: 23,
-	  padding: 16,
-      gap: 12,
-	  maxWidth: 300,
-      width: "100%",
-    }}
-  >
-  {[
-    {
-      q: "Как активировать/продлить подписку?",
-      a: (
-        <div>
-          <p style={{ margin: "0 0 6px 0" }}>
-            Чтобы активировать/продлить подписку:
-          </p>
-          <ul style={{ paddingLeft: 16, margin: 0 }}>
-            <li>Кликните по кнопке выше;</li>
-            <li>После перенаправления на страницу оплаты, выберите удобный способ и нажмите «Оплатить».</li>
-          </ul>
-        </div>
-      ),
-    },
-    {
-      q: "Какие способы оплаты есть?",
-      a: (
-        <div>
-          <p style={{ margin: "0 0 6px 0" }}>
-            Мы предлагаем самые распространённые и удобные способы оплаты:
-          </p>
-          <ul style={{ paddingLeft: 16, margin: 0 }}>
-            <li>Онлайн по карте</li>
-            <li>Через СБП</li>
-            <li>Методом Pay в пару кликов</li>
-          </ul>
-        </div>
-      ),
-    },
-    {
-      q: "Какая стоимость подписки?",
-      a: <p style={{ margin: 0 }}>Стоимость подписки составляет 99₽/мес.</p>,
-    },
-    {
-      q: "Можно ли подключить автоплатёж?",
-      a: (
-        <div>
-          <p style={{ margin: 0 }}>
-            Да. На странице оплаты можно подключить автоплатёж и не оплачивать вручную каждый месяц.
-          </p>
-          <i>
-            <p style={{ margin: "6px 0 0 0", fontSize: 13, color: "#bbb" }}>
-              * Автоплатёж можно отключить в любой момент по кнопке выше.
-            </p>
-          </i>
-        </div>
-      ),
-    },
-  ].map((item, idx) => (
-    <details
-      key={idx}
-      style={{
-        background: "rgba(255,255,255,0.02)",
-        borderRadius: 16,
-        padding: "14px 18px",
-        cursor: "pointer",
-        color: "#ddd",
-		width: "100%",
-      }}
-    >
-      <summary
-        style={{
-          listStyle: "none",
-          fontWeight: 600,
-          fontSize: 15,
-          cursor: "pointer",
-        }}
-      >
-        {item.q}
-      </summary>
-      <div style={{ marginTop: 8, fontSize: 14, lineHeight: "1.4" }}>
-        {item.a}
-      </div>
-    </details>
-  ))}
   </div>
- </div>
 )}
         </main>
       )}
