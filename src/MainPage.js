@@ -1076,6 +1076,7 @@ if (!isAuthorized) {
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         color: "#fff",
+		marginBottom: 20,
       }}
     >
       {hasSubscription && user?.subscription?.expiresAt ? (
