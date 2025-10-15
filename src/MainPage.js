@@ -1115,7 +1115,8 @@ if (!isAuthorized) {
         }}
         style={{
           display: "block",
-          marginTop: 8,
+          marginTop: 7,
+		  marginBottom: 7,
           padding: "14px 0",
           background: "linear-gradient(90deg, #2787f5, #7a5cff)",
           color: "#fff",
@@ -1149,6 +1150,7 @@ if (!isAuthorized) {
           position: "fixed",
           top: 0,
           left: 0,
+		  padding: "32px",
           width: "100%",
           height: "100%",
           background: "rgba(0,0,0,0.6)",
@@ -1182,7 +1184,6 @@ if (!isAuthorized) {
                 flex: 1,
                 padding: "12px 0",
                 borderRadius: 12,
-                fontWeight: 600,
                 border:
                   selectedPeriod === "1"
                     ? "2px solid #2787f5"
@@ -1190,7 +1191,7 @@ if (!isAuthorized) {
                 cursor: "pointer",
               }}
             >
-              1 месяц
+              <div style={{ fontWeight: 600 }}>1 месяц</div>
               {selectedPeriod === "1" && <div style={{ marginTop: 6 }}>99₽</div>}
             </div>
             {/* 3 месяца */}
@@ -1200,7 +1201,6 @@ if (!isAuthorized) {
                 flex: 1,
                 padding: "12px 0",
                 borderRadius: 12,
-                fontWeight: 600,
                 border:
                   selectedPeriod === "3"
                     ? "2px solid #2787f5"
@@ -1208,8 +1208,8 @@ if (!isAuthorized) {
                 cursor: "pointer",
               }}
             >
-              3 месяца
-              {selectedPeriod === "3" && <div style={{ marginTop: 6 }}>299₽</div>}
+              <div style={{ fontWeight: 600 }}>3 месяца</div>
+              {selectedPeriod === "3" && <div style={{ marginTop: 6 }}>289₽</div>}
             </div>
           </div>
 
@@ -1229,7 +1229,6 @@ if (!isAuthorized) {
               fontWeight: 600,
               fontSize: 16,
               transition: "all 0.2s",
-              alignSelf: "center",
             }}
           >
             Оплатить
@@ -1274,8 +1273,8 @@ if (!isAuthorized) {
             onClick={() => setShowPaymentModal(false)}
             style={{
               position: "absolute",
-              top: 8,
-              right: 12,
+              top: 7,
+              right: 10,
               background: "none",
               border: "none",
               fontSize: 20,
@@ -1287,15 +1286,15 @@ if (!isAuthorized) {
             ×
           </button>
 
-          <h2 style={{ textAlign: "center", marginBottom: 10 }}>
+          <h2 style={{ textAlign: "center", marginBottom: 9 }}>
             Реквизиты для оплаты
           </h2>
 
-          <p style={{ marginBottom: 4 }}>
+          <p style={{ marginBottom: 2 }}>
             Для проведения оплаты необходимо совершить перевод через СБП на сумму,
             указанную на экране, по реквизитам, указанным ниже.
           </p>
-          <p style={{ marginBottom: 8 }}>
+          <p style={{ marginBottom: 10 }}>
             <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. В противном случае платёж не инициализируется системой
             и дальнейшее решение возможно только через службу поддержки.
           </p>
@@ -1306,7 +1305,7 @@ if (!isAuthorized) {
               alignItems: "center",
               gap: 6,
               justifyContent: "flex-start",
-              marginBottom: 4,
+              marginBottom: 1.5,
             }}
           >
             <span>Номер телефона: </span>
@@ -1329,7 +1328,7 @@ if (!isAuthorized) {
               }}
               title="Скопировать номер"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M4 1a1 1 0 0 0-1 1v10h1V2h8V1H4z"/>
                 <path d="M5 3a1 1 0 0 0-1 1v10h9a1 1 0 0 0 1-1V3H5zm1 1h7v9H6V4z"/>
               </svg>
@@ -1340,13 +1339,13 @@ if (!isAuthorized) {
             <div
               style={{
                 position: "fixed",
-                bottom: "25%",
+                bottom: "15%",
                 left: "50%",
                 transform: "translateX(-50%)",
                 background: "#000",
                 color: "#fff",
                 padding: "6px 12px",
-                borderRadius: 8,
+                borderRadius: 10,
                 opacity: 0.9,
               }}
             >
@@ -1354,14 +1353,14 @@ if (!isAuthorized) {
             </div>
           )}
 
-          <p style={{ marginBottom: 16, textAlign: "left" }}>
+          <p style={{ marginBottom: 20, textAlign: "left" }}>
             Банк получателя: <b>Юмани (Юmoney)</b>
           </p>
 
           <button
             onClick={() => setShowPaymentModal(false)}
             style={{
-              padding: "10px 0",
+              padding: "8px 0",
               background: "linear-gradient(90deg, #2787f5, #0a90ff)",
               color: "#fff",
               border: "none",
@@ -1369,7 +1368,7 @@ if (!isAuthorized) {
               width: "70%",
               cursor: "pointer",
               fontWeight: 600,
-              fontSize: 16,
+              fontSize: 15,
               transition: "all 0.2s",
               alignSelf: "center",
             }}
