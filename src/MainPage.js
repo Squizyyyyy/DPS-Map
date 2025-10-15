@@ -1069,7 +1069,7 @@ if (!isAuthorized) {
       textAlign: "center",
     }}
   >
-    {/* Блок: Статус подписки */}
+    {/* Статус подписки */}
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -1085,15 +1085,14 @@ if (!isAuthorized) {
     >
       {hasSubscription && user?.subscription?.expiresAt ? (
         <p style={{ margin: 0 }}>
-          Активна до:{" "}
-          <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
+          Активна до: <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
         </p>
       ) : (
         <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
       )}
     </div>
 
-    {/* Блок с кнопками подписки */}
+    {/* Блок с кнопкой подписки */}
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -1108,7 +1107,6 @@ if (!isAuthorized) {
         gap: 23,
       }}
     >
-      {/* Кнопка подписки */}
       <a
         href="#"
         onClick={(e) => {
@@ -1142,6 +1140,7 @@ if (!isAuthorized) {
       >
         Активировать подписку
       </a>
+    </div>
 
     {/* Модальное окно выбора периода */}
     {showSbpModal && (
@@ -1150,7 +1149,7 @@ if (!isAuthorized) {
           position: "fixed",
           top: 0,
           left: 0,
-		  padding: "16px",
+          padding: "16px",
           width: "100%",
           height: "100%",
           background: "rgba(0,0,0,0.6)",
@@ -1183,8 +1182,11 @@ if (!isAuthorized) {
                 flex: 1,
                 padding: "12px 0",
                 borderRadius: 12,
-				fontWeight: 600,
-                border: selectedPeriod === "1" ? "2px solid #2787f5" : "2px solid transparent",
+                fontWeight: 600,
+                border:
+                  selectedPeriod === "1"
+                    ? "2px solid #2787f5"
+                    : "2px solid transparent",
                 cursor: "pointer",
               }}
             >
@@ -1198,8 +1200,11 @@ if (!isAuthorized) {
                 flex: 1,
                 padding: "12px 0",
                 borderRadius: 12,
-				fontWeight: 600,
-                border: selectedPeriod === "3" ? "2px solid #2787f5" : "2px solid transparent",
+                fontWeight: 600,
+                border:
+                  selectedPeriod === "3"
+                    ? "2px solid #2787f5"
+                    : "2px solid transparent",
                 cursor: "pointer",
               }}
             >
@@ -1214,16 +1219,17 @@ if (!isAuthorized) {
               setShowSbpModal(false);
             }}
             style={{
-              padding: "20px 0",
+              padding: "14px 0",
               background: "linear-gradient(90deg, #2787f5, #7a5cff)",
               color: "#fff",
               border: "none",
-			  width: "70%",
+              width: "70%",
               borderRadius: 16,
               cursor: "pointer",
               fontWeight: 600,
               fontSize: 16,
               transition: "all 0.2s",
+              alignSelf: "center",
             }}
           >
             Оплатить
@@ -1239,7 +1245,7 @@ if (!isAuthorized) {
           position: "fixed",
           top: 0,
           left: 0,
-		  padding: "16px",
+          padding: "16px",
           width: "100%",
           height: "100%",
           background: "rgba(0,0,0,0.6)",
@@ -1261,103 +1267,114 @@ if (!isAuthorized) {
             display: "flex",
             flexDirection: "column",
             gap: 8,
+            position: "relative",
           }}
         >
-		
-	  {/* Крестик */}
-      <button
-        onClick={() => setShowPaymentModal(false)}
-        style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          background: "none",
-          border: "none",
-          fontSize: 20,
-          color: "#fff",
-          cursor: "pointer",
-        }}
-        title="Закрыть"
-      >
-        ×
-      </button>
-	  
-      <h2 style={{ textAlign: "center", marginBottom: 10 }}>Реквизиты для оплаты</h2>
-      <p style={{ marginBottom: 4 }}>
-        Для проведения оплаты необходимо совершить перевод через СБП на сумму, указанную на экране, по реквизитам, указанным ниже.
-      </p>
-      <p style={{ marginBottom: 10 }}>
-        <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. В противном случае платёж не инициализируется системой и дальнейшее решение возможно только через службу поддержки.
-      </p>
-          
-	  <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-start", marginBottom: 8 }}>
-        <span>Номер телефона: </span>
-        <b>+7 (995) 896-29-51</b>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText("9958962951");
-            setShowCopiedNotification(true);
-            setTimeout(() => setShowCopiedNotification(false), 2000);
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: 0,
-            margin: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          title="Скопировать номер"
-        >
-          {/* Иконка копирования */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M4 1a1 1 0 0 0-1 1v10h1V2h8V1H4z"/>
-            <path d="M5 3a1 1 0 0 0-1 1v10h9a1 1 0 0 0 1-1V3H5zm1 1h7v9H6V4z"/>
-          </svg>
-        </button>
-      </div>
+          {/* Крестик */}
+          <button
+            onClick={() => setShowPaymentModal(false)}
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              background: "none",
+              border: "none",
+              fontSize: 20,
+              color: "#fff",
+              cursor: "pointer",
+            }}
+            title="Закрыть"
+          >
+            ×
+          </button>
 
-      {showCopiedNotification && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "25%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#000",
-            color: "#fff",
-            padding: "6px 12px",
-            borderRadius: 8,
-            opacity: 0.9,
-          }}
-        >
-          Номер скопирован!
-        </div>
-      )}
+          <h2 style={{ textAlign: "center", marginBottom: 10 }}>
+            Реквизиты для оплаты
+          </h2>
 
-      <p style={{ marginBottom: 16, textAlign: "left" }}>
-        <b>Банк получателя:</b> Юмани (Юmoney)
-      </p>
+          <p style={{ marginBottom: 4 }}>
+            Для проведения оплаты необходимо совершить перевод через СБП на сумму,
+            указанную на экране, по реквизитам, указанным ниже.
+          </p>
+          <p style={{ marginBottom: 10 }}>
+            <b>Внимание!</b> Переводить следует ровно указанную сумму{" "}
+            <b>до копейки</b>. В противном случае платёж не инициализируется системой
+            и дальнейшее решение возможно только через службу поддержки.
+          </p>
 
-      <button
-        onClick={() => setShowPaymentModal(false)}
-        style={{
-          padding: "10px 0",
-          background: "linear-gradient(90deg, #2787f5, #0a90ff)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 16,
-		  width: "70%",
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: 16,
-          transition: "all 0.2s",
-        }}
-      >
-        Понятно
-      </button>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              justifyContent: "flex-start",
+              marginBottom: 8,
+            }}
+          >
+            <span>Номер телефона: </span>
+            <b>+7 (995) 896-29-51</b>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText("9958962951");
+                setShowCopiedNotification(true);
+                setTimeout(() => setShowCopiedNotification(false), 2000);
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                margin: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              title="Скопировать номер"
+            >
+              {/* Иконка копирования */}
+            </button>
+          </div>
+
+          {showCopiedNotification && (
+            <div
+              style={{
+                position: "fixed",
+                bottom: "25%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "#000",
+                color: "#fff",
+                padding: "6px 12px",
+                borderRadius: 8,
+                opacity: 0.9,
+              }}
+            >
+              Номер скопирован!
+            </div>
+          )}
+
+          <p style={{ marginBottom: 16, textAlign: "left" }}>
+            <b>Банк получателя:</b> Юмани (Юmoney)
+          </p>
+
+          <button
+            onClick={() => setShowPaymentModal(false)}
+            style={{
+              padding: "10px 0",
+              background: "linear-gradient(90deg, #2787f5, #0a90ff)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 16,
+              width: "70%",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: 16,
+              transition: "all 0.2s",
+              alignSelf: "center",
+            }}
+          >
+            Понятно
+          </button>
         </div>
       </div>
     )}
