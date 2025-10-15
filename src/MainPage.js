@@ -1139,6 +1139,24 @@ if (!isAuthorized) {
         Активировать подписку
       </a>
 
+      {/* Кнопка отмены автопродления */}
+      <button
+        style={{
+          background: "none",
+          border: "none",
+          color: "#ffc7c7",
+          fontWeight: 600,
+          fontSize: 16,
+          cursor: "pointer",
+          width: "100%",
+          marginTop: 6,
+          marginBottom: 8,
+        }}
+      >
+        Отменить автопродление
+      </button>
+    </div>
+
     {/* Модальное окно выбора периода */}
     {showSbpModal && (
       <div
@@ -1326,6 +1344,7 @@ if (!isAuthorized) {
             Понятно
           </button>
         </div>
+      )}
   </div>
 )}
         </main>
