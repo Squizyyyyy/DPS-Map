@@ -1220,7 +1220,10 @@ if (!isAuthorized) {
           </div>
 
           <button
-            onClick={() => setShowPaymentModal(true)}
+            onClick={() => {
+              setShowPaymentModal(true);
+              setShowSbpModal(false);
+            }}
             style={{
               padding: "12px 0",
               background: "linear-gradient(90deg, #2787f5, #7a5cff)",
@@ -1344,7 +1347,8 @@ if (!isAuthorized) {
             Понятно
           </button>
         </div>
-      )}
+      </div>
+    )}
   </div>
 )}
         </main>
