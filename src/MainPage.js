@@ -1149,7 +1149,6 @@ if (!isAuthorized) {
           position: "fixed",
           top: 0,
           left: 0,
-          padding: "16px",
           width: "100%",
           height: "100%",
           background: "rgba(0,0,0,0.6)",
@@ -1164,7 +1163,8 @@ if (!isAuthorized) {
             background: "#0a1f33",
             borderRadius: 20,
             padding: 24,
-            width: "90%",
+            width: "100%",
+			padding: "16px",
             maxWidth: 400,
             textAlign: "center",
             color: "#fff",
@@ -1245,7 +1245,6 @@ if (!isAuthorized) {
           position: "fixed",
           top: 0,
           left: 0,
-          padding: "16px",
           width: "100%",
           height: "100%",
           background: "rgba(0,0,0,0.6)",
@@ -1259,8 +1258,8 @@ if (!isAuthorized) {
           style={{
             background: "#0a1f33",
             borderRadius: 20,
-            padding: 24,
-            width: "90%",
+			padding: "16px",
+            width: "100%",
             maxWidth: 400,
             textAlign: "center",
             color: "#fff",
@@ -1275,12 +1274,12 @@ if (!isAuthorized) {
             onClick={() => setShowPaymentModal(false)}
             style={{
               position: "absolute",
-              top: 12,
+              top: 8,
               right: 12,
               background: "none",
               border: "none",
               fontSize: 20,
-              color: "#fff",
+              color: "#ccc",
               cursor: "pointer",
             }}
             title="Закрыть"
@@ -1296,9 +1295,8 @@ if (!isAuthorized) {
             Для проведения оплаты необходимо совершить перевод через СБП на сумму,
             указанную на экране, по реквизитам, указанным ниже.
           </p>
-          <p style={{ marginBottom: 10 }}>
-            <b>Внимание!</b> Переводить следует ровно указанную сумму{" "}
-            <b>до копейки</b>. В противном случае платёж не инициализируется системой
+          <p style={{ marginBottom: 8 }}>
+            <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. В противном случае платёж не инициализируется системой
             и дальнейшее решение возможно только через службу поддержки.
           </p>
 
@@ -1308,7 +1306,7 @@ if (!isAuthorized) {
               alignItems: "center",
               gap: 6,
               justifyContent: "flex-start",
-              marginBottom: 8,
+              marginBottom: 4,
             }}
           >
             <span>Номер телефона: </span>
@@ -1331,7 +1329,10 @@ if (!isAuthorized) {
               }}
               title="Скопировать номер"
             >
-              {/* Иконка копирования */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M4 1a1 1 0 0 0-1 1v10h1V2h8V1H4z"/>
+                <path d="M5 3a1 1 0 0 0-1 1v10h9a1 1 0 0 0 1-1V3H5zm1 1h7v9H6V4z"/>
+              </svg>
             </button>
           </div>
 
@@ -1354,7 +1355,7 @@ if (!isAuthorized) {
           )}
 
           <p style={{ marginBottom: 16, textAlign: "left" }}>
-            <b>Банк получателя:</b> Юмани (Юmoney)
+            Банк получателя: <b>Юмани (Юmoney)</b>
           </p>
 
           <button
