@@ -34,6 +34,11 @@ export default function MainPage() {
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [selectedCity, setSelectedCity] = useState(cities[0]);
   const [showSbpModal, setShowSbpModal] = useState(false);
+  const [showSbpModal, setShowSbpModal] = React.useState(false);
+  const [showPaymentModal, setShowPaymentModal] = React.useState(false);
+  const [selectedPeriod, setSelectedPeriod] = React.useState(null);
+  const [showCopiedNotification, setShowCopiedNotification] = React.useState(false);
+
 
   const isMapActive = activeTab === "map";
   
