@@ -1048,35 +1048,35 @@ if (!isAuthorized) {
   </div>
 )}
 
-  {/* Подписка */}
-  {activeTab === "subscription" && (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-		alignItems: "center",
-        justifyContent: "center",
-        height: "calc(100vh - 85px)",
-		padding: "0 30px",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-        fontSize: 16,
-        color: "#aaa",
-		textAlign: "center",
-      }}
-    >
+{/* Подписка */}
+{activeTab === "subscription" && (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "calc(100vh - 85px)",
+      padding: "0 30px",
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      fontSize: 16,
+      color: "#aaa",
+      textAlign: "center",
+    }}
+  >
     {/* Блок: Статус подписки */}
     <div
       style={{
         backgroundColor: "#0a1f33",
         borderRadius: 24,
         padding: 16,
-		maxWidth: 300,
+        maxWidth: 300,
         width: "100%",
         textAlign: "center",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
         color: "#fff",
-		marginBottom: 20,
+        marginBottom: 20,
       }}
     >
       {hasSubscription && user?.subscription?.expiresAt ? (
@@ -1088,73 +1088,246 @@ if (!isAuthorized) {
         <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
       )}
     </div>
-	
-	{/* Блок с кнопками подписки */}
-    <div style={{
-      backgroundColor: "#0a1f33",
-      borderRadius: 24,
-      padding: 16,
-	  maxWidth: 300,
-      width: "100%",
-      textAlign: "center",
-      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-      display: "flex",
-      flexDirection: "column",
-      gap: 23,
-    }}>
 
-    {/* Кнопка подписки */}
-    <a
-      href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        setShowSbpModal(true);
-      }}
+    {/* Блок с кнопками подписки */}
+    <div
       style={{
-        display: "block",
-        marginTop: 8,
-        padding: "14px 0",
-        background: "linear-gradient(90deg, #2787f5, #7a5cff)",
-        color: "#fff",
-        border: "none",
-        borderRadius: 16,
-        cursor: "pointer",
-        fontWeight: 600,
-        fontSize: 16,
+        backgroundColor: "#0a1f33",
+        borderRadius: 24,
+        padding: 16,
+        maxWidth: 300,
         width: "100%",
         textAlign: "center",
-        textDecoration: "none",
-        transition: "all 0.2s",
-      }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.background =
-          "linear-gradient(90deg, #1e6cd8, #693bff)")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.background =
-          "linear-gradient(90deg, #2787f5, #7a5cff)")
-      }
-    >
-      Активировать подписку
-    </a>
-	
-	{/* Кнопка отмены автопродления */}
-    <button
-      style={{
-        background: "none",
-        border: "none",
-        color: "#ffc7c7",
-        fontWeight: 600,
-        fontSize: 16,
-        cursor: "pointer",
-		width: "100%",
-        marginTop: 6,
-		marginBottom: 8,
+        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 23,
       }}
     >
-      Отменить автопродление
-    </button>
-	</div>
+      {/* Кнопка подписки */}
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          setShowSbpModal(true);
+        }}
+        style={{
+          display: "block",
+          marginTop: 8,
+          padding: "14px 0",
+          background: "linear-gradient(90deg, #2787f5, #7a5cff)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 16,
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: 16,
+          width: "100%",
+          textAlign: "center",
+          textDecoration: "none",
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #1e6cd8, #693bff)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.background =
+            "linear-gradient(90deg, #2787f5, #7a5cff)")
+        }
+      >
+        Активировать подписку
+      </a>
+
+    {/* Модальное окно выбора периода */}
+    {showSbpModal && (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(0,0,0,0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 10000,
+        }}
+      >
+        <div
+          style={{
+            background: "#0a1f33",
+            borderRadius: 20,
+            padding: 24,
+            width: "90%",
+            maxWidth: 400,
+            textAlign: "center",
+            color: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            gap: 20,
+          }}
+        >
+          <h2>Выберите период</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+            {/* 1 месяц */}
+            <div
+              onClick={() => setSelectedPeriod("1")}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                borderRadius: 12,
+                border: selectedPeriod === "1" ? "2px solid #2787f5" : "2px solid transparent",
+                cursor: "pointer",
+              }}
+            >
+              1 месяц
+              {selectedPeriod === "1" && <div style={{ marginTop: 6 }}>99₽</div>}
+            </div>
+            {/* 3 месяца */}
+            <div
+              onClick={() => setSelectedPeriod("3")}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                borderRadius: 12,
+                border: selectedPeriod === "3" ? "2px solid #2787f5" : "2px solid transparent",
+                cursor: "pointer",
+              }}
+            >
+              3 месяца
+              {selectedPeriod === "3" && <div style={{ marginTop: 6 }}>299₽</div>}
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowPaymentModal(true)}
+            style={{
+              padding: "12px 0",
+              background: "linear-gradient(90deg, #2787f5, #7a5cff)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 16,
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: 16,
+              transition: "all 0.2s",
+            }}
+          >
+            Оплатить
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* Модальное окно реквизитов */}
+    {showPaymentModal && (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(0,0,0,0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 10000,
+        }}
+      >
+        <div
+          style={{
+            background: "#0a1f33",
+            borderRadius: 20,
+            padding: 24,
+            width: "90%",
+            maxWidth: 400,
+            textAlign: "center",
+            color: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <h2>Реквизиты для оплаты</h2>
+          <p>
+            Для проведения оплаты необходимо совершить перевод через СБП на сумму, указанную на экране, по реквизитам, указанным ниже.
+          </p>
+          <p>
+            <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. В противном случае платёж не инициализируется системой и дальнейшее решение возможно только через службу поддержки.
+          </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <span>Номер телефона: </span>
+            <b>+7 (995) 896-29-51</b>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText("+79958962951");
+                setShowCopiedNotification(true);
+                setTimeout(() => setShowCopiedNotification(false), 2000);
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                margin: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              title="Скопировать номер"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path d="M10 1.5A1.5 1.5 0 0 1 11.5 3v9A1.5 1.5 0 0 1 10 13.5H4A1.5 1.5 0 0 1 2.5 12V3A1.5 1.5 0 0 1 4 1.5h6zm0 1h-6a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5z"/>
+                <path d="M4.5 0A.5.5 0 0 1 5 0h6a.5.5 0 0 1 .5.5V1H4V.5a.5.5 0 0 1 .5-.5z"/>
+              </svg>
+            </button>
+          </div>
+          {showCopiedNotification && (
+            <div style={{
+              position: "fixed",
+              bottom: "25%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "#000",
+              color: "#fff",
+              padding: "6px 12px",
+              borderRadius: 8,
+              opacity: 0.9,
+            }}>
+              Номер скопирован!
+            </div>
+          )}
+          <p>
+            <b>Банк получателя:</b> Юмани (Юmoney)
+          </p>
+          <button
+            onClick={() => setShowPaymentModal(false)}
+            style={{
+              padding: "12px 0",
+              background: "linear-gradient(90deg, #2787f5, #7a5cff)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 16,
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: 16,
+              transition: "all 0.2s",
+            }}
+          >
+            Понятно
+          </button>
+        </div>
+      </div>
+    )}
   </div>
 )}
         </main>
