@@ -1326,8 +1326,6 @@ if (!isAuthorized) {
             Понятно
           </button>
         </div>
-      </div>
-    )}
   </div>
 )}
         </main>
