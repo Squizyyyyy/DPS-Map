@@ -1295,25 +1295,24 @@ if (!isAuthorized) {
           }}
         >
 
-          <h2 style={{ textAlign: "center", marginBottom: 11 }}>
+          <h2 style={{ textAlign: "center", marginBottom: 18, }}>
             Реквизиты для оплаты
           </h2>
 
-          <div style={{ marginBottom: 4, textAlign: "center" }}>
+          <div style={{ marginBottom: 6, textAlign: "center" }}>
             Для проведения оплаты необходимо совершить перевод через СБП на сумму,
             указанную на экране, по реквизитам, указанным ниже.
           </div>
           
-		  <div style={{ marginBottom: 10, textAlign: "center" }}>
+		  <div style={{ marginBottom: 12, textAlign: "center" }}>
             <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. 
             В противном случае платёж не инициализируется системой и дальнейшее решение возможно только через службу поддержки.
           </div>
 
-          <div style={{ marginBottom: 4, }}>
+          <div style={{ marginBottom: 5, }}>
             <div>Номер телефона:</div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, marginBottom: 10, }}>
               <span>+7 (995) 896-29-51</span>
-			</div>
             <button
               onClick={() => {
                 navigator.clipboard.writeText("9958962951");
@@ -1338,6 +1337,7 @@ if (!isAuthorized) {
               </svg>
             </button>
           </div>
+		</div>
 
           {showCopiedNotification && (
             <div
@@ -1357,9 +1357,9 @@ if (!isAuthorized) {
             </div>
           )}
 
-          <div style={{ marginBottom: 4, }}>
+          <div style={{ marginBottom: 5, }}>
           <div>Банк получателя:</div>
-          <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 11, }}>Юмани (Юmoney)</div>
+          <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 18, }}>Юмани (Юmoney)</div>
         </div>
 
           <button
