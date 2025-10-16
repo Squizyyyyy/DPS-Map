@@ -160,7 +160,6 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
   const cents = Math.floor(Math.random() * 99) + 1; // 1..99
   const sum = 99 + cents / 100;
 
-  // Сохраняем сумму для пользователя на 15 минут
   if (activePayments[user.id]) clearTimeout(activePayments[user.id].timer);
 
   activePayments[user.id] = {
@@ -169,7 +168,7 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
     timer: setTimeout(() => {
       console.log(`[Subscription] Время истекло для пользователя ${user.id}, сумма удалена`);
       delete activePayments[user.id];
-    }, 15 * 60 * 1000), // 15 минут
+    }, 15 * 60 * 1000),
   };
 
   console.log(`[Subscription] Сгенерирована сумма ${sum.toFixed(2)} для пользователя ${user.id}`);
@@ -212,23 +211,21 @@ app.post("/subscription/check-mail", checkAuth, async (req, res) => {
     console.log(`[Subscription] Найдено ${messages.length} новых писем`);
 
     let found = false;
+    const sumRegex = new RegExp(`${sum.toFixed(2).replace(".", "[.,]")}\\s*₽`);
 
-    for (const item of messages) {
+    for (const [index, item] of messages.entries()) {
       const all = item.parts.find((p) => p.which === "TEXT");
       if (!all) continue;
 
       const parsed = await simpleParser(all.body);
-      const body = parsed.text;
+      const body = parsed.text || parsed.html || "";
 
-      if (body) {
-        const sumDot = sum.toFixed(2);      // 99.65
-        const sumComma = sumDot.replace(".", ","); // 99,65
+      console.log(`[Subscription] Письмо ${index + 1}:\n${body.substring(0, 300)}...`); // лог первых 300 символов
 
-        if (body.includes(sumDot) || body.includes(sumComma)) {
-          console.log(`[Subscription] Оплата найдена для пользователя ${user.id}, сумма: ${sumDot}`);
-          found = true;
-          break;
-        }
+      if (sumRegex.test(body)) {
+        console.log(`[Subscription] Оплата найдена для пользователя ${user.id}, сумма: ${sum.toFixed(2)}`);
+        found = true;
+        break;
       }
     }
 
@@ -237,7 +234,7 @@ app.post("/subscription/check-mail", checkAuth, async (req, res) => {
 
     if (found) {
       const now = Date.now();
-      const expiresAt = now + 30 * 24 * 60 * 60 * 1000; // 30 дней
+      const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
 
       user.subscription = {
         active: true,
