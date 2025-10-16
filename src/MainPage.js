@@ -1150,7 +1150,6 @@ if (!isAuthorized) {
           position: "fixed",
           top: 0,
           left: 0,
-		  padding: "32px",
           width: "100%",
           height: "100%",
           background: "rgba(0,0,0,0.6)",
@@ -1158,21 +1157,24 @@ if (!isAuthorized) {
           alignItems: "center",
           justifyContent: "center",
           zIndex: 10000,
+		  padding: "16px",
+		  boxSizing: "border-box",
         }}
       >
         <div
           style={{
             background: "#0a1f33",
             borderRadius: 20,
-            padding: 24,
-            width: "100%",
-			padding: "16px",
+            padding: "20px",
+			width: "calc(100% - 32px)",
             maxWidth: 400,
             textAlign: "center",
             color: "#fff",
             display: "flex",
             flexDirection: "column",
             gap: 20,
+			boxSizing: "border-box",
+            position: "relative",
           }}
         >
           <h2>Выберите период</h2>
@@ -1194,7 +1196,8 @@ if (!isAuthorized) {
               <div style={{ fontWeight: 600 }}>1 месяц</div>
               {selectedPeriod === "1" && <div style={{ marginTop: 6 }}>99₽</div>}
             </div>
-            {/* 3 месяца */}
+            
+			{/* 3 месяца */}
             <div
               onClick={() => setSelectedPeriod("3")}
               style={{
@@ -1229,6 +1232,7 @@ if (!isAuthorized) {
               fontWeight: 600,
               fontSize: 16,
               transition: "all 0.2s",
+			  alignSelf: "center",
             }}
           >
             Оплатить
@@ -1251,20 +1255,23 @@ if (!isAuthorized) {
           alignItems: "center",
           justifyContent: "center",
           zIndex: 10000,
+		  padding: "16px",
+          boxSizing: "border-box",
         }}
       >
         <div
           style={{
             background: "#0a1f33",
             borderRadius: 20,
-			padding: "16px",
-            width: "100%",
+			padding: "20px",
+            width: "calc(100% - 32px)",
             maxWidth: 400,
             textAlign: "center",
             color: "#fff",
             display: "flex",
             flexDirection: "column",
             gap: 8,
+            boxSizing: "border-box",
             position: "relative",
           }}
         >
@@ -1273,8 +1280,8 @@ if (!isAuthorized) {
             onClick={() => setShowPaymentModal(false)}
             style={{
               position: "absolute",
-              top: 7,
-              right: 10,
+              top: 6,
+              right: 8,
               background: "none",
               border: "none",
               fontSize: 20,
