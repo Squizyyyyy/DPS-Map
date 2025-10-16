@@ -210,8 +210,13 @@ app.post("/subscription/check-mail", checkAuth, async (req, res) => {
       const parsed = await simpleParser(all.body);
       const body = parsed.text;
       
-      // Проверяем, есть ли сумма в тексте письма
-      if (body && body.includes(sum.toFixed(2))) {
+    // Проверяем, есть ли сумма в тексте письма
+    if (body) {
+      // Форматируем и с точкой, и с запятой
+      const sumDot = sum.toFixed(2); // 99.65
+      const sumComma = sumDot.replace(".", ","); // 99,65
+
+      if (body.includes(sumDot) || body.includes(sumComma)) {
         found = true;
         break;
       }
