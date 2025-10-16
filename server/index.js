@@ -9,6 +9,8 @@ import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
 import fetch from "node-fetch";
 import crypto from "crypto";
+import imaps from "imap-simple"; // для IMAP Mail.ru
+import simpleParser from "mailparser"; // для парсинга писем
 
 dotenv.config();
 
@@ -146,6 +148,104 @@ async function checkAuth(req, res, next) {
 
   next();
 }
+
+// ---------------------- Subscription Logic ----------------------
+
+// Словарь для хранения сгенерированных сумм и их таймеров
+const activePayments = {};
+
+// Генерация уникальной суммы
+app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
+  const user = req.session.user;
+  // Генерируем сумму от 99.01 до 99.99
+  const cents = Math.floor(Math.random() * 99) + 1; // 1..99
+  const sum = 99 + cents / 100;
+  
+  // Сохраняем сумму для пользователя на 15 минут
+  if (activePayments[user.id]) clearTimeout(activePayments[user.id].timer);
+  
+  activePayments[user.id] = {
+    sum,
+    start: Date.now(),
+    timer: setTimeout(() => {
+      delete activePayments[user.id];
+    }, 15 * 60 * 1000), // 15 минут
+  };
+
+  res.json({ sum });
+});
+
+// Проверка почты Mail.ru на наличие оплаты
+app.post("/subscription/check-mail", checkAuth, async (req, res) => {
+  const user = req.session.user;
+  const payment = activePayments[user.id];
+  if (!payment) return res.status(400).json({ success: false, error: "Сумма не сгенерирована" });
+
+  const { sum } = payment;
+
+  try {
+    const config = {
+      imap: {
+        user: process.env.MAILRU_USER,
+        password: process.env.MAILRU_PASSWORD,
+        host: "imap.mail.ru",
+        port: 993,
+        tls: true,
+        authTimeout: 3000,
+      },
+    };
+
+    const connection = await imaps.connect(config);
+    await connection.openBox("INBOX");
+
+    const searchCriteria = ["UNSEEN"];
+    const fetchOptions = { bodies: ["HEADER.FIELDS (FROM TO SUBJECT DATE)", "TEXT"], markSeen: true };
+
+    const messages = await connection.search(searchCriteria, fetchOptions);
+    
+    let found = false;
+
+    for (const item of messages) {
+      const all = item.parts.find((p) => p.which === "TEXT");
+      const parsed = await simpleParser(all.body);
+      const body = parsed.text;
+      
+      // Проверяем, есть ли сумма в тексте письма
+      if (body && body.includes(sum.toFixed(2))) {
+        found = true;
+        break;
+      }
+    }
+
+    await connection.end();
+
+    if (found) {
+      // Выдаем подписку пользователю на 30 дней
+      const now = Date.now();
+      const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
+
+      user.subscription = {
+        active: true,
+        plan: "basic",
+        expiresAt,
+      };
+
+      await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+      req.session.user = user;
+
+      // Удаляем активную сумму
+      clearTimeout(activePayments[user.id].timer);
+      delete activePayments[user.id];
+
+      return res.json({ success: true, subscription: user.subscription });
+    } else {
+      return res.json({ success: false, message: "Платёж не найден" });
+    }
+  } catch (err) {
+    console.error("Ошибка при проверке почты:", err);
+    return res.status(500).json({ success: false, error: "Ошибка проверки платежа" });
+  }
+});
 
 // ---- Функция для автообновления access token ----
 async function refreshAccessToken(user) {

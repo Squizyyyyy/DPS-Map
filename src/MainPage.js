@@ -1235,10 +1235,23 @@ if (!isAuthorized) {
             </div>
           </div>
 
+          {/* Кнопка Оплатить генерирует сумму */}
           <button
-            onClick={() => {
-              setShowPaymentModal(true);
-              setShowSbpModal(false);
+            onClick={async () => {
+              try {
+                // Генерируем сумму на сервере
+                const res = await fetch("/subscription/generate-sum", {
+                  method: "POST",
+                  credentials: "include",
+                });
+                const data = await res.json();
+                if (data.sum) setGeneratedSum(data.sum);
+                setShowPaymentModal(true);
+                setShowSbpModal(false);
+              } catch (err) {
+                console.error(err);
+                alert("Ошибка генерации суммы");
+              }
             }}
             style={{
               padding: "11px 0",
@@ -1251,7 +1264,7 @@ if (!isAuthorized) {
               fontWeight: 600,
               fontSize: 16,
               transition: "all 0.2s",
-			  alignSelf: "center",
+              alignSelf: "center",
             }}
           >
             Оплатить
@@ -1307,6 +1320,10 @@ if (!isAuthorized) {
 		  <div style={{ marginBottom: 14, textAlign: "center" }}>
             <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. 
             В противном случае платёж не инициализируется системой и дальнейшее решение возможно только через службу поддержки.
+          </div>
+		  
+		  <div style={{ marginBottom: 8, textAlign: "center" }}>
+            <b>{generatedSum?.toFixed(2)} ₽</b>
           </div>
 
           <div style={{ marginBottom: 5, }}>
