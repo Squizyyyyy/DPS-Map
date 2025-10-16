@@ -37,7 +37,7 @@ export default function MainPage() {
   const [showPaymentModal, setShowPaymentModal] = React.useState(false);
   const [selectedPeriod, setSelectedPeriod] = React.useState(null);
   const [showCopiedNotification, setShowCopiedNotification] = React.useState(false);
-
+  const [generatedSum, setGeneratedSum] = useState(null);
 
   const isMapActive = activeTab === "map";
   
