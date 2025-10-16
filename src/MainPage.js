@@ -1177,6 +1177,25 @@ if (!isAuthorized) {
             position: "relative",
           }}
         >
+		
+		{/* Крестик */}
+          <button
+            onClick={() => setShowPaymentModal(false)}
+            style={{
+              position: "absolute",
+              top: 5,
+              right: 6.5,
+              background: "none",
+              border: "none",
+              fontSize: 20,
+              color: "#ccc",
+              cursor: "pointer",
+            }}
+            title="Закрыть"
+          >
+            ×
+          </button>
+		  
           <h2>Выберите период</h2>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
             {/* 1 месяц */}
@@ -1222,7 +1241,7 @@ if (!isAuthorized) {
               setShowSbpModal(false);
             }}
             style={{
-              padding: "12px 0",
+              padding: "11px 0",
               background: "linear-gradient(90deg, #2787f5, #7a5cff)",
               color: "#fff",
               border: "none",
@@ -1272,25 +1291,9 @@ if (!isAuthorized) {
             flexDirection: "column",
             boxSizing: "border-box",
             position: "relative",
+			fontSize: 15,
           }}
         >
-          {/* Крестик */}
-          <button
-            onClick={() => setShowPaymentModal(false)}
-            style={{
-              position: "absolute",
-              top: 6,
-              right: 8,
-              background: "none",
-              border: "none",
-              fontSize: 20,
-              color: "#ccc",
-              cursor: "pointer",
-            }}
-            title="Закрыть"
-          >
-            ×
-          </button>
 
           <h2 style={{ textAlign: "center", marginBottom: 9 }}>
             Реквизиты для оплаты
@@ -1315,7 +1318,7 @@ if (!isAuthorized) {
             }}
           >
             <span>Номер телефона: </span>
-            <b>+7 (995) 896-29-51</b>
+            <b style={{ fontSize: 16 }}>+7 (995) 896-29-51</b>
             <button
               onClick={() => {
                 navigator.clipboard.writeText("9958962951");
@@ -1360,7 +1363,7 @@ if (!isAuthorized) {
           )}
 
           <p style={{ marginBottom: 20, textAlign: "left" }}>
-            Банк получателя: <b>Юмани (Юmoney)</b>
+            Банк получателя: <b style={{ fontSize: 16 }}>Юмани (Юmoney)</b>
           </p>
 
           <button
