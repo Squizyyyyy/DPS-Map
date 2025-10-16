@@ -1313,6 +1313,7 @@ if (!isAuthorized) {
             <div>Номер телефона:</div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17 }}>
               <span>+7 (995) 896-29-51</span>
+			</div>
             <button
               onClick={() => {
                 navigator.clipboard.writeText("9958962951");
