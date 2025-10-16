@@ -1222,7 +1222,7 @@ if (!isAuthorized) {
               setShowSbpModal(false);
             }}
             style={{
-              padding: "14px 0",
+              padding: "12px 0",
               background: "linear-gradient(90deg, #2787f5, #7a5cff)",
               color: "#fff",
               border: "none",
@@ -1270,7 +1270,6 @@ if (!isAuthorized) {
             color: "#fff",
             display: "flex",
             flexDirection: "column",
-            gap: 8,
             boxSizing: "border-box",
             position: "relative",
           }}
