@@ -157,21 +157,22 @@ const activePayments = {};
 // Генерация уникальной суммы
 app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
   const user = req.session.user;
-  // Генерируем сумму от 99.01 до 99.99
   const cents = Math.floor(Math.random() * 99) + 1; // 1..99
   const sum = 99 + cents / 100;
-  
+
   // Сохраняем сумму для пользователя на 15 минут
   if (activePayments[user.id]) clearTimeout(activePayments[user.id].timer);
-  
+
   activePayments[user.id] = {
     sum,
     start: Date.now(),
     timer: setTimeout(() => {
+      console.log(`[Subscription] Время истекло для пользователя ${user.id}, сумма удалена`);
       delete activePayments[user.id];
     }, 15 * 60 * 1000), // 15 минут
   };
 
+  console.log(`[Subscription] Сгенерирована сумма ${sum.toFixed(2)} для пользователя ${user.id}`);
   res.json({ sum });
 });
 
@@ -179,7 +180,11 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
 app.post("/subscription/check-mail", checkAuth, async (req, res) => {
   const user = req.session.user;
   const payment = activePayments[user.id];
-  if (!payment) return res.status(400).json({ success: false, error: "Сумма не сгенерирована" });
+
+  if (!payment) {
+    console.log(`[Subscription] Пользователь ${user.id} попытался проверить оплату без сгенерированной суммы`);
+    return res.status(400).json({ success: false, error: "Сумма не сгенерирована" });
+  }
 
   const { sum } = payment;
 
@@ -195,39 +200,44 @@ app.post("/subscription/check-mail", checkAuth, async (req, res) => {
       },
     };
 
+    console.log(`[Subscription] Подключение к Mail.ru для пользователя ${user.id}...`);
     const connection = await imaps.connect(config);
     await connection.openBox("INBOX");
+    console.log(`[Subscription] Открыта папка INBOX`);
 
     const searchCriteria = ["UNSEEN"];
     const fetchOptions = { bodies: ["HEADER.FIELDS (FROM TO SUBJECT DATE)", "TEXT"], markSeen: true };
 
     const messages = await connection.search(searchCriteria, fetchOptions);
-    
+    console.log(`[Subscription] Найдено ${messages.length} новых писем`);
+
     let found = false;
 
     for (const item of messages) {
       const all = item.parts.find((p) => p.which === "TEXT");
+      if (!all) continue;
+
       const parsed = await simpleParser(all.body);
       const body = parsed.text;
-      
-    // Проверяем, есть ли сумма в тексте письма
-    if (body) {
-      // Форматируем и с точкой, и с запятой
-      const sumDot = sum.toFixed(2); // 99.65
-      const sumComma = sumDot.replace(".", ","); // 99,65
 
-      if (body.includes(sumDot) || body.includes(sumComma)) {
-        found = true;
-        break;
+      if (body) {
+        const sumDot = sum.toFixed(2);      // 99.65
+        const sumComma = sumDot.replace(".", ","); // 99,65
+
+        if (body.includes(sumDot) || body.includes(sumComma)) {
+          console.log(`[Subscription] Оплата найдена для пользователя ${user.id}, сумма: ${sumDot}`);
+          found = true;
+          break;
+        }
       }
     }
 
     await connection.end();
+    console.log(`[Subscription] Подключение к Mail.ru закрыто`);
 
     if (found) {
-      // Выдаем подписку пользователю на 30 дней
       const now = Date.now();
-      const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
+      const expiresAt = now + 30 * 24 * 60 * 60 * 1000; // 30 дней
 
       user.subscription = {
         active: true,
@@ -238,16 +248,16 @@ app.post("/subscription/check-mail", checkAuth, async (req, res) => {
       await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
       req.session.user = user;
 
-      // Удаляем активную сумму
       clearTimeout(activePayments[user.id].timer);
       delete activePayments[user.id];
 
       return res.json({ success: true, subscription: user.subscription });
     } else {
+      console.log(`[Subscription] Платёж не найден для пользователя ${user.id}`);
       return res.json({ success: false, message: "Платёж не найден" });
     }
   } catch (err) {
-    console.error("Ошибка при проверке почты:", err);
+    console.error(`[Subscription] Ошибка при проверке почты для пользователя ${user.id}:`, err);
     return res.status(500).json({ success: false, error: "Ошибка проверки платежа" });
   }
 });
