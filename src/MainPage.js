@@ -1180,7 +1180,7 @@ if (!isAuthorized) {
 		
 		{/* Крестик */}
           <button
-            onClick={() => setShowPaymentModal(false)}
+            onClick={() => setShowSbpModal(false)}
             style={{
               position: "absolute",
               top: 5,
@@ -1295,30 +1295,24 @@ if (!isAuthorized) {
           }}
         >
 
-          <h2 style={{ textAlign: "center", marginBottom: 9 }}>
+          <h2 style={{ textAlign: "center", marginBottom: 11 }}>
             Реквизиты для оплаты
           </h2>
 
-          <p style={{ marginBottom: 2 }}>
+          <div style={{ marginBottom: 4, textAlign: "center" }}>
             Для проведения оплаты необходимо совершить перевод через СБП на сумму,
             указанную на экране, по реквизитам, указанным ниже.
-          </p>
-          <p style={{ marginBottom: 10 }}>
-            <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. В противном случае платёж не инициализируется системой
-            и дальнейшее решение возможно только через службу поддержки.
-          </p>
+          </div>
+          
+		  <div style={{ marginBottom: 10, textAlign: "center" }}>
+            <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. 
+            В противном случае платёж не инициализируется системой и дальнейшее решение возможно только через службу поддержки.
+          </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              justifyContent: "flex-start",
-              marginBottom: 1.5,
-            }}
-          >
-            <span>Номер телефона: </span>
-            <b style={{ fontSize: 16 }}>+7 (995) 896-29-51</b>
+          <div style={{ marginBottom: 4, }}>
+            <div>Номер телефона:</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17 }}>
+              <span>+7 (995) 896-29-51</span>
             <button
               onClick={() => {
                 navigator.clipboard.writeText("9958962951");
@@ -1362,9 +1356,10 @@ if (!isAuthorized) {
             </div>
           )}
 
-          <p style={{ marginBottom: 20, textAlign: "left" }}>
-            Банк получателя: <b style={{ fontSize: 16 }}>Юмани (Юmoney)</b>
-          </p>
+          <div style={{ marginBottom: 4, }}>
+          <div>Банк получателя:</div>
+          <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 11, }}>Юмани (Юmoney)</div>
+        </div>
 
           <button
             onClick={() => setShowPaymentModal(false)}
