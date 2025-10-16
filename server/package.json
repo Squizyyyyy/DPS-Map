@@ -13,7 +13,9 @@
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
+    "imap-simple": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mailparser": "^3.7.5",
     "mongodb": "^6.18.0",
     "node-fetch": "^3.3.2"
   }
