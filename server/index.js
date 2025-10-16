@@ -9,8 +9,8 @@ import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
 import fetch from "node-fetch";
 import crypto from "crypto";
-import imaps from "imap-simple"; // для IMAP Mail.ru
-import simpleParser from "mailparser"; // для парсинга писем
+import imaps from "imap-simple";
+import simpleParser from "mailparser";
 
 dotenv.config();
 
