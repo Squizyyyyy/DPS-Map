@@ -1146,7 +1146,7 @@ if (!isAuthorized) {
       </a>
     </div>
 
-    {/* Модальное окно выбора периода */}
+    {/* Модалка выбора периода */}
     {showSbpModal && (
       <div
         style={{
@@ -1180,7 +1180,6 @@ if (!isAuthorized) {
             position: "relative",
           }}
         >
-          {/* Крестик */}
           <button
             onClick={() => setShowSbpModal(false)}
             style={{
@@ -1200,7 +1199,6 @@ if (!isAuthorized) {
 
           <h2>Выберите период</h2>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-            {/* 1 месяц */}
             <div
               onClick={() => setSelectedPeriod("1")}
               style={{
@@ -1214,8 +1212,6 @@ if (!isAuthorized) {
               <div style={{ fontWeight: 600 }}>1 месяц</div>
               {selectedPeriod === "1" && <div style={{ marginTop: 6 }}>99₽</div>}
             </div>
-
-            {/* 3 месяца */}
             <div
               onClick={() => setSelectedPeriod("3")}
               style={{
@@ -1231,7 +1227,6 @@ if (!isAuthorized) {
             </div>
           </div>
 
-          {/* Кнопка Оплатить генерирует сумму */}
           <button
             disabled={!selectedPeriod}
             onClick={async () => {
@@ -1251,21 +1246,18 @@ if (!isAuthorized) {
                   setShowPaymentModal(true);
                   setShowSbpModal(false);
 
-                  // Запускаем проверку подписки каждые 5 секунд
+                  // Проверка статуса подписки
                   const intervalId = setInterval(async () => {
-                    const statusRes = await fetch("/auth/status", {
-                      credentials: "include",
-                    });
+                    const statusRes = await fetch("/auth/status", { credentials: "include" });
                     const statusData = await statusRes.json();
                     if (statusData.user?.subscription?.active) {
                       setUser(statusData.user);
                       setPaymentPending(false);
                       clearInterval(intervalId);
-                      setShowPaymentModal(false);
                     }
                   }, 5000);
 
-                  // Остановим проверку через 15 минут, если не будет оплаты
+                  // Авто-очистка интервала через 15 минут
                   setTimeout(() => clearInterval(intervalId), 15 * 60 * 1000);
                 }
               } catch (err) {
@@ -1275,9 +1267,7 @@ if (!isAuthorized) {
             }}
             style={{
               padding: "11px 0",
-              background: !selectedPeriod
-                ? "#888"
-                : "linear-gradient(90deg, #2787f5, #7a5cff)",
+              background: !selectedPeriod ? "#888" : "linear-gradient(90deg, #2787f5, #7a5cff)",
               color: "#fff",
               border: "none",
               width: "70%",
@@ -1303,7 +1293,7 @@ if (!isAuthorized) {
       </div>
     )}
 
-    {/* Модальное окно реквизитов */}
+    {/* Модалка реквизитов */}
     {showPaymentModal && (
       <div
         style={{
@@ -1338,24 +1328,23 @@ if (!isAuthorized) {
           }}
         >
           <h2 style={{ textAlign: "center", marginBottom: 22 }}>Реквизиты для оплаты</h2>
-          
-		  <div style={{ marginBottom: 8, textAlign: "center" }}>
+
+          <div style={{ marginBottom: 8, textAlign: "center" }}>
             Для проведения оплаты необходимо совершить перевод через СБП на сумму,
             указанную на экране, по реквизитам, указанным ниже.
           </div>
-          
-		  <div style={{ marginBottom: 14, textAlign: "center" }}>
-            <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. 
+
+          <div style={{ marginBottom: 14, textAlign: "center" }}>
+            <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>.
           </div>
-          
-		  <div style={{ marginBottom: 8, textAlign: "center" }}>
+
+          <div style={{ marginBottom: 8, textAlign: "center" }}>
             <b>{generatedSum?.toFixed(2)} ₽</b>
           </div>
 
           <div style={{ marginBottom: 5 }}>
             <div>Номер телефона:</div>
-            
-			<div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, marginBottom: 8, gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, marginBottom: 8, gap: 6 }}>
               <span>+7 (995) 896-29-51</span>
               <button
                 onClick={() => {

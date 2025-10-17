@@ -146,15 +146,17 @@ async function checkAuth(req, res, next) {
 // ---------------------- Subscription Logic ----------------------
 const activePayments = {};
 
-// Генерация суммы для выбранного тарифа и запуск авто-проверки
 app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
   const user = req.session.user;
-  const { plan } = req.body; // plan: "1m" или "3m"
+  const { plan } = req.body;
   const base = plan === "3m" ? 289 : 99;
   const allCents = Array.from({ length: 99 }, (_, i) => i + 1);
 
+  console.log(`🧾 [${user.id}] Запрос генерации суммы для тарифа: ${plan}`);
+
   try {
     await paymentsCollection.deleteMany({ expiresAt: { $lt: Date.now() } });
+    console.log("🧹 Старые платежи очищены");
 
     const activeDocs = await paymentsCollection.find({}).toArray();
     const usedCents = activeDocs
@@ -162,52 +164,63 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
       .map(d => Math.round((d.sum - base) * 100));
     const freeCents = allCents.filter(c => !usedCents.includes(c));
 
-    if (freeCents.length === 0)
+    if (freeCents.length === 0) {
+      console.log("⚠️ Нет доступных копеек для суммы");
       return res.status(500).json({ success: false, error: "Нет доступных сумм" });
+    }
 
     const cents = freeCents[Math.floor(Math.random() * freeCents.length)];
     const sum = base + cents / 100;
     const expiresAt = Date.now() + 15 * 60 * 1000;
 
+    console.log(`💰 [${user.id}] Сгенерирована сумма: ${sum.toFixed(2)} ₽ (истекает через 15 минут)`);
+
     await paymentsCollection.insertOne({ userId: user.id, sum, expiresAt, plan });
     activePayments[user.id] = { sum, plan, expiresAt };
 
-    // Запускаем цикл проверки почты
+    console.log(`📩 [${user.id}] Запуск проверки писем...`);
     startMailCheck(user.id);
 
     res.json({ success: true, sum });
   } catch (err) {
-    console.error(err);
+    console.error(`❌ [${user.id}] Ошибка генерации суммы:`, err);
     res.status(500).json({ success: false, error: "Ошибка генерации суммы" });
   }
 });
 
-// Функция запуска таймера проверки почты каждые 30 секунд до 15 минут
 function startMailCheck(userId) {
   const intervalMs = 30 * 1000;
   const maxTimeMs = 15 * 60 * 1000;
   const startTime = Date.now();
+
+  console.log(`🔁 [${userId}] Старт цикла проверки почты каждые 30 секунд`);
 
   const timer = setInterval(async () => {
     const elapsed = Date.now() - startTime;
     if (elapsed > maxTimeMs) {
       clearInterval(timer);
       delete activePayments[userId];
-      console.log(`⏱ Проверка почты для пользователя ${userId} остановлена (таймаут)`);
+      console.log(`⏱ [${userId}] Проверка почты остановлена — время истекло`);
       return;
     }
 
     try {
+      console.log(`📬 [${userId}] Подключаемся к IMAP...`);
       const user = await usersCollection.findOne({ id: userId });
       if (!user) {
+        console.log(`⚠️ [${userId}] Пользователь не найден`);
         clearInterval(timer);
         return;
       }
 
       const paymentDoc = await paymentsCollection.findOne({ userId });
-      if (!paymentDoc) return;
+      if (!paymentDoc) {
+        console.log(`⚠️ [${userId}] Нет активного платежа`);
+        return;
+      }
 
       const { sum, plan } = paymentDoc;
+      console.log(`💸 [${userId}] Ищем письмо с суммой: ${sum.toFixed(2)} ₽`);
 
       const config = {
         imap: {
@@ -226,6 +239,8 @@ function startMailCheck(userId) {
       const fetchOptions = { bodies: ["TEXT"], markSeen: true };
       const messages = await connection.search(searchCriteria, fetchOptions);
 
+      console.log(`📨 [${userId}] Найдено новых писем: ${messages.length}`);
+
       const sumRegex = new RegExp(`${sum.toFixed(2).replace(".", "[.,]")}`);
       let found = false;
       let foundUid = null;
@@ -238,6 +253,7 @@ function startMailCheck(userId) {
         if (sumRegex.test(body)) {
           found = true;
           foundUid = msg.attributes.uid;
+          console.log(`✅ [${userId}] Найдено письмо с суммой ${sum.toFixed(2)} ₽`);
           break;
         }
       }
@@ -245,12 +261,14 @@ function startMailCheck(userId) {
       if (found && foundUid) {
         await connection.addFlags(foundUid, ["\\Deleted"]);
         await connection.expunge();
+        console.log(`🗑 [${userId}] Письмо с суммой удалено`);
 
         const now = Date.now();
-        let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
-        let newExpiresAt = now + additionalMs;
+        const addMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+        let newExpiresAt = now + addMs;
         if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
-          newExpiresAt = user.subscription.expiresAt + additionalMs;
+          newExpiresAt = user.subscription.expiresAt + addMs;
+          console.log(`⏩ [${userId}] Продление подписки, новые 30/90 дней добавлены`);
         }
 
         user.subscription = { active: true, plan, expiresAt: newExpiresAt };
@@ -261,13 +279,14 @@ function startMailCheck(userId) {
         await connection.closeBox(true);
         await connection.end();
         clearInterval(timer);
-        console.log(`✅ Подписка активирована для пользователя ${userId}`);
+        console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
       } else {
         await connection.closeBox(true);
         await connection.end();
+        console.log(`❌ [${userId}] Письмо с суммой ${sum.toFixed(2)} ₽ не найдено`);
       }
     } catch (err) {
-      console.error(`Ошибка проверки почты для пользователя ${userId}:`, err);
+      console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message);
     }
   }, intervalMs);
 }
