@@ -273,9 +273,14 @@ function startMailCheck(userId) {
 
       if (found && foundUid) {
         console.log(`🗑 [${userId}] Удаляем письмо с UID ${foundUid}`);
-        await connection.addFlags(foundUid, ["\\Deleted"]);
-        await connection.expunge();
+        await connection.addFlags(foundUid, ["\\Deleted"]); // помечаем на удаление
+      }
 
+      // Закрытие ящика удаляет помеченные письма
+      await connection.closeBox(true).catch(() => {});
+      await connection.end().catch(() => {});
+
+      if (found && foundUid) {
         const now = Date.now();
         let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
         let newExpiresAt = now + additionalMs;
@@ -295,9 +300,6 @@ function startMailCheck(userId) {
       } else {
         console.log(`❌ [${userId}] Письмо с суммой ${sum.toFixed(2)} ₽ не найдено`);
       }
-
-      await connection.closeBox(true).catch(() => {});
-      await connection.end().catch(() => {});
     } catch (err) {
       console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message);
     }
