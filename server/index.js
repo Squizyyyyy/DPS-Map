@@ -193,7 +193,7 @@ function startMailCheck(userId) {
   const maxTimeMs = 15 * 60 * 1000;
   const startTime = Date.now();
 
-  console.log(`🔁 [${userId}] Старт цикла проверки почты каждые 30 секунд`);
+  console.log(`🔁 [${userId}] Старт цикла проверки почты каждые 15 секунд`);
 
   const timer = setInterval(async () => {
     const elapsed = Date.now() - startTime;
@@ -244,6 +244,9 @@ function startMailCheck(userId) {
       let found = false;
       let foundUid = null;
 
+      // создаём гибкий регэксп для поиска суммы
+      const sumRegex = new RegExp(sum.toFixed(2).replace(".", "[.,]").replace(/0$/, "0?") + "(\\s?₽)?");
+
       for (const msg of messages) {
         const rawBody = msg.parts.map(p => p.body).join("\n");
         const parsed = await simpleParser(rawBody);
@@ -255,18 +258,10 @@ function startMailCheck(userId) {
 
         console.log(`📜 [${userId}] Фрагмент письма:\n${body.slice(0, 500)}\n---`);
 
-        const variants = [
-          `${sum.toFixed(2)}`,
-          `${sum.toFixed(2).replace(".", ",")}`,
-          `${sum.toFixed(2)} ₽`,
-          `${sum.toFixed(2).replace(".", ",")} ₽`,
-        ];
-
-        const matchedVariant = variants.find(v => body.includes(v));
-        if (matchedVariant) {
+        if (sumRegex.test(body)) {
           found = true;
           foundUid = msg.attributes.uid;
-          console.log(`✅ [${userId}] Найдено письмо с суммой "${matchedVariant}"`);
+          console.log(`✅ [${userId}] Найдено письмо с суммой (регэксп): ${sum}`);
 
           // ⚡ Подписка активируется сразу после нахождения письма
           console.log(`🗝 [${userId}] Активируем подписку прямо сейчас...`);
