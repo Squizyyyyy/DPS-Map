@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import fetch from "node-fetch";
 import crypto from "crypto";
 import imaps from "imap-simple";
-import simpleParser from "mailparser";
+import { simpleParser } from "mailparser";
 
 dotenv.config();
 
@@ -144,6 +144,8 @@ async function checkAuth(req, res, next) {
 }
 
 // ---------------------- Subscription Logic ----------------------
+import { simpleParser } from "mailparser"; // ✅ правильный импорт
+
 const activePayments = {};
 
 app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
@@ -241,102 +243,72 @@ function startMailCheck(userId) {
 
       console.log(`📨 [${userId}] Найдено новых писем: ${messages.length}`);
 
-      const sumRegex = new RegExp(`${sum.toFixed(2).replace(".", "[.,]")}`);
       let found = false;
       let foundUid = null;
 
       for (const msg of messages) {
-  const textPart = msg.parts.find(p => p.which === "TEXT");
-  if (!textPart) continue;
+        const textPart = msg.parts.find(p => p.which === "TEXT");
+        if (!textPart) continue;
 
-  const parsed = await simpleParser.simpleParser(textPart.body);
-  let body = (parsed.text || parsed.html || "")
-    .replace(/\u00A0/g, " ") // заменяем неразрывные пробелы
-    .replace(/&nbsp;/g, " ") // на случай если парсер не убрал
-    .replace(/\s+/g, " ") // убираем лишние пробелы
-    .trim();
+        const parsed = await simpleParser(textPart.body);
+        let body = (parsed.text || parsed.html || "")
+          .replace(/\u00A0/g, " ")
+          .replace(/&nbsp;/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
 
-  // Подготавливаем возможные варианты записи суммы
-  const variants = [
-    `${sum.toFixed(2)}`,
-    `${sum.toFixed(2).replace(".", ",")}`,
-    `${sum.toFixed(2)}₽`,
-    `${sum.toFixed(2).replace(".", ",")}₽`,
-    `${sum.toFixed(2)} ₽`,
-    `${sum.toFixed(2).replace(".", ",")} ₽`,
-    `${sum.toFixed(2)} RUB`,
-    `${sum.toFixed(2).replace(".", ",")} RUB`,
-    `${sum.toFixed(2)} р`,
-    `${sum.toFixed(2).replace(".", ",")} р`,
-  ];
+        console.log(`📜 [${userId}] Фрагмент письма:`, body.slice(0, 150));
 
-  const matchedVariant = variants.find(v => body.includes(v));
-  if (matchedVariant) {
-    found = true;
-    foundUid = msg.attributes.uid;
-    console.log(`✅ [${userId}] Найдено письмо — найден вариант: "${matchedVariant}"`);
-    break;
-  }
-}
+        const variants = [
+          `${sum.toFixed(2)}`,
+          `${sum.toFixed(2).replace(".", ",")}`,
+          `${sum.toFixed(2)}₽`,
+          `${sum.toFixed(2).replace(".", ",")}₽`,
+          `${sum.toFixed(2)} ₽`,
+          `${sum.toFixed(2).replace(".", ",")} ₽`,
+          `${sum.toFixed(2)} RUB`,
+          `${sum.toFixed(2).replace(".", ",")} RUB`,
+          `${sum.toFixed(2)} р`,
+          `${sum.toFixed(2).replace(".", ",")} р`,
+        ];
 
-if (found && foundUid) {
-  await connection.addFlags(foundUid, ["\\Deleted"]);
-  await connection.expunge();
-  console.log(`🗑 [${userId}] Письмо с суммой удалено`);
-
-  const now = Date.now();
-  let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
-  let newExpiresAt = now + additionalMs;
-  if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
-    newExpiresAt = user.subscription.expiresAt + additionalMs;
-  }
-
-  user.subscription = { active: true, plan, expiresAt: newExpiresAt };
-  await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
-  await paymentsCollection.deleteOne({ userId });
-  delete activePayments[userId];
-
-  await connection.closeBox(true);
-  await connection.end();
-  clearInterval(timer);
-  console.log(`✅ Подписка активирована для пользователя ${userId}`);
-} else {
-  await connection.closeBox(true);
-  await connection.end();
-  console.log(`❌ [${userId}] Письмо с суммой ${sum.toFixed(2)} ₽ не найдено`);
-  if (messages.length > 0) {
-    const preview = (await simpleParser.simpleParser(messages[0].parts[0].body)).text?.slice(0, 300);
-    console.log("📄 Текст последнего письма:", preview);
-  }
-}
+        const matchedVariant = variants.find(v => body.includes(v));
+        if (matchedVariant) {
+          found = true;
+          foundUid = msg.attributes.uid;
+          console.log(`✅ [${userId}] Найдено письмо с суммой "${matchedVariant}"`);
+          break;
+        }
+      }
 
       if (found && foundUid) {
+        console.log(`🗑 [${userId}] Удаляем письмо с UID ${foundUid}`);
         await connection.addFlags(foundUid, ["\\Deleted"]);
         await connection.expunge();
-        console.log(`🗑 [${userId}] Письмо с суммой удалено`);
 
         const now = Date.now();
-        const addMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
-        let newExpiresAt = now + addMs;
+        let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+        let newExpiresAt = now + additionalMs;
+
         if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
-          newExpiresAt = user.subscription.expiresAt + addMs;
-          console.log(`⏩ [${userId}] Продление подписки, новые 30/90 дней добавлены`);
+          newExpiresAt = user.subscription.expiresAt + additionalMs;
+          console.log(`⏩ [${userId}] Подписка продлена, добавлено ${plan === "3m" ? "90" : "30"} дней`);
         }
 
         user.subscription = { active: true, plan, expiresAt: newExpiresAt };
         await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
         await paymentsCollection.deleteOne({ userId });
         delete activePayments[userId];
-
-        await connection.closeBox(true);
-        await connection.end();
         clearInterval(timer);
+
         console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
       } else {
-        await connection.closeBox(true);
-        await connection.end();
         console.log(`❌ [${userId}] Письмо с суммой ${sum.toFixed(2)} ₽ не найдено`);
       }
+
+      // Закрываем аккуратно
+      await connection.closeBox(true).catch(() => {});
+      await connection.end().catch(() => {});
     } catch (err) {
       console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message);
     }
