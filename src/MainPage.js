@@ -1087,6 +1087,8 @@ if (!isAuthorized) {
         <p style={{ margin: 0 }}>
           Активна до: <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
         </p>
+      ) : paymentPending ? (
+        <p style={{ margin: 0, color: "#ffcc00" }}>Ожидание оплаты...</p>
       ) : (
         <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
       )}
@@ -1234,6 +1236,7 @@ if (!isAuthorized) {
             onClick={async () => {
               try {
                 if (!selectedPeriod) return;
+
                 const res = await fetch("/subscription/generate-sum", {
                   method: "POST",
                   credentials: "include",
@@ -1241,9 +1244,29 @@ if (!isAuthorized) {
                   body: JSON.stringify({ plan: selectedPeriod === "3" ? "3m" : "1m" }),
                 });
                 const data = await res.json();
-                if (data.sum) setGeneratedSum(data.sum);
-                setShowPaymentModal(true);
-                setShowSbpModal(false);
+                if (data.sum) {
+                  setGeneratedSum(data.sum);
+                  setPaymentPending(true); // Включаем ожидание платежа
+                  setShowPaymentModal(true);
+                  setShowSbpModal(false);
+
+                  // Запускаем проверку подписки каждые 5 секунд
+                  const intervalId = setInterval(async () => {
+                    const statusRes = await fetch("/auth/status", {
+                      credentials: "include",
+                    });
+                    const statusData = await statusRes.json();
+                    if (statusData.user?.subscription?.active) {
+                      setUser(statusData.user);
+                      setPaymentPending(false);
+                      clearInterval(intervalId);
+                      setShowPaymentModal(false);
+                    }
+                  }, 5000);
+
+                  // Остановим проверку через 15 минут, если не будет оплаты
+                  setTimeout(() => clearInterval(intervalId), 15 * 60 * 1000);
+                }
               } catch (err) {
                 console.error(err);
                 alert("Ошибка генерации суммы");
@@ -1252,7 +1275,7 @@ if (!isAuthorized) {
             style={{
               padding: "11px 0",
               background: !selectedPeriod
-                ? "#888" // серый фон для заблокированной кнопки
+                ? "#888"
                 : "linear-gradient(90deg, #2787f5, #7a5cff)",
               color: "#fff",
               border: "none",
@@ -1275,7 +1298,6 @@ if (!isAuthorized) {
           >
             Оплатить
           </button>
-
         </div>
       </div>
     )}
@@ -1324,14 +1346,15 @@ if (!isAuthorized) {
 		  <div style={{ marginBottom: 14, textAlign: "center" }}>
             <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. 
           </div>
-		  
-          <div style={{ marginBottom: 8, textAlign: "center" }}>
+          
+		  <div style={{ marginBottom: 8, textAlign: "center" }}>
             <b>{generatedSum?.toFixed(2)} ₽</b>
           </div>
 
           <div style={{ marginBottom: 5 }}>
             <div>Номер телефона:</div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, marginBottom: 8, gap: 6 }}>
+            
+			<div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, marginBottom: 8, gap: 6 }}>
               <span>+7 (995) 896-29-51</span>
               <button
                 onClick={() => {

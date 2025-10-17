@@ -146,19 +146,16 @@ async function checkAuth(req, res, next) {
 // ---------------------- Subscription Logic ----------------------
 const activePayments = {};
 
-// Генерация суммы для выбранного тарифа
+// Генерация суммы для выбранного тарифа и запуск авто-проверки
 app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
   const user = req.session.user;
   const { plan } = req.body; // plan: "1m" или "3m"
   const base = plan === "3m" ? 289 : 99;
-
   const allCents = Array.from({ length: 99 }, (_, i) => i + 1);
 
   try {
-    // Удаляем просроченные
     await paymentsCollection.deleteMany({ expiresAt: { $lt: Date.now() } });
 
-    // Смотрим, какие уже заняты
     const activeDocs = await paymentsCollection.find({}).toArray();
     const usedCents = activeDocs
       .filter(d => Math.floor(d.sum) === base)
@@ -175,6 +172,9 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
     await paymentsCollection.insertOne({ userId: user.id, sum, expiresAt, plan });
     activePayments[user.id] = { sum, plan, expiresAt };
 
+    // Запускаем цикл проверки почты
+    startMailCheck(user.id);
+
     res.json({ success: true, sum });
   } catch (err) {
     console.error(err);
@@ -182,80 +182,95 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
   }
 });
 
-// Проверка оплаты по Mail.ru
-app.post("/subscription/check-mail", checkAuth, async (req, res) => {
-  const user = req.session.user;
-  const paymentDoc = await paymentsCollection.findOne({ userId: user.id });
-  if (!paymentDoc) return res.status(400).json({ success: false, error: "Сумма не сгенерирована" });
+// Функция запуска таймера проверки почты каждые 30 секунд до 15 минут
+function startMailCheck(userId) {
+  const intervalMs = 30 * 1000;
+  const maxTimeMs = 15 * 60 * 1000;
+  const startTime = Date.now();
 
-  const { sum, plan } = paymentDoc;
-
-  try {
-    const config = {
-      imap: {
-        user: process.env.MAILRU_USER,
-        password: process.env.MAILRU_PASSWORD,
-        host: "imap.mail.ru",
-        port: 993,
-        tls: true,
-      },
-    };
-
-    const connection = await imaps.connect(config);
-    await connection.openBox("INBOX");
-
-    const searchCriteria = ["UNSEEN"];
-    const fetchOptions = { bodies: ["TEXT"], markSeen: true };
-    const messages = await connection.search(searchCriteria, fetchOptions);
-
-    const sumRegex = new RegExp(`${sum.toFixed(2).replace(".", "[.,]")}`);
-    let found = false;
-    let foundUid = null;
-
-    for (const msg of messages) {
-      const textPart = msg.parts.find(p => p.which === "TEXT");
-      if (!textPart) continue;
-      const parsed = await simpleParser.simpleParser(textPart.body);
-      const body = parsed.text || parsed.html || "";
-      if (sumRegex.test(body)) {
-        found = true;
-        foundUid = msg.attributes.uid;
-        break;
-      }
+  const timer = setInterval(async () => {
+    const elapsed = Date.now() - startTime;
+    if (elapsed > maxTimeMs) {
+      clearInterval(timer);
+      delete activePayments[userId];
+      console.log(`⏱ Проверка почты для пользователя ${userId} остановлена (таймаут)`);
+      return;
     }
 
-    if (found && foundUid) {
-      await connection.addFlags(foundUid, ["\\Deleted"]);
-      await connection.expunge();
-
-      const now = Date.now();
-      let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
-
-      let newExpiresAt = now + additionalMs;
-      if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
-        newExpiresAt = user.subscription.expiresAt + additionalMs;
+    try {
+      const user = await usersCollection.findOne({ id: userId });
+      if (!user) {
+        clearInterval(timer);
+        return;
       }
 
-      user.subscription = { active: true, plan, expiresAt: newExpiresAt };
-      await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
-      req.session.user = user;
+      const paymentDoc = await paymentsCollection.findOne({ userId });
+      if (!paymentDoc) return;
 
-      await paymentsCollection.deleteOne({ userId: user.id });
-      delete activePayments[user.id];
+      const { sum, plan } = paymentDoc;
 
-      await connection.closeBox(true);
-      await connection.end();
-      return res.json({ success: true, subscription: user.subscription });
-    } else {
-      await connection.closeBox(true);
-      await connection.end();
-      return res.json({ success: false, message: "Платёж не найден" });
+      const config = {
+        imap: {
+          user: process.env.MAILRU_USER,
+          password: process.env.MAILRU_PASSWORD,
+          host: "imap.mail.ru",
+          port: 993,
+          tls: true,
+        },
+      };
+
+      const connection = await imaps.connect(config);
+      await connection.openBox("INBOX");
+
+      const searchCriteria = ["UNSEEN"];
+      const fetchOptions = { bodies: ["TEXT"], markSeen: true };
+      const messages = await connection.search(searchCriteria, fetchOptions);
+
+      const sumRegex = new RegExp(`${sum.toFixed(2).replace(".", "[.,]")}`);
+      let found = false;
+      let foundUid = null;
+
+      for (const msg of messages) {
+        const textPart = msg.parts.find(p => p.which === "TEXT");
+        if (!textPart) continue;
+        const parsed = await simpleParser.simpleParser(textPart.body);
+        const body = parsed.text || parsed.html || "";
+        if (sumRegex.test(body)) {
+          found = true;
+          foundUid = msg.attributes.uid;
+          break;
+        }
+      }
+
+      if (found && foundUid) {
+        await connection.addFlags(foundUid, ["\\Deleted"]);
+        await connection.expunge();
+
+        const now = Date.now();
+        let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+        let newExpiresAt = now + additionalMs;
+        if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
+          newExpiresAt = user.subscription.expiresAt + additionalMs;
+        }
+
+        user.subscription = { active: true, plan, expiresAt: newExpiresAt };
+        await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+        await paymentsCollection.deleteOne({ userId });
+        delete activePayments[userId];
+
+        await connection.closeBox(true);
+        await connection.end();
+        clearInterval(timer);
+        console.log(`✅ Подписка активирована для пользователя ${userId}`);
+      } else {
+        await connection.closeBox(true);
+        await connection.end();
+      }
+    } catch (err) {
+      console.error(`Ошибка проверки почты для пользователя ${userId}:`, err);
     }
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false, error: "Ошибка проверки почты" });
-  }
-});
+  }, intervalMs);
+}
 
 // ---- Функция для автообновления access token ----
 async function refreshAccessToken(user) {
