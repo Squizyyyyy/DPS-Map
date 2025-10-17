@@ -189,7 +189,7 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
 });
 
 function startMailCheck(userId) {
-  const intervalMs = 30 * 1000;
+  const intervalMs = 15 * 1000;
   const maxTimeMs = 15 * 60 * 1000;
   const startTime = Date.now();
 
@@ -236,7 +236,7 @@ function startMailCheck(userId) {
       await connection.openBox("INBOX");
 
       const searchCriteria = ["UNSEEN"];
-      const fetchOptions = { bodies: [""] };
+      const fetchOptions = { bodies: [""] }; // "" = весь BODY[]
       const messages = await connection.search(searchCriteria, fetchOptions);
 
       console.log(`📨 [${userId}] Найдено новых писем: ${messages.length}`);
@@ -267,40 +267,41 @@ function startMailCheck(userId) {
           found = true;
           foundUid = msg.attributes.uid;
           console.log(`✅ [${userId}] Найдено письмо с суммой "${matchedVariant}"`);
-          break;
+
+          // ⚡ Подписка активируется сразу после нахождения письма
+          console.log(`🗝 [${userId}] Активируем подписку прямо сейчас...`);
+          const now = Date.now();
+          let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+          let newExpiresAt = now + additionalMs;
+
+          if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
+            newExpiresAt = user.subscription.expiresAt + additionalMs;
+            console.log(`⏩ [${userId}] Подписка продлена, добавлено ${plan === "3m" ? "90" : "30"} дней`);
+          }
+
+          user.subscription = { active: true, plan, expiresAt: newExpiresAt };
+          await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+          await paymentsCollection.deleteOne({ userId });
+          delete activePayments[userId];
+          clearInterval(timer);
+
+          console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
+
+          // Удаляем письмо и закрываем соединение
+          await connection.addFlags(foundUid, ["\\Deleted"]);
+          await connection.closeBox(true).catch(() => {});
+          await connection.end().catch(() => {});
+
+          break; // ✅ Вышли из цикла после активации
         }
       }
 
-      if (found && foundUid) {
-        console.log(`🗑 [${userId}] Помечаем письмо с UID ${foundUid} на удаление`);
-        await connection.addFlags(foundUid, ["\\Deleted"]); 
-      }
-
-      // Сразу обновляем подписку до закрытия соединения
-      if (found && foundUid) {
-        const now = Date.now();
-        let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
-        let newExpiresAt = now + additionalMs;
-
-        if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
-          newExpiresAt = user.subscription.expiresAt + additionalMs;
-          console.log(`⏩ [${userId}] Подписка продлена, добавлено ${plan === "3m" ? "90" : "30"} дней`);
-        }
-
-        user.subscription = { active: true, plan, expiresAt: newExpiresAt };
-        await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
-        await paymentsCollection.deleteOne({ userId });
-        delete activePayments[userId];
-        clearInterval(timer);
-
-        console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
-      } else {
+      if (!found) {
         console.log(`❌ [${userId}] Письмо с суммой ${sum.toFixed(2)} ₽ не найдено`);
+        await connection.closeBox(true).catch(() => {});
+        await connection.end().catch(() => {});
       }
 
-      // Закрываем соединение и удаляем помеченные письма
-      await connection.closeBox(true);
-      await connection.end();
     } catch (err) {
       console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message);
     }
