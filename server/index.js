@@ -179,7 +179,8 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
     activePayments[user.id] = { sum, plan, expiresAt };
 
     console.log(`📩 [${user.id}] Запуск проверки писем...`);
-    startMailCheck(user.id);
+    // Передаём сессию, чтобы обновлять её сразу после активации
+    startMailCheck(user.id, req.session);
 
     res.json({ success: true, sum });
   } catch (err) {
@@ -188,8 +189,8 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
   }
 });
 
-function startMailCheck(userId) {
-  const intervalMs = 15 * 1000;
+function startMailCheck(userId, session) {
+  const intervalMs = 15 * 1000; // каждые 15 секунд
   const maxTimeMs = 15 * 60 * 1000;
   const startTime = Date.now();
 
@@ -236,7 +237,7 @@ function startMailCheck(userId) {
       await connection.openBox("INBOX");
 
       const searchCriteria = ["UNSEEN"];
-      const fetchOptions = { bodies: [""] }; // "" = весь BODY[]
+      const fetchOptions = { bodies: [""] };
       const messages = await connection.search(searchCriteria, fetchOptions);
 
       console.log(`📨 [${userId}] Найдено новых писем: ${messages.length}`);
@@ -244,7 +245,7 @@ function startMailCheck(userId) {
       let found = false;
       let foundUid = null;
 
-      // создаём гибкий регэксп для поиска суммы
+      // гибкий RegExp для поиска суммы (учёт копейки с нулём и без)
       const sumRegex = new RegExp(sum.toFixed(2).replace(".", "[.,]").replace(/0$/, "0?") + "(\\s?₽)?");
 
       for (const msg of messages) {
@@ -263,8 +264,7 @@ function startMailCheck(userId) {
           foundUid = msg.attributes.uid;
           console.log(`✅ [${userId}] Найдено письмо с суммой (регэксп): ${sum}`);
 
-          // ⚡ Подписка активируется сразу после нахождения письма
-          console.log(`🗝 [${userId}] Активируем подписку прямо сейчас...`);
+          // активируем подписку
           const now = Date.now();
           let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
           let newExpiresAt = now + additionalMs;
@@ -276,18 +276,22 @@ function startMailCheck(userId) {
 
           user.subscription = { active: true, plan, expiresAt: newExpiresAt };
           await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
+
+          // ⚡ Обновляем сессию, чтобы подписка сразу появилась у пользователя
+          if (session) {
+            session.user.subscription = user.subscription;
+          }
+
           await paymentsCollection.deleteOne({ userId });
           delete activePayments[userId];
           clearInterval(timer);
 
           console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
 
-          // Удаляем письмо и закрываем соединение
           await connection.addFlags(foundUid, ["\\Deleted"]);
           await connection.closeBox(true).catch(() => {});
           await connection.end().catch(() => {});
-
-          break; // ✅ Вышли из цикла после активации
+          break;
         }
       }
 
@@ -296,7 +300,6 @@ function startMailCheck(userId) {
         await connection.closeBox(true).catch(() => {});
         await connection.end().catch(() => {});
       }
-
     } catch (err) {
       console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message);
     }
