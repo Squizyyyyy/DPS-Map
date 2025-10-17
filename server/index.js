@@ -236,7 +236,7 @@ function startMailCheck(userId) {
       await connection.openBox("INBOX");
 
       const searchCriteria = ["UNSEEN"];
-      const fetchOptions = { bodies: [""] }; // "" = весь BODY[]
+      const fetchOptions = { bodies: [""] };
       const messages = await connection.search(searchCriteria, fetchOptions);
 
       console.log(`📨 [${userId}] Найдено новых писем: ${messages.length}`);
@@ -272,14 +272,11 @@ function startMailCheck(userId) {
       }
 
       if (found && foundUid) {
-        console.log(`🗑 [${userId}] Удаляем письмо с UID ${foundUid}`);
-        await connection.addFlags(foundUid, ["\\Deleted"]); // помечаем на удаление
+        console.log(`🗑 [${userId}] Помечаем письмо с UID ${foundUid} на удаление`);
+        await connection.addFlags(foundUid, ["\\Deleted"]); 
       }
 
-      // Закрытие ящика удаляет помеченные письма
-      await connection.closeBox(true).catch(() => {});
-      await connection.end().catch(() => {});
-
+      // Сразу обновляем подписку до закрытия соединения
       if (found && foundUid) {
         const now = Date.now();
         let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
@@ -300,6 +297,10 @@ function startMailCheck(userId) {
       } else {
         console.log(`❌ [${userId}] Письмо с суммой ${sum.toFixed(2)} ₽ не найдено`);
       }
+
+      // Закрываем соединение и удаляем помеченные письма
+      await connection.closeBox(true);
+      await connection.end();
     } catch (err) {
       console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message);
     }
