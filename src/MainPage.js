@@ -1089,7 +1089,9 @@ if (!isAuthorized) {
           Активна до: <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
         </p>
       ) : paymentPending ? (
-        <p style={{ margin: 0, color: "#ffcc00" }}>Ожидание оплаты...</p>
+        <p style={{ margin: 0, color: "#ffcc00" }}>
+          Ожидание оплаты<span className="dots"></span>
+        </p>
       ) : (
         <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
       )}
@@ -1248,10 +1250,10 @@ if (!isAuthorized) {
 
                   // Проверка статуса подписки
                   const intervalId = setInterval(async () => {
-                    const statusRes = await fetch("/auth/status", { credentials: "include" });
+                    const statusRes = await fetch("/subscription/status", { credentials: "include" });
                     const statusData = await statusRes.json();
-                    if (statusData.user?.subscription?.active) {
-                      setUser(statusData.user);
+                    if (statusData.subscription?.active) {
+                      setUser((prev) => ({ ...prev, subscription: statusData.subscription }));
                       setPaymentPending(false);
                       clearInterval(intervalId);
                     }
@@ -1392,6 +1394,25 @@ if (!isAuthorized) {
         </div>
       </div>
     )}
+	
+	{/* Стили для анимации точек */}
+    <style>
+      {`
+        .dots::after {
+          content: "";
+          display: inline-block;
+          width: 0.8em;
+          text-align: left;
+          animation: dots 1s steps(3, end) infinite;
+        }
+        @keyframes dots {
+          0%, 20% { content: ""; }
+          40% { content: "."; }
+          60% { content: ".."; }
+          80%, 100% { content: "..."; }
+        }
+      `}
+    </style>
   </div>
 )}
         </main>

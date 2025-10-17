@@ -465,6 +465,25 @@ app.get("/auth/status", async (req, res) => {
   res.json({ authorized: true, user });
 });
 
+// ---------------------- Subscription Status ----------------------
+app.get("/subscription/status", checkAuth, async (req, res) => {
+  try {
+    const user = await usersCollection.findOne({ id: req.session.user.id });
+    if (!user) return res.status(404).json({ success: false });
+
+    // Обновляем сессию, чтобы фронтенд видел актуальные данные сразу
+    req.session.user.subscription = user.subscription || null;
+
+    res.json({
+      success: true,
+      subscription: user.subscription || null,
+    });
+  } catch (err) {
+    console.error("Ошибка получения статуса подписки:", err);
+    res.status(500).json({ success: false, error: "Ошибка сервера" });
+  }
+});
+
 // ---- Logout ----
 app.post("/auth/logout", (req, res) => {
   req.session.destroy(() => {
