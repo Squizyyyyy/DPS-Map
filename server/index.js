@@ -26,6 +26,7 @@ const client = new MongoClient(MONGO_URI);
 let markersCollection;
 let actionsCollection;
 let usersCollection;
+let paymentsCollection;
 
 // ---------------------- Middlewares ----------------------
 app.set("trust proxy", 1);
@@ -38,7 +39,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
+      maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: "lax",
     },
@@ -53,13 +54,15 @@ async function startServer() {
     markersCollection = db.collection("markers");
     actionsCollection = db.collection("actions");
     usersCollection = db.collection("users");
+    paymentsCollection = db.collection("payments");
 
     await actionsCollection.createIndex({ ip: 1, action: 1 }, { unique: true });
     await usersCollection.createIndex({ id: 1 }, { unique: true });
+    await paymentsCollection.createIndex({ sum: 1 }, { unique: true });
+    await paymentsCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-    console.log("✅ Подключено к MongoDB");
+    console.log("✅ MongoDB подключена, коллекции готовы");
 
-    // Запускаем проверку статусов меток каждые 5 минут
     setInterval(updateMarkersStatus, 5 * 60 * 1000);
 
     app.listen(PORT, () => {
@@ -84,8 +87,7 @@ async function getAddress(lat, lng) {
     if (!data.address) return "Адрес не найден";
     const { house_number, road, suburb, neighbourhood, city, town } = data.address;
     return [house_number, road, suburb || neighbourhood, city || town].filter(Boolean).join(", ");
-  } catch (error) {
-    console.error("Ошибка получения адреса:", error);
+  } catch {
     return "Адрес не найден";
   }
 }
@@ -95,11 +97,7 @@ async function checkRateLimit(ip, action) {
   const limitMs = 15 * 60 * 1000;
   const record = await actionsCollection.findOne({ ip, action });
   if (record && now - record.timestamp < limitMs) return false;
-  await actionsCollection.updateOne(
-    { ip, action },
-    { $set: { timestamp: now } },
-    { upsert: true }
-  );
+  await actionsCollection.updateOne({ ip, action }, { $set: { timestamp: now } }, { upsert: true });
   return true;
 }
 
@@ -113,7 +111,7 @@ function parseIdToken(idToken) {
     const parts = idToken.split(".");
     if (parts.length !== 3) return null;
     return JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -136,56 +134,61 @@ function mapClaimsToUser(claims) {
 
 // ---------------------- Auth Middleware ----------------------
 async function checkAuth(req, res, next) {
-  if (!req.session.user) {
-    return res.status(401).json({ error: "Не авторизован" });
-  }
-
+  if (!req.session.user) return res.status(401).json({ error: "Не авторизован" });
   const userInDb = await usersCollection.findOne({ id: req.session.user.id });
   if (!userInDb) {
     req.session.destroy(() => {});
     return res.status(401).json({ error: "Пользователь не найден" });
   }
-
   next();
 }
 
 // ---------------------- Subscription Logic ----------------------
-
-// Словарь для хранения сгенерированных сумм и их таймеров
 const activePayments = {};
 
-// Генерация уникальной суммы
+// Генерация суммы для выбранного тарифа
 app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
   const user = req.session.user;
-  const cents = Math.floor(Math.random() * 99) + 1; // 1..99
-  const sum = 99 + cents / 100;
+  const { plan } = req.body; // plan: "1m" или "3m"
+  const base = plan === "3m" ? 289 : 99;
 
-  if (activePayments[user.id]) clearTimeout(activePayments[user.id].timer);
+  const allCents = Array.from({ length: 99 }, (_, i) => i + 1);
 
-  activePayments[user.id] = {
-    sum,
-    start: Date.now(),
-    timer: setTimeout(() => {
-      console.log(`[Subscription] Время истекло для пользователя ${user.id}, сумма удалена`);
-      delete activePayments[user.id];
-    }, 15 * 60 * 1000),
-  };
+  try {
+    // Удаляем просроченные
+    await paymentsCollection.deleteMany({ expiresAt: { $lt: Date.now() } });
 
-  console.log(`[Subscription] Сгенерирована сумма ${sum.toFixed(2)} для пользователя ${user.id}`);
-  res.json({ sum });
+    // Смотрим, какие уже заняты
+    const activeDocs = await paymentsCollection.find({}).toArray();
+    const usedCents = activeDocs
+      .filter(d => Math.floor(d.sum) === base)
+      .map(d => Math.round((d.sum - base) * 100));
+    const freeCents = allCents.filter(c => !usedCents.includes(c));
+
+    if (freeCents.length === 0)
+      return res.status(500).json({ success: false, error: "Нет доступных сумм" });
+
+    const cents = freeCents[Math.floor(Math.random() * freeCents.length)];
+    const sum = base + cents / 100;
+    const expiresAt = Date.now() + 15 * 60 * 1000;
+
+    await paymentsCollection.insertOne({ userId: user.id, sum, expiresAt, plan });
+    activePayments[user.id] = { sum, plan, expiresAt };
+
+    res.json({ success: true, sum });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Ошибка генерации суммы" });
+  }
 });
 
-// Проверка почты Mail.ru на наличие оплаты
+// Проверка оплаты по Mail.ru
 app.post("/subscription/check-mail", checkAuth, async (req, res) => {
   const user = req.session.user;
-  const payment = activePayments[user.id];
+  const paymentDoc = await paymentsCollection.findOne({ userId: user.id });
+  if (!paymentDoc) return res.status(400).json({ success: false, error: "Сумма не сгенерирована" });
 
-  if (!payment) {
-    console.log(`[Subscription] Пользователь ${user.id} попытался проверить оплату без сгенерированной суммы`);
-    return res.status(400).json({ success: false, error: "Сумма не сгенерирована" });
-  }
-
-  const { sum } = payment;
+  const { sum, plan } = paymentDoc;
 
   try {
     const config = {
@@ -195,67 +198,62 @@ app.post("/subscription/check-mail", checkAuth, async (req, res) => {
         host: "imap.mail.ru",
         port: 993,
         tls: true,
-        authTimeout: 3000,
       },
     };
 
-    console.log(`[Subscription] Подключение к Mail.ru для пользователя ${user.id}...`);
     const connection = await imaps.connect(config);
     await connection.openBox("INBOX");
-    console.log(`[Subscription] Открыта папка INBOX`);
 
     const searchCriteria = ["UNSEEN"];
-    const fetchOptions = { bodies: ["HEADER.FIELDS (FROM TO SUBJECT DATE)", "TEXT"], markSeen: true };
-
+    const fetchOptions = { bodies: ["TEXT"], markSeen: true };
     const messages = await connection.search(searchCriteria, fetchOptions);
-    console.log(`[Subscription] Найдено ${messages.length} новых писем`);
 
+    const sumRegex = new RegExp(`${sum.toFixed(2).replace(".", "[.,]")}`);
     let found = false;
-    const sumRegex = new RegExp(`${sum.toFixed(2).replace(".", "[.,]")}\\s*₽`);
+    let foundUid = null;
 
-    for (const [index, item] of messages.entries()) {
-      const all = item.parts.find((p) => p.which === "TEXT");
-      if (!all) continue;
-
-      const parsed = await simpleParser(all.body);
+    for (const msg of messages) {
+      const textPart = msg.parts.find(p => p.which === "TEXT");
+      if (!textPart) continue;
+      const parsed = await simpleParser.simpleParser(textPart.body);
       const body = parsed.text || parsed.html || "";
-
-      console.log(`[Subscription] Письмо ${index + 1}:\n${body.substring(0, 300)}...`); // лог первых 300 символов
-
       if (sumRegex.test(body)) {
-        console.log(`[Subscription] Оплата найдена для пользователя ${user.id}, сумма: ${sum.toFixed(2)}`);
         found = true;
+        foundUid = msg.attributes.uid;
         break;
       }
     }
 
-    await connection.end();
-    console.log(`[Subscription] Подключение к Mail.ru закрыто`);
+    if (found && foundUid) {
+      await connection.addFlags(foundUid, ["\\Deleted"]);
+      await connection.expunge();
 
-    if (found) {
       const now = Date.now();
-      const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
+      let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
 
-      user.subscription = {
-        active: true,
-        plan: "basic",
-        expiresAt,
-      };
+      let newExpiresAt = now + additionalMs;
+      if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
+        newExpiresAt = user.subscription.expiresAt + additionalMs;
+      }
 
+      user.subscription = { active: true, plan, expiresAt: newExpiresAt };
       await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
       req.session.user = user;
 
-      clearTimeout(activePayments[user.id].timer);
+      await paymentsCollection.deleteOne({ userId: user.id });
       delete activePayments[user.id];
 
+      await connection.closeBox(true);
+      await connection.end();
       return res.json({ success: true, subscription: user.subscription });
     } else {
-      console.log(`[Subscription] Платёж не найден для пользователя ${user.id}`);
+      await connection.closeBox(true);
+      await connection.end();
       return res.json({ success: false, message: "Платёж не найден" });
     }
   } catch (err) {
-    console.error(`[Subscription] Ошибка при проверке почты для пользователя ${user.id}:`, err);
-    return res.status(500).json({ success: false, error: "Ошибка проверки платежа" });
+    console.error(err);
+    return res.status(500).json({ success: false, error: "Ошибка проверки почты" });
   }
 });
 

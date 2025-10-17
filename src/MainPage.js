@@ -1116,7 +1116,7 @@ if (!isAuthorized) {
         style={{
           display: "block",
           marginTop: 7,
-		  marginBottom: 7,
+          marginBottom: 7,
           padding: "14px 0",
           background: "linear-gradient(90deg, #2787f5, #7a5cff)",
           color: "#fff",
@@ -1157,8 +1157,8 @@ if (!isAuthorized) {
           alignItems: "center",
           justifyContent: "center",
           zIndex: 10000,
-		  padding: "16px",
-		  boxSizing: "border-box",
+          padding: "16px",
+          boxSizing: "border-box",
         }}
       >
         <div
@@ -1166,19 +1166,18 @@ if (!isAuthorized) {
             background: "#0a1f33",
             borderRadius: 20,
             padding: "20px",
-			width: "calc(100% - 32px)",
+            width: "calc(100% - 32px)",
             maxWidth: 400,
             textAlign: "center",
             color: "#fff",
             display: "flex",
             flexDirection: "column",
             gap: 20,
-			boxSizing: "border-box",
+            boxSizing: "border-box",
             position: "relative",
           }}
         >
-		
-		{/* Крестик */}
+          {/* Крестик */}
           <button
             onClick={() => setShowSbpModal(false)}
             style={{
@@ -1195,7 +1194,7 @@ if (!isAuthorized) {
           >
             ×
           </button>
-		  
+
           <h2>Выберите период</h2>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
             {/* 1 месяц */}
@@ -1205,28 +1204,22 @@ if (!isAuthorized) {
                 flex: 1,
                 padding: "12px 0",
                 borderRadius: 12,
-                border:
-                  selectedPeriod === "1"
-                    ? "2px solid #2787f5"
-                    : "2px solid transparent",
+                border: selectedPeriod === "1" ? "2px solid #2787f5" : "2px solid transparent",
                 cursor: "pointer",
               }}
             >
               <div style={{ fontWeight: 600 }}>1 месяц</div>
               {selectedPeriod === "1" && <div style={{ marginTop: 6 }}>99₽</div>}
             </div>
-            
-			{/* 3 месяца */}
+
+            {/* 3 месяца */}
             <div
               onClick={() => setSelectedPeriod("3")}
               style={{
                 flex: 1,
                 padding: "12px 0",
                 borderRadius: 12,
-                border:
-                  selectedPeriod === "3"
-                    ? "2px solid #2787f5"
-                    : "2px solid transparent",
+                border: selectedPeriod === "3" ? "2px solid #2787f5" : "2px solid transparent",
                 cursor: "pointer",
               }}
             >
@@ -1237,12 +1230,15 @@ if (!isAuthorized) {
 
           {/* Кнопка Оплатить генерирует сумму */}
           <button
+            disabled={!selectedPeriod}
             onClick={async () => {
               try {
-                // Генерируем сумму на сервере
+                if (!selectedPeriod) return;
                 const res = await fetch("/subscription/generate-sum", {
                   method: "POST",
                   credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ plan: selectedPeriod === "3" ? "3m" : "1m" }),
                 });
                 const data = await res.json();
                 if (data.sum) setGeneratedSum(data.sum);
@@ -1255,20 +1251,31 @@ if (!isAuthorized) {
             }}
             style={{
               padding: "11px 0",
-              background: "linear-gradient(90deg, #2787f5, #7a5cff)",
+              background: !selectedPeriod
+                ? "#888" // серый фон для заблокированной кнопки
+                : "linear-gradient(90deg, #2787f5, #7a5cff)",
               color: "#fff",
               border: "none",
               width: "70%",
               borderRadius: 16,
-              cursor: "pointer",
+              cursor: selectedPeriod ? "pointer" : "not-allowed",
               fontWeight: 600,
               fontSize: 16,
               transition: "all 0.2s",
               alignSelf: "center",
             }}
+            onMouseEnter={(e) => {
+              if (selectedPeriod)
+                e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #693bff)";
+            }}
+            onMouseLeave={(e) => {
+              if (selectedPeriod)
+                e.currentTarget.style.background = "linear-gradient(90deg, #2787f5, #7a5cff)";
+            }}
           >
             Оплатить
           </button>
+
         </div>
       </div>
     )}
@@ -1287,7 +1294,7 @@ if (!isAuthorized) {
           alignItems: "center",
           justifyContent: "center",
           zIndex: 10000,
-		  padding: "16px",
+          padding: "16px",
           boxSizing: "border-box",
         }}
       >
@@ -1295,7 +1302,7 @@ if (!isAuthorized) {
           style={{
             background: "#0a1f33",
             borderRadius: 20,
-			padding: "20px",
+            padding: "20px",
             width: "calc(100% - 32px)",
             maxWidth: 400,
             textAlign: "center",
@@ -1304,80 +1311,52 @@ if (!isAuthorized) {
             flexDirection: "column",
             boxSizing: "border-box",
             position: "relative",
-			fontSize: 15,
+            fontSize: 15,
           }}
         >
-
-          <h2 style={{ textAlign: "center", marginBottom: 22, }}>
-            Реквизиты для оплаты
-          </h2>
-
-          <div style={{ marginBottom: 8, textAlign: "center" }}>
+          <h2 style={{ textAlign: "center", marginBottom: 22 }}>Реквизиты для оплаты</h2>
+          
+		  <div style={{ marginBottom: 8, textAlign: "center" }}>
             Для проведения оплаты необходимо совершить перевод через СБП на сумму,
             указанную на экране, по реквизитам, указанным ниже.
           </div>
           
 		  <div style={{ marginBottom: 14, textAlign: "center" }}>
             <b>Внимание!</b> Переводить следует ровно указанную сумму <b>до копейки</b>. 
-            В противном случае платёж не инициализируется системой и дальнейшее решение возможно только через службу поддержки.
           </div>
 		  
-		  <div style={{ marginBottom: 8, textAlign: "center" }}>
+          <div style={{ marginBottom: 8, textAlign: "center" }}>
             <b>{generatedSum?.toFixed(2)} ₽</b>
           </div>
 
-          <div style={{ marginBottom: 5, }}>
+          <div style={{ marginBottom: 5 }}>
             <div>Номер телефона:</div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, marginBottom: 8, gap: 6, }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, marginBottom: 8, gap: 6 }}>
               <span>+7 (995) 896-29-51</span>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText("9958962951");
-                setShowCopiedNotification(true);
-                setTimeout(() => setShowCopiedNotification(false), 2000);
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-                margin: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              title="Скопировать номер"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M4 1a1 1 0 0 0-1 1v10h1V2h8V1H4z"/>
-                <path d="M5 3a1 1 0 0 0-1 1v10h9a1 1 0 0 0 1-1V3H5zm1 1h7v9H6V4z"/>
-              </svg>
-            </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText("9958962951");
+                  setShowCopiedNotification(true);
+                  setTimeout(() => setShowCopiedNotification(false), 2000);
+                }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, margin: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                title="Скопировать номер"
+              >
+                {/* svg */}
+              </button>
+            </div>
           </div>
-		</div>
 
           {showCopiedNotification && (
-            <div
-              style={{
-                position: "fixed",
-                bottom: "15%",
-                left: "50%",
-                transform: "translateX(-50%)",
-                background: "#000",
-                color: "#fff",
-                padding: "6px 12px",
-                borderRadius: 10,
-                opacity: 0.9,
-              }}
-            >
+            <div style={{ position: "fixed", bottom: "15%", left: "50%", transform: "translateX(-50%)", background: "#000", color: "#fff", padding: "6px 12px", borderRadius: 10, opacity: 0.9 }}>
               Номер скопирован!
             </div>
           )}
 
-          <div style={{ marginBottom: 5, }}>
-          <div>Банк получателя:</div>
-          <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 20, }}>Юмани (Юmoney)</div>
-        </div>
+          <div style={{ marginBottom: 5 }}>
+            <div>Банк получателя:</div>
+            <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 20 }}>Юмани (Юmoney)</div>
+          </div>
 
           <button
             onClick={() => setShowPaymentModal(false)}
