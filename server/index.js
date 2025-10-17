@@ -205,7 +205,6 @@ function startMailCheck(userId) {
     }
 
     try {
-      console.log(`📬 [${userId}] Подключаемся к IMAP...`);
       const user = await usersCollection.findOne({ id: userId });
       if (!user) {
         console.log(`⚠️ [${userId}] Пользователь не найден`);
@@ -229,6 +228,7 @@ function startMailCheck(userId) {
           host: "imap.mail.ru",
           port: 993,
           tls: true,
+          authTimeout: 10000,
         },
       };
 
@@ -236,7 +236,7 @@ function startMailCheck(userId) {
       await connection.openBox("INBOX");
 
       const searchCriteria = ["UNSEEN"];
-      const fetchOptions = { bodies: ["TEXT"], markSeen: true };
+      const fetchOptions = { bodies: [""] }; // "" = весь BODY[]
       const messages = await connection.search(searchCriteria, fetchOptions);
 
       console.log(`📨 [${userId}] Найдено новых писем: ${messages.length}`);
@@ -245,29 +245,21 @@ function startMailCheck(userId) {
       let foundUid = null;
 
       for (const msg of messages) {
-        const textPart = msg.parts.find(p => p.which === "TEXT");
-        if (!textPart) continue;
-
-        const parsed = await simpleParser(textPart.body);
-        let body = (parsed.text || parsed.html || "")
+        const rawBody = msg.parts.map(p => p.body).join("\n");
+        const parsed = await simpleParser(rawBody);
+        const body = (parsed.text || parsed.html || "")
           .replace(/\u00A0/g, " ")
           .replace(/&nbsp;/g, " ")
           .replace(/\s+/g, " ")
           .trim();
 
-        console.log(`📜 [${userId}] Фрагмент письма:`, body.slice(0, 150));
+        console.log(`📜 [${userId}] Фрагмент письма:\n${body.slice(0, 500)}\n---`);
 
         const variants = [
           `${sum.toFixed(2)}`,
           `${sum.toFixed(2).replace(".", ",")}`,
-          `${sum.toFixed(2)}₽`,
-          `${sum.toFixed(2).replace(".", ",")}₽`,
           `${sum.toFixed(2)} ₽`,
           `${sum.toFixed(2).replace(".", ",")} ₽`,
-          `${sum.toFixed(2)} RUB`,
-          `${sum.toFixed(2).replace(".", ",")} RUB`,
-          `${sum.toFixed(2)} р`,
-          `${sum.toFixed(2).replace(".", ",")} р`,
         ];
 
         const matchedVariant = variants.find(v => body.includes(v));
@@ -304,7 +296,6 @@ function startMailCheck(userId) {
         console.log(`❌ [${userId}] Письмо с суммой ${sum.toFixed(2)} ₽ не найдено`);
       }
 
-      // Закрываем аккуратно
       await connection.closeBox(true).catch(() => {});
       await connection.end().catch(() => {});
     } catch (err) {
