@@ -1248,19 +1248,33 @@ if (!isAuthorized) {
                   setShowPaymentModal(true);
                   setShowSbpModal(false);
 
-                  // Проверка статуса подписки
-                  const intervalId = setInterval(async () => {
-                    const statusRes = await fetch("/subscription/status", { credentials: "include" });
-                    const statusData = await statusRes.json();
-                    if (statusData.subscription?.active) {
-                      setUser((prev) => ({ ...prev, subscription: statusData.subscription }));
-                      setPaymentPending(false);
-                      clearInterval(intervalId);
+                  // Сразу обновляем подписку после оплаты
+                  const updateSubscription = async () => {
+                    try {
+                      const statusRes = await fetch("/auth/status", { credentials: "include" });
+                      const statusData = await statusRes.json();
+                      if (statusData.user?.subscription?.active) {
+                        setUser(statusData.user);
+                        setPaymentPending(false);
+                        return true;
+                      }
+                    } catch (err) {
+                      console.error("Ошибка обновления подписки:", err);
                     }
+                    return false;
+                  };
+
+                  // Запускаем проверку каждые 5 секунд, но моментально обновим, если уже есть
+                  let intervalId = setInterval(async () => {
+                    const updated = await updateSubscription();
+                    if (updated) clearInterval(intervalId);
                   }, 5000);
 
                   // Авто-очистка интервала через 15 минут
                   setTimeout(() => clearInterval(intervalId), 15 * 60 * 1000);
+
+                  // Моментальная проверка при открытии модалки
+                  await updateSubscription();
                 }
               } catch (err) {
                 console.error(err);
@@ -1354,10 +1368,23 @@ if (!isAuthorized) {
                   setShowCopiedNotification(true);
                   setTimeout(() => setShowCopiedNotification(false), 2000);
                 }}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, margin: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                style={{
+				  background: "none",
+				  border: "none",
+				  cursor: "pointer",
+				  padding: 0,
+				  margin: 0,
+				  display: "flex",
+				  alignItems: "center",
+				  justifyContent: "center",
+				}}
                 title="Скопировать номер"
               >
                 {/* svg */}
+				<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M4 1a1 1 0 0 0-1 1v10h1V2h8V1H4z"/>
+                  <path d="M5 3a1 1 0 0 0-1 1v10h9a1 1 0 0 0 1-1V3H5zm1 1h7v9H6V4z"/>
+                </svg>
               </button>
             </div>
           </div>
