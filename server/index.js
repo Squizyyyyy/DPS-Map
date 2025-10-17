@@ -144,8 +144,6 @@ async function checkAuth(req, res, next) {
 }
 
 // ---------------------- Subscription Logic ----------------------
-import { simpleParser } from "mailparser"; // ✅ правильный импорт
-
 const activePayments = {};
 
 app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
