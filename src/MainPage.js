@@ -38,6 +38,7 @@ export default function MainPage() {
   const [selectedPeriod, setSelectedPeriod] = React.useState(null);
   const [showCopiedNotification, setShowCopiedNotification] = React.useState(false);
   const [generatedSum, setGeneratedSum] = useState(null);
+  const [paymentPending, setPaymentPending] = useState(false);
 
   const isMapActive = activeTab === "map";
   
@@ -1246,7 +1247,7 @@ if (!isAuthorized) {
                 const data = await res.json();
                 if (data.sum) {
                   setGeneratedSum(data.sum);
-                  setPaymentPending(true); // Включаем ожидание платежа
+                  setPaymentPending(true);
                   setShowPaymentModal(true);
                   setShowSbpModal(false);
 
