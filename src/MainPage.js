@@ -831,7 +831,7 @@ if (!isAuthorized) {
     <button
       onClick={handleLogout}
       style={{
-		padding: "12px 0",
+		padding: "10px 0",
         background: "#d9534f",
         border: "none",
 		borderRadius: 16,
@@ -1251,12 +1251,10 @@ if (!isAuthorized) {
 				  let intervalId;
                   let timeoutId;
 
-                  // Функция обновления подписки с автозакрытием модалки
-                  const updateSubscription = async () => {
+                  // Функция опроса подписки
+                  const pollSubscription = async () => {
                     try {
-                      const statusRes = await fetch("/auth/status", {
-                        credentials: "include",
-                      });
+                      const statusRes = await fetch("/auth/status", { credentials: "include", cache: "no-store" });
                       const statusData = await statusRes.json();
                       if (statusData.user?.subscription?.active) {
                         setUser((prev) => ({
@@ -1265,6 +1263,8 @@ if (!isAuthorized) {
                         }));
                         setPaymentPending(false);
                         setShowPaymentModal(false);
+
+                        // Очистка таймеров
                         clearInterval(intervalId);
                         clearTimeout(timeoutId);
                         return true;
@@ -1276,9 +1276,7 @@ if (!isAuthorized) {
                   };
 
                   // Проверка каждые 5 секунд
-                  intervalId = setInterval(async () => {
-                    await updateSubscription();
-                  }, 5000);
+                  intervalId = setInterval(pollSubscription, 5000);
 
                   // Авто-очистка через 15 минут
                   timeoutId = setTimeout(() => {
@@ -1286,14 +1284,14 @@ if (!isAuthorized) {
                     setPaymentPending(false);
                   }, 15 * 60 * 1000);
 
-                  // Очистка при размонтировании
+                  // Очистка при закрытии вкладки
                   window.addEventListener("beforeunload", () => {
                     clearInterval(intervalId);
                     clearTimeout(timeoutId);
                   });
 
-                  // Моментальная проверка сразу
-                  await updateSubscription();
+                  // Мгновенная проверка сразу
+                  await pollSubscription();
                 }
               } catch (err) {
                 console.error(err);
