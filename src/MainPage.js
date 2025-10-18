@@ -1169,7 +1169,7 @@ if (!isAuthorized) {
           }}
           style={{
             padding: "14px 0",
-            background: "linear-gradient(90deg, #008000, #19ff19)",
+            background: "linear-gradient(90deg, #00e600, #19ff19)",
             color: "#fff",
             border: "none",
             borderRadius: 16,
@@ -1180,7 +1180,7 @@ if (!isAuthorized) {
             transition: "all 0.2s",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #693bff)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #008000, #19ff19)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #00e600, #19ff19)")}
         >
           Я завершил оплату
         </button>

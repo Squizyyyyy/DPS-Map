@@ -278,37 +278,27 @@ function startMailCheck(userId, session) {
           // Обновляем БД
           await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
 
-          // Обновляем сессию, чтобы подписка сразу появилась у пользователя
+          // ---- Сессия сразу синхронизируется с БД ----
           try {
             if (session) {
               session.user = session.user || {};
               session.user.subscription = user.subscription;
 
-              // Теперь session.save() ожидается через Promise
               await new Promise((resolve, reject) => {
-                session.save((err) => {
-                  if (err) {
-                    console.error(`❗ [${userId}] Ошибка сохранения сессии:`, err);
-                    reject(err);
-                  } else {
-                    console.log(`🔁 [${userId}] Сессия успешно обновлена (подписка)`);
-                    resolve();
-                  }
-                });
+                session.save((err) => (err ? reject(err) : resolve()));
               });
+
+              console.log(`🔁 [${userId}] Сессия обновлена после активации подписки`);
             }
           } catch (se) {
-            console.error(`❗ [${userId}] Ошибка при попытке обновить сессию:`, se);
+            console.error(`❗ [${userId}] Ошибка сохранения сессии:`, se);
           }
+          // --------------------------------------------------------------
 
-          // Удаляем запись о платеже и из activePayments
           await paymentsCollection.deleteOne({ userId });
           delete activePayments[userId];
           clearInterval(timer);
 
-          console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
-
-          // помечаем письмо для удаления
           try {
             await connection.addFlags(foundUid, ["\\Deleted"]);
           } catch (ferr) {
@@ -317,6 +307,7 @@ function startMailCheck(userId, session) {
 
           await connection.closeBox(true).catch(() => {});
           await connection.end().catch(() => {});
+          console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
           break;
         }
       }
@@ -331,6 +322,31 @@ function startMailCheck(userId, session) {
     }
   }, intervalMs);
 }
+
+// ---------------------- Новый endpoint для актуального статуса ----------------------
+app.get("/auth/status", async (req, res) => {
+  try {
+    if (!req.session.user?.id) return res.json({ user: null });
+
+    const userId = req.session.user.id;
+    const freshUser = await usersCollection.findOne({ id: userId });
+
+    if (!freshUser) return res.json({ user: null });
+
+    // Обновляем сессию
+    req.session.user = req.session.user || {};
+    req.session.user.subscription = freshUser.subscription;
+
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => (err ? reject(err) : resolve()));
+    });
+
+    return res.json({ user: freshUser });
+  } catch (err) {
+    console.error("Ошибка получения статуса пользователя:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 // ---- Функция для автообновления access token ----
 async function refreshAccessToken(user) {
