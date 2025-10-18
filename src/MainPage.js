@@ -72,39 +72,39 @@ export default function MainPage() {
     document.documentElement.style.height = "100%";
   }, []);
 
-// Проверка сессии при загрузке
-useEffect(() => {
-  (async () => {
-    try {
-      const res = await fetch("/auth/status", { credentials: "include" });
-      const data = await res.json();
+  // Проверка сессии при загрузке
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/auth/status", { credentials: "include" });
+        const data = await res.json();
 
-      if (data.authorized) {
-        const userData = data.user;
+        if (data.authorized) {
+          const userData = data.user;
 
-        setUser(userData);
-        setIsAuthorized(true);
+          setUser(userData);
+          setIsAuthorized(true);
 
-        // Подтягиваем подписку
-        setHasSubscription(
-          userData.subscription?.expiresAt
-            ? userData.subscription.expiresAt > Date.now()
-            : false
-        );
+          // Подтягиваем подписку
+          setHasSubscription(
+            userData.subscription?.expiresAt
+              ? userData.subscription.expiresAt > Date.now()
+              : false
+          );
 
-        // Подтягиваем город
-        if (userData.city) {
-          const city = cities.find((c) => c.name === userData.city);
-          if (city) setSelectedCity(city);
+          // Подтягиваем город
+          if (userData.city) {
+            const city = cities.find((c) => c.name === userData.city);
+            if (city) setSelectedCity(city);
+          }
+
+          setError(null);
         }
-
-        setError(null);
+      } catch (e) {
+        console.error("Auth status error:", e);
       }
-    } catch (e) {
-      console.error("Auth status error:", e);
-    }
-  })();
-}, []);
+    })();
+  }, []);
 
   // Загрузка SDK VK ID
   useEffect(() => {
@@ -1134,20 +1134,17 @@ if (!isAuthorized) {
       gap: 23,
     }}
   >
-  <a
-    href="#"
-    onClick={(e) => {
-      e.preventDefault();
-      setShowSbpModal(true);
-    }}
+  {/* Объединенная кнопка */}
+  <button
+    onClick={paymentPending ? refreshSubscriptionStatus : () => setShowSbpModal(true)}
     style={{
       display: "block",
       marginTop: 7,
       marginBottom: 7,
       padding: "14px 0",
-      background: user.subscription?.active
-        ? "linear-gradient(90deg, #ffaa00, #ffdd55)"
-        : "linear-gradient(90deg, #2787f5, #7a5cff)",
+      background: paymentPending
+      ? "#9ecf9e"
+      : "linear-gradient(90deg, #2787f5, #7a5cff)",
       color: "#fff",
       border: "none",
       borderRadius: 16,
@@ -1160,46 +1157,22 @@ if (!isAuthorized) {
       transition: "all 0.2s",
     }}
     onMouseEnter={(e) => {
-      e.currentTarget.style.background = user.subscription?.active
-        ? "linear-gradient(90deg, #ff8800, #ffcc33)"
-        : "linear-gradient(90deg, #1e6cd8, #693bff)";
+      e.currentTarget.style.background = paymentPending
+      ? "#7bb27b"
+      : "linear-gradient(90deg, #1e6cd8, #693bff)";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.background = user.subscription?.active
-        ? "linear-gradient(90deg, #ffaa00, #ffdd55)"
-        : "linear-gradient(90deg, #2787f5, #7a5cff)";
+      e.currentTarget.style.background = paymentPending
+      ? "#9ecf9e"
+      : "linear-gradient(90deg, #2787f5, #7a5cff)";
     }}
   >
-    {user.subscription?.active ? "Продлить подписку" : "Активировать подписку"}
-  </a>
-
-  {paymentPending && (
-    <button
-      onClick={refreshSubscriptionStatus}
-      style={{
-        padding: "14px 0",
-        background: "linear-gradient(90deg, #00e600, #19ff19)",
-        color: "#fff",
-        border: "none",
-        borderRadius: 16,
-        cursor: "pointer",
-        fontWeight: 600,
-        fontSize: 16,
-        width: "100%",
-        transition: "all 0.2s",
-      }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.background =
-          "linear-gradient(90deg, #1e6cd8, #693bff)")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.background =
-          "linear-gradient(90deg, #00e600, #19ff19)")
-      }
-    >
-      Я завершил оплату
-    </button>
-  )}
+    {user?.subscription?.active
+      ? "Продлить подписку"
+      : paymentPending
+      ? "Я завершил оплату"
+      : "Активировать подписку"}
+  </button>
 </div>
 
     {/* Модалка выбора периода */}
