@@ -32,13 +32,13 @@ export default function MapViewMapGL({ city }) {
         const iconUrl =
           m.status === "unconfirmed"
             ? "/icons/marker-gray.png"
-            : "https://cdn-icons-png.flaticon.com/128/5959/5959568.png";
+            : "/icons/marker.png";
 
         if (!markersRef.current[m.id]) {
           const marker = new window.mapgl.Marker(mapRef.current, {
             coordinates: [m.lng, m.lat],
             icon: iconUrl,
-            size: [30, 30],
+            size: [37, 37],
             anchor: [0.5, 1],
           });
           marker.on("click", () => openPopup(m, marker));
@@ -265,30 +265,10 @@ export default function MapViewMapGL({ city }) {
         zoom: 12,
         minZoom: 11,
         zoomControl: false, // отключаем встроенные кнопки
-        restrictArea: [
-          [city.coords[1] - BOUND_LNG_DIFF, city.coords[0] - BOUND_LAT_DIFF],
-          [city.coords[1] + BOUND_LNG_DIFF, city.coords[0] + BOUND_LAT_DIFF],
-        ],
       });
 
       mapRef.current = mapInstance;
       mapInstance.on("click", handleMapClick);
-
-      mapInstance.on("move", () => {
-        const center = mapInstance.getCenter();
-        let [lng, lat] = center;
-        const minLng = city.coords[1] - BOUND_LNG_DIFF;
-        const maxLng = city.coords[1] + BOUND_LNG_DIFF;
-        const minLat = city.coords[0] - BOUND_LAT_DIFF;
-        const maxLat = city.coords[0] + BOUND_LAT_DIFF;
-
-        if (lng < minLng) lng = minLng;
-        if (lng > maxLng) lng = maxLng;
-        if (lat < minLat) lat = minLat;
-        if (lat > maxLat) lat = maxLat;
-
-        mapInstance.setCenter([lng, lat]);
-      });
 
       fetchMarkers();
       const interval = setInterval(fetchMarkers, 30000);
@@ -353,8 +333,9 @@ export default function MapViewMapGL({ city }) {
     lineHeight: 1,
     borderRadius: "50%",
     background: "rgba(64, 64, 64, 0.15)",
-    border: "3px solid rgba(0, 0, 0, 0.5)",
-    boxShadow: "none",
+	backdropFilter: "blur(6px)",
+    border: "none",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
     cursor: "pointer",
     fontSize: "20px",
     fontWeight: "bold",

@@ -673,29 +673,23 @@ if (!isAuthorized) {
             position: "absolute",
             top: 5,
             right: 5,
-            width: 42,
-            height: 42,
-            boxSizing: "border-box",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 0,
-            lineHeight: 1,
-            borderRadius: "50%",
+            padding: "8px 16px",
+            borderRadius: 12,
             background: "rgba(64, 64, 64, 0.15)",
-            border: "3px solid rgba(0, 0, 0, 0.5)",
-            boxShadow: "none",
-            cursor: "pointer",
-            fontSize: 20,
-            fontWeight: "bold",
+			backdropFilter: "blur(6px)",
+            border: "none",
             color: "white",
+            fontSize: 16,
+            fontWeight: 600,
+            cursor: "pointer",
             transition: "all 0.2s ease",
+            boxShadow: "none",
             zIndex: 10000,
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0, 0, 0, 0.15)")}
         >
-          ←
+          Выйти
         </button>
       </div>
     )
