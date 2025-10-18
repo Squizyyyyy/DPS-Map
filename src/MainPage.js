@@ -1099,7 +1099,7 @@ if (!isAuthorized) {
     </div>
 
     {/* Блок с кнопкой подписки */}
-	{!user.subscription?.active && (
+	{!user.subscription?.active ? (
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -1149,7 +1149,6 @@ if (!isAuthorized) {
       >
         Активировать подписку
       </a>
-	  
 	  ) : (
         
 		// Кнопка "Я завершил оплату", когда оплата в процессе
@@ -1205,6 +1204,7 @@ if (!isAuthorized) {
     </button>
   )}
 </div>
+) : null}
 
     {/* Модалка выбора периода */}
     {showSbpModal && (
