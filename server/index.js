@@ -278,18 +278,23 @@ function startMailCheck(userId, session) {
           // Обновляем БД
           await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
 
-          // Обновляем сессию, чтобы подписка сразу появилась у пользователя (save в store)
+          // Обновляем сессию, чтобы подписка сразу появилась у пользователя
           try {
             if (session) {
               session.user = session.user || {};
               session.user.subscription = user.subscription;
-              // Явно сохраняем сессию
-              session.save((err) => {
-                if (err) {
-                  console.error(`❗ [${userId}] Ошибка сохранения сессии:`, err);
-                } else {
-                  console.log(`🔁 [${userId}] Сессия успешно обновлена (подписка)`);
-                }
+
+              // Теперь session.save() ожидается через Promise
+              await new Promise((resolve, reject) => {
+                session.save((err) => {
+                  if (err) {
+                    console.error(`❗ [${userId}] Ошибка сохранения сессии:`, err);
+                    reject(err);
+                  } else {
+                    console.log(`🔁 [${userId}] Сессия успешно обновлена (подписка)`);
+                    resolve();
+                  }
+                });
               });
             }
           } catch (se) {
