@@ -1112,7 +1112,8 @@ if (!isAuthorized) {
         gap: 23,
       }}
     >
-      <a
+      {!paymentPending ? (
+	  <a
         href="#"
         onClick={(e) => {
           e.preventDefault();
@@ -1146,6 +1147,44 @@ if (!isAuthorized) {
       >
         Активировать подписку
       </a>
+	  
+	  ) : (
+        // Кнопка "Я завершил оплату", когда оплата в процессе
+        <button
+          onClick={async () => {
+            try {
+              const statusRes = await fetch("/auth/status", { credentials: "include", cache: "no-store" });
+              const statusData = await statusRes.json();
+              if (statusData.user?.subscription?.active) {
+                setUser((prev) => ({ ...prev, subscription: statusData.user.subscription }));
+                setPaymentPending(false);
+                setShowPaymentModal(false);
+              } else {
+                alert("Подписка пока не активна. Попробуйте снова через пару секунд.");
+              }
+            } catch (err) {
+              console.error("Ошибка обновления подписки:", err);
+              alert("Не удалось проверить статус подписки");
+            }
+          }}
+          style={{
+            padding: "14px 0",
+            background: "linear-gradient(90deg, #008000, #19ff19)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 16,
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: 16,
+            width: "100%",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #693bff)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #008000, #19ff19)")}
+        >
+          Я завершил оплату
+        </button>
+      )}  
     </div>
 
     {/* Модалка выбора периода */}
@@ -1247,49 +1286,6 @@ if (!isAuthorized) {
                   setPaymentPending(true);
                   setShowPaymentModal(true);
                   setShowSbpModal(false);
-				  
-				  let intervalId;
-                  let timeoutId;
-
-                  // Функция опроса подписки
-                  const pollSubscription = async () => {
-                    try {
-                      const statusRes = await fetch("/auth/status", { credentials: "include", cache: "no-store" });
-                      const statusData = await statusRes.json();
-                      if (statusData.user?.subscription?.active) {
-                        setUser((prev) => ({
-                          ...prev,
-                          subscription: statusData.user.subscription,
-                        }));
-                        setPaymentPending(false);
-                        setShowPaymentModal(false);
-
-                        // Очистка таймеров
-                        clearInterval(intervalId);
-                        clearTimeout(timeoutId);
-                        return true;
-                      }
-                    } catch (err) {
-                      console.error("Ошибка обновления подписки:", err);
-                    }
-                    return false;
-                  };
-
-                  // Проверка каждые 5 секунд
-                  intervalId = setInterval(pollSubscription, 5000);
-
-                  // Авто-очистка через 15 минут
-                  timeoutId = setTimeout(() => {
-                    clearInterval(intervalId);
-                    setPaymentPending(false);
-                  }, 15 * 60 * 1000);
-
-                  // Очистка при закрытии вкладки
-                  window.addEventListener("beforeunload", () => {
-                    clearInterval(intervalId);
-                    clearTimeout(timeoutId);
-                  });
-				  
                 }
               } catch (err) {
                 console.error(err);
@@ -1414,7 +1410,7 @@ if (!isAuthorized) {
             <div>Банк получателя:</div>
             <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 20 }}>Юмани (Юmoney)</div>
           </div>
-
+		  
           <button
             onClick={() => setShowPaymentModal(false)}
             style={{
