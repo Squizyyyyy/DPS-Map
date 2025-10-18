@@ -42,6 +42,25 @@ export default function MainPage() {
 
   const isMapActive = activeTab === "map";
   
+  // Функция обновления статуса подписки
+  const refreshSubscriptionStatus = async () => {
+    try {
+      const res = await fetch("/auth/status", { credentials: "include", cache: "no-store" });
+      const data = await res.json();
+      if (data.user?.subscription?.active) {
+        setUser(data.user);
+        setPaymentPending(false);
+        setShowPaymentModal(false);
+        toast.success("Подписка активирована!");
+      } else {
+        toast.info("Подписка пока не активна. Попробуйте снова через пару секунд.");
+      }
+    } catch (err) {
+      console.error("Ошибка обновления подписки:", err);
+      toast.error("Не удалось проверить статус подписки");
+    }
+  };
+  
   // Убираем стандартные отступы body/html
   useEffect(() => {
     document.body.style.margin = "0";
@@ -52,7 +71,7 @@ export default function MainPage() {
     document.documentElement.style.height = "100%";
   }, []);
 
-  // Проверка сессии при загрузке
+// Проверка сессии при загрузке
 useEffect(() => {
   (async () => {
     try {
@@ -1071,68 +1090,49 @@ if (!isAuthorized) {
     }}
   >
   
-  {/* Функция обновления статуса подписки */}
-    const refreshSubscriptionStatus = async () => {
-      try {
-        const res = await fetch("/auth/status", { credentials: "include", cache: "no-store" });
-        const data = await res.json();
-        if (data.user?.subscription?.active) {
-          setUser(data.user);
-          setPaymentPending(false);
-          setShowPaymentModal(false);
-          toast.success("Подписка активирована!");
-        } else {
-          toast.info("Подписка пока не активна. Попробуйте снова через пару секунд.");
-        }
-      } catch (err) {
-        console.error("Ошибка обновления подписки:", err);
-        toast.error("Не удалось проверить статус подписки");
-      }
-    };
-  
-    {/* Статус подписки */}
-    <div
-      style={{
-        backgroundColor: "#0a1f33",
-        borderRadius: 24,
-        padding: 16,
-        maxWidth: 300,
-        width: "100%",
-        textAlign: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        color: "#fff",
-        marginBottom: 16,
-      }}
-    >
-      {user.subscription?.active ? (
-        <p style={{ margin: 0 }}>
-          Активна до:{" "}
-          <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
-        </p>
-      ) : paymentPending ? (
-        <p style={{ margin: 0, color: "#ffcc00" }}>
-          Ожидание оплаты<span className="dots"></span>
-        </p>
-      ) : (
-        <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
-      )}
-    </div>
+  {/* Статус подписки */}
+  <div
+    style={{
+      backgroundColor: "#0a1f33",
+      borderRadius: 24,
+      padding: 16,
+      maxWidth: 300,
+      width: "100%",
+      textAlign: "center",
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      color: "#fff",
+      marginBottom: 16,
+    }}
+  >
+    {user.subscription?.active ? (
+      <p style={{ margin: 0 }}>
+        Активна до:{" "}
+        <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
+      </p>
+    ) : paymentPending ? (
+      <p style={{ margin: 0, color: "#ffcc00" }}>
+        Ожидание оплаты<span className="dots"></span>
+      </p>
+    ) : (
+      <p style={{ margin: 0, color: "#fff" }}>Подписка не активна</p>
+    )}
+  </div>
 
-    {/* Блок с кнопкой подписки */}
-<div
-  style={{
-    backgroundColor: "#0a1f33",
-    borderRadius: 24,
-    padding: 16,
-    maxWidth: 300,
-    width: "100%",
-    textAlign: "center",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-    display: "flex",
-    flexDirection: "column",
-    gap: 23,
-  }}
->
+  {/* Блок с кнопкой подписки */}
+  <div
+    style={{
+      backgroundColor: "#0a1f33",
+      borderRadius: 24,
+      padding: 16,
+      maxWidth: 300,
+      width: "100%",
+      textAlign: "center",
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 23,
+    }}
+  >
   <a
     href="#"
     onClick={(e) => {
