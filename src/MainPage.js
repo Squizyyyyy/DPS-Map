@@ -1289,9 +1289,7 @@ if (!isAuthorized) {
                     clearInterval(intervalId);
                     clearTimeout(timeoutId);
                   });
-
-                  // Мгновенная проверка сразу
-                  await pollSubscription();
+				  
                 }
               } catch (err) {
                 console.error(err);
