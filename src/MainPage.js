@@ -1084,9 +1084,10 @@ if (!isAuthorized) {
         marginBottom: 16,
       }}
     >
-      {hasSubscription && user?.subscription?.expiresAt ? (
+      {user.subscription?.active ? (
         <p style={{ margin: 0 }}>
-          Активна до: <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
+          Активна до:{" "}
+          <b>{new Date(user.subscription.expiresAt).toLocaleDateString()}</b>
         </p>
       ) : paymentPending ? (
         <p style={{ margin: 0, color: "#ffcc00" }}>
@@ -1098,6 +1099,7 @@ if (!isAuthorized) {
     </div>
 
     {/* Блок с кнопкой подписки */}
+	{!user.subscription?.active && (
     <div
       style={{
         backgroundColor: "#0a1f33",
@@ -1149,31 +1151,35 @@ if (!isAuthorized) {
       </a>
 	  
 	  ) : (
-        // Кнопка "Я завершил оплату", когда оплата в процессе
+        
+		// Кнопка "Я завершил оплату", когда оплата в процессе
         <button
-      onClick={async () => {
-        try {
-          const statusRes = await fetch("/auth/status", {
-            credentials: "include",
-            cache: "no-store",
-          });
-          const statusData = await statusRes.json();
+            onClick={async () => {
+              try {
+                const statusRes = await fetch("/auth/status", {
+                  credentials: "include",
+                  cache: "no-store",
+                });
+                const statusData = await statusRes.json();
 
-          if (statusData.user?.subscription?.active) {
-            // Обновляем пользователя целиком, чтобы компонент подписки рендерился сразу
-            setUser(statusData.user);
-            setPaymentPending(false);
-            setShowPaymentModal(false);
+                if (statusData.user?.subscription?.active) {
+                  
+				  // Обновляем локальный user сразу, чтобы компонент перерендерился
+                  setUser(statusData.user);
+                  setPaymentPending(false);
+                  setShowPaymentModal(false);
 
-            toast.success("Подписка активирована!");
-          } else {
-            toast.info("Подписка пока не активна. Попробуйте снова через пару секунд.");
-          }
-        } catch (err) {
-          console.error("Ошибка обновления подписки:", err);
-          toast.error("Не удалось проверить статус подписки");
-        }
-      }}
+                  toast.success("Подписка активирована!");
+                } else {
+                  toast.info(
+                    "Подписка пока не активна. Попробуйте снова через пару секунд."
+                  );
+                }
+              } catch (err) {
+                console.error("Ошибка обновления подписки:", err);
+                toast.error("Не удалось проверить статус подписки");
+              }
+            }}
       style={{
         padding: "14px 0",
         background: "linear-gradient(90deg, #00e600, #19ff19)",
