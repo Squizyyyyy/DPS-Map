@@ -25,7 +25,7 @@ const cities = [
 
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState("account");
-  const [hasSubscription, setHasSubscription] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(user?.subscription?.active || false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
@@ -1070,6 +1070,26 @@ if (!isAuthorized) {
       textAlign: "center",
     }}
   >
+  
+  {/* Функция обновления статуса подписки */}
+    const refreshSubscriptionStatus = async () => {
+      try {
+        const res = await fetch("/auth/status", { credentials: "include", cache: "no-store" });
+        const data = await res.json();
+        if (data.user?.subscription?.active) {
+          setUser(data.user);
+          setPaymentPending(false);
+          setShowPaymentModal(false);
+          toast.success("Подписка активирована!");
+        } else {
+          toast.info("Подписка пока не активна. Попробуйте снова через пару секунд.");
+        }
+      } catch (err) {
+        console.error("Ошибка обновления подписки:", err);
+        toast.error("Не удалось проверить статус подписки");
+      }
+    };
+  
     {/* Статус подписки */}
     <div
       style={{
@@ -1099,86 +1119,62 @@ if (!isAuthorized) {
     </div>
 
     {/* Блок с кнопкой подписки */}
-	{!user.subscription?.active ? (
-    <div
-      style={{
-        backgroundColor: "#0a1f33",
-        borderRadius: 24,
-        padding: 16,
-        maxWidth: 300,
-        width: "100%",
-        textAlign: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 23,
-      }}
-    >
-      {!paymentPending ? (
-	  <a
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          setShowSbpModal(true);
-        }}
-        style={{
-          display: "block",
-          marginTop: 7,
-          marginBottom: 7,
-          padding: "14px 0",
-          background: "linear-gradient(90deg, #2787f5, #7a5cff)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 16,
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: 16,
-          width: "100%",
-          textAlign: "center",
-          textDecoration: "none",
-          transition: "all 0.2s",
-        }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.background =
-            "linear-gradient(90deg, #1e6cd8, #693bff)")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.background =
-            "linear-gradient(90deg, #2787f5, #7a5cff)")
-        }
-      >
-        Активировать подписку
-      </a>
-	  ) : (
-        
-		// Кнопка "Я завершил оплату", когда оплата в процессе
-        <button
-            onClick={async () => {
-              try {
-                const statusRes = await fetch("/auth/status", {
-                  credentials: "include",
-                  cache: "no-store",
-                });
-                const statusData = await statusRes.json();
+<div
+  style={{
+    backgroundColor: "#0a1f33",
+    borderRadius: 24,
+    padding: 16,
+    maxWidth: 300,
+    width: "100%",
+    textAlign: "center",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+    display: "flex",
+    flexDirection: "column",
+    gap: 23,
+  }}
+>
+  <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      setShowSbpModal(true);
+    }}
+    style={{
+      display: "block",
+      marginTop: 7,
+      marginBottom: 7,
+      padding: "14px 0",
+      background: user.subscription?.active
+        ? "linear-gradient(90deg, #ffaa00, #ffdd55)"
+        : "linear-gradient(90deg, #2787f5, #7a5cff)",
+      color: "#fff",
+      border: "none",
+      borderRadius: 16,
+      cursor: "pointer",
+      fontWeight: 600,
+      fontSize: 16,
+      width: "100%",
+      textAlign: "center",
+      textDecoration: "none",
+      transition: "all 0.2s",
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = user.subscription?.active
+        ? "linear-gradient(90deg, #ff8800, #ffcc33)"
+        : "linear-gradient(90deg, #1e6cd8, #693bff)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = user.subscription?.active
+        ? "linear-gradient(90deg, #ffaa00, #ffdd55)"
+        : "linear-gradient(90deg, #2787f5, #7a5cff)";
+    }}
+  >
+    {user.subscription?.active ? "Продлить подписку" : "Активировать подписку"}
+  </a>
 
-                if (statusData.user?.subscription?.active) {
-                  
-				  // Обновляем локальный user сразу, чтобы компонент перерендерился
-                  setUser(statusData.user);
-                  setPaymentPending(false);
-                  setShowPaymentModal(false);
-
-                  toast.success("Подписка активирована!");
-                } else {
-                  toast.info(
-                    "Подписка пока не активна. Попробуйте снова через пару секунд."
-                  );
-                }
-              } catch (err) {
-                console.error("Ошибка обновления подписки:", err);
-                toast.error("Не удалось проверить статус подписки");
-              }
-            }}
+  {paymentPending && (
+    <button
+      onClick={refreshSubscriptionStatus}
       style={{
         padding: "14px 0",
         background: "linear-gradient(90deg, #00e600, #19ff19)",
@@ -1204,7 +1200,6 @@ if (!isAuthorized) {
     </button>
   )}
 </div>
-) : null}
 
     {/* Модалка выбора периода */}
     {showSbpModal && (
