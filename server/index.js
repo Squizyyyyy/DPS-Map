@@ -179,7 +179,7 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
     activePayments[user.id] = { sum, plan, expiresAt };
 
     console.log(`📩 [${user.id}] Запуск проверки писем...`);
-    // Передаём сессию, чтобы обновлять её сразу после активации
+    // Передаём текущую сессию, чтобы можно было её обновлять при активации
     startMailCheck(user.id, req.session);
 
     res.json({ success: true, sum });
@@ -190,7 +190,7 @@ app.post("/subscription/generate-sum", checkAuth, async (req, res) => {
 });
 
 function startMailCheck(userId, session) {
-  const intervalMs = 15 * 1000; // каждые 15 секунд
+  const intervalMs = 15 * 1000;
   const maxTimeMs = 15 * 60 * 1000;
   const startTime = Date.now();
 
@@ -264,9 +264,9 @@ function startMailCheck(userId, session) {
           foundUid = msg.attributes.uid;
           console.log(`✅ [${userId}] Найдено письмо с суммой (регэксп): ${sum}`);
 
-          // активируем подписку
+          // Активируем подписку
           const now = Date.now();
-          let additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+          const additionalMs = plan === "3m" ? 90 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
           let newExpiresAt = now + additionalMs;
 
           if (user.subscription?.expiresAt && user.subscription.expiresAt > now) {
@@ -275,20 +275,41 @@ function startMailCheck(userId, session) {
           }
 
           user.subscription = { active: true, plan, expiresAt: newExpiresAt };
+          // Обновляем БД
           await usersCollection.updateOne({ id: user.id }, { $set: { subscription: user.subscription } });
 
-          // ⚡ Обновляем сессию, чтобы подписка сразу появилась у пользователя
-          if (session) {
-            session.user.subscription = user.subscription;
+          // Обновляем сессию, чтобы подписка сразу появилась у пользователя (save в store)
+          try {
+            if (session) {
+              session.user = session.user || {};
+              session.user.subscription = user.subscription;
+              // Явно сохраняем сессию
+              session.save((err) => {
+                if (err) {
+                  console.error(`❗ [${userId}] Ошибка сохранения сессии:`, err);
+                } else {
+                  console.log(`🔁 [${userId}] Сессия успешно обновлена (подписка)`);
+                }
+              });
+            }
+          } catch (se) {
+            console.error(`❗ [${userId}] Ошибка при попытке обновить сессию:`, se);
           }
 
+          // Удаляем запись о платеже и из activePayments
           await paymentsCollection.deleteOne({ userId });
           delete activePayments[userId];
           clearInterval(timer);
 
           console.log(`🎉 [${userId}] Подписка активирована до ${new Date(newExpiresAt).toLocaleString()}`);
 
-          await connection.addFlags(foundUid, ["\\Deleted"]);
+          // помечаем письмо для удаления
+          try {
+            await connection.addFlags(foundUid, ["\\Deleted"]);
+          } catch (ferr) {
+            console.warn(`⚠️ [${userId}] Не удалось пометить письмо на удаление:`, ferr.message || ferr);
+          }
+
           await connection.closeBox(true).catch(() => {});
           await connection.end().catch(() => {});
           break;
@@ -301,7 +322,7 @@ function startMailCheck(userId, session) {
         await connection.end().catch(() => {});
       }
     } catch (err) {
-      console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message);
+      console.error(`🚨 [${userId}] Ошибка при проверке писем:`, err.message || err);
     }
   }, intervalMs);
 }

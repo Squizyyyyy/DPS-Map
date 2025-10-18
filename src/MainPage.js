@@ -850,7 +850,7 @@ if (!isAuthorized) {
       Выйти из профиля
     </button>
 
-  {/* Info и Связь с нами */}
+  {/* Инфо и Связь с нами */}
   <div
     style={{
       marginTop: 24,
@@ -864,7 +864,7 @@ if (!isAuthorized) {
         "-apple-system, BlinkMacSystemFont, 'San Francisco', Helvetica, Arial, sans-serif",
     }}
   >
-    {/* Info */}
+    {/* Инфо */}
     <span
       onClick={() => setActiveTab("guide")}
       style={{
@@ -872,7 +872,7 @@ if (!isAuthorized) {
         textDecoration: "underline",
       }}
     >
-      Info
+      Инфо
     </span>
 
     {/* Разделитель */}
@@ -1247,18 +1247,26 @@ if (!isAuthorized) {
                   setPaymentPending(true);
                   setShowPaymentModal(true);
                   setShowSbpModal(false);
+				  
+				  let intervalId;
+                  let timeoutId;
 
-                  // Функция для обновления подписки
+                  // Функция обновления подписки с автозакрытием модалки
                   const updateSubscription = async () => {
                     try {
-                      const statusRes = await fetch("/auth/status", { credentials: "include" });
+                      const statusRes = await fetch("/auth/status", {
+                        credentials: "include",
+                      });
                       const statusData = await statusRes.json();
                       if (statusData.user?.subscription?.active) {
-                        setUser(prev => ({
+                        setUser((prev) => ({
                           ...prev,
-                          subscription: statusData.user.subscription
+                          subscription: statusData.user.subscription,
                         }));
                         setPaymentPending(false);
+                        setShowPaymentModal(false);
+                        clearInterval(intervalId);
+                        clearTimeout(timeoutId);
                         return true;
                       }
                     } catch (err) {
@@ -1267,19 +1275,24 @@ if (!isAuthorized) {
                     return false;
                   };
 
-                  // Проверка каждые 5 секунд до момента активации
-                  let intervalId = setInterval(async () => {
-                    const updated = await updateSubscription();
-                    if (updated) clearInterval(intervalId);
+                  // Проверка каждые 5 секунд
+                  intervalId = setInterval(async () => {
+                    await updateSubscription();
                   }, 5000);
 
-                  // Авто-очистка интервала через 15 минут
-                  const timeoutId = setTimeout(() => {
+                  // Авто-очистка через 15 минут
+                  timeoutId = setTimeout(() => {
                     clearInterval(intervalId);
                     setPaymentPending(false);
                   }, 15 * 60 * 1000);
 
-                  // Мгновенная проверка сразу после генерации суммы
+                  // Очистка при размонтировании
+                  window.addEventListener("beforeunload", () => {
+                    clearInterval(intervalId);
+                    clearTimeout(timeoutId);
+                  });
+
+                  // Моментальная проверка сразу
                   await updateSubscription();
                 }
               } catch (err) {
