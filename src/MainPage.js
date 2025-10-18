@@ -1248,13 +1248,16 @@ if (!isAuthorized) {
                   setShowPaymentModal(true);
                   setShowSbpModal(false);
 
-                  // Сразу обновляем подписку после оплаты
+                  // Функция для обновления подписки
                   const updateSubscription = async () => {
                     try {
                       const statusRes = await fetch("/auth/status", { credentials: "include" });
                       const statusData = await statusRes.json();
                       if (statusData.user?.subscription?.active) {
-                        setUser(statusData.user);
+                        setUser(prev => ({
+                          ...prev,
+                          subscription: statusData.user.subscription
+                        }));
                         setPaymentPending(false);
                         return true;
                       }
@@ -1264,16 +1267,19 @@ if (!isAuthorized) {
                     return false;
                   };
 
-                  // Запускаем проверку каждые 5 секунд, но моментально обновим, если уже есть
+                  // Проверка каждые 5 секунд до момента активации
                   let intervalId = setInterval(async () => {
                     const updated = await updateSubscription();
                     if (updated) clearInterval(intervalId);
                   }, 5000);
 
                   // Авто-очистка интервала через 15 минут
-                  setTimeout(() => clearInterval(intervalId), 15 * 60 * 1000);
+                  const timeoutId = setTimeout(() => {
+                    clearInterval(intervalId);
+                    setPaymentPending(false);
+                  }, 15 * 60 * 1000);
 
-                  // Моментальная проверка при открытии модалки
+                  // Мгновенная проверка сразу после генерации суммы
                   await updateSubscription();
                 }
               } catch (err) {
