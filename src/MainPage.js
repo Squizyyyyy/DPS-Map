@@ -25,9 +25,9 @@ const cities = [
 
 export default function MainPage() {
   const [activeTab, setActiveTab] = useState("account");
-  const [hasSubscription, setHasSubscription] = useState(user?.subscription?.active || false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState(null);
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [error, setError] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
@@ -52,6 +52,7 @@ export default function MainPage() {
         setPaymentPending(false);
         setShowPaymentModal(false);
         toast.success("Подписка активирована!");
+		setHasSubscription(true);
       } else {
         toast.info("Подписка пока не активна. Попробуйте снова через пару секунд.");
       }
