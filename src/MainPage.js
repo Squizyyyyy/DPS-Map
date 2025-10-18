@@ -1151,41 +1151,54 @@ if (!isAuthorized) {
 	  ) : (
         // Кнопка "Я завершил оплату", когда оплата в процессе
         <button
-          onClick={async () => {
-            try {
-              const statusRes = await fetch("/auth/status", { credentials: "include", cache: "no-store" });
-              const statusData = await statusRes.json();
-              if (statusData.user?.subscription?.active) {
-                setUser((prev) => ({ ...prev, subscription: statusData.user.subscription }));
-                setPaymentPending(false);
-                setShowPaymentModal(false);
-              } else {
-                alert("Подписка пока не активна. Попробуйте снова через пару секунд.");
-              }
-            } catch (err) {
-              console.error("Ошибка обновления подписки:", err);
-              alert("Не удалось проверить статус подписки");
-            }
-          }}
-          style={{
-            padding: "14px 0",
-            background: "linear-gradient(90deg, #00e600, #19ff19)",
-            color: "#fff",
-            border: "none",
-            borderRadius: 16,
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: 16,
-            width: "100%",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #1e6cd8, #693bff)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(90deg, #00e600, #19ff19)")}
-        >
-          Я завершил оплату
-        </button>
-      )}  
-    </div>
+      onClick={async () => {
+        try {
+          const statusRes = await fetch("/auth/status", {
+            credentials: "include",
+            cache: "no-store",
+          });
+          const statusData = await statusRes.json();
+
+          if (statusData.user?.subscription?.active) {
+            // Обновляем пользователя целиком, чтобы компонент подписки рендерился сразу
+            setUser(statusData.user);
+            setPaymentPending(false);
+            setShowPaymentModal(false);
+
+            toast.success("Подписка активирована!");
+          } else {
+            toast.info("Подписка пока не активна. Попробуйте снова через пару секунд.");
+          }
+        } catch (err) {
+          console.error("Ошибка обновления подписки:", err);
+          toast.error("Не удалось проверить статус подписки");
+        }
+      }}
+      style={{
+        padding: "14px 0",
+        background: "linear-gradient(90deg, #00e600, #19ff19)",
+        color: "#fff",
+        border: "none",
+        borderRadius: 16,
+        cursor: "pointer",
+        fontWeight: 600,
+        fontSize: 16,
+        width: "100%",
+        transition: "all 0.2s",
+      }}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.background =
+          "linear-gradient(90deg, #1e6cd8, #693bff)")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.background =
+          "linear-gradient(90deg, #00e600, #19ff19)")
+      }
+    >
+      Я завершил оплату
+    </button>
+  )}
+</div>
 
     {/* Модалка выбора периода */}
     {showSbpModal && (
