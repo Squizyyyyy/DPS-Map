@@ -38,7 +38,7 @@ export default function MapViewMapGL({ city }) {
           const marker = new window.mapgl.Marker(mapRef.current, {
             coordinates: [m.lng, m.lat],
             icon: iconUrl,
-            size: [37, 37],
+            size: [44, 40],
             anchor: [0.5, 1],
           });
           marker.on("click", () => openPopup(m, marker));
@@ -149,8 +149,8 @@ export default function MapViewMapGL({ city }) {
 
         const newMarker = new window.mapgl.Marker(mapRef.current, {
           coordinates: [m.lng, m.lat],
-          icon: "https://cdn-icons-png.flaticon.com/128/5959/5959568.png",
-          size: [30, 30],
+          icon: "/icons/marker.png",
+          size: [44, 40],
           anchor: [0.5, 1],
         });
         newMarker.on("click", () => openPopup(m, newMarker));
@@ -334,8 +334,7 @@ export default function MapViewMapGL({ city }) {
     borderRadius: "50%",
     background: "rgba(64, 64, 64, 0.15)",
 	backdropFilter: "blur(6px)",
-    border: "none",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    border: "1px solid rgba(0, 0, 0, 0.2)",
     cursor: "pointer",
     fontSize: "20px",
     fontWeight: "bold",

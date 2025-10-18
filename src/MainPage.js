@@ -673,14 +673,14 @@ if (!isAuthorized) {
             position: "absolute",
             top: 5,
             right: 5,
-            padding: "8px 16px",
+            padding: "5px 13px",
             borderRadius: 12,
             background: "rgba(64, 64, 64, 0.15)",
 			backdropFilter: "blur(6px)",
-            border: "none",
+            border: "1px solid rgba(0, 0, 0, 0.2)",
             color: "white",
-            fontSize: 16,
-            fontWeight: 600,
+            fontSize: 15,
+            fontWeight: 500,
             cursor: "pointer",
             transition: "all 0.2s ease",
             boxShadow: "none",
@@ -892,8 +892,86 @@ if (!isAuthorized) {
     {/* Разделитель */}
     <span>|</span>
 
-    {/* Связь с нами */}
-    <span style={{ textDecoration: "underline" }}>Связь с нами:</span>
+{/* Контакты */}
+<span
+  onClick={() => setShowContactsModal(true)}
+  style={{
+    cursor: "pointer",
+    textDecoration: "underline",
+    color: "#fff",
+    fontWeight: 600,
+  }}
+>
+  Контакты
+</span>
+
+{/* Модалка */}
+{showContactsModal && (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 2000,
+    }}
+    onClick={() => setShowContactsModal(false)}
+  >
+    <div
+      style={{
+        background: "#0a1f33",
+        borderRadius: 20,
+        padding: 24,
+        width: "90%",
+        maxWidth: 360,
+        position: "relative",
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        onClick={() => setShowContactsModal(false)}
+        style={{
+          position: "absolute",
+          top: 5,
+          right: 6.5,
+          background: "none",
+          border: "none",
+          fontSize: 20,
+          color: "#ccc",
+          cursor: "pointer",
+        }}
+      >
+        ×
+      </button>
+
+      <h3 style={{ color: "#fff", marginBottom: 12 }}>Связь с нами</h3>
+      <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+        <a href="https://t.me/dps_map_support" target="_blank" rel="noopener noreferrer">
+          <svg width="32" height="32" viewBox="0 0 240 240" fill="#0088cc">
+            <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
+          </svg>
+        </a>
+        <a href="https://wa.me/+79958962951" target="_blank" rel="noopener noreferrer">
+          <WhatsAppIcon width={32} height={32} style={{ fill: "#25D366", cursor: "pointer" }} />
+        </a>
+      </div>
+
+      <h3 style={{ color: "#fff", marginBottom: 12 }}>Новостной канал</h3>
+      <div style={{ display: "flex", gap: 12 }}>
+        <a href="https://t.me/dpsmap_news" target="_blank" rel="noopener noreferrer">
+          <svg width="32" height="32" viewBox="0 0 240 240" fill="#0088cc">
+            <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.1 82.8l-16.9 79.9c-1.3 5.7-4.7 7-9.5 4.3l-26.2-19.3-12.7 12.2c-1.4 1.4-2.5 2.5-5.1 2.5l1.8-25.1 45.7-41c2-1.8-0.4-2.8-3.1-1l-56.4 35.5-24.3-7.6c-5.3-1.6-5.4-5.3 1.1-7.8l94.9-36.6c4.4-1.5 8.2 1 6.8 7.4z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+)}
 
     {/* Telegram */}
     <a
